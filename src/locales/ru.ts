@@ -1,0 +1,66 @@
+export default {
+  translation: {
+    404: {
+      title: 'Ошибка 404',
+      description: 'Страница не найдена',
+      text: 'Возможно, наши горе-разработчики что-то сломали :(',
+    },
+    welcome: {
+      title: 'Календарь водителя',
+      description: 'Войдите или создайте экипаж',
+      signupButton: 'Создать экипаж',
+      loginButton: 'Войти',
+    },
+    signup: {
+      title: 'Создание экипажа',
+      description: 'Создание экипажа',
+      userForm: {
+        phone: 'Телефон',
+        username: 'Имя',
+        color: 'Цвет рабочих смен::',
+        schedule: 'График::',
+        '2/2': '2/2',
+        '1/2': '1/2',
+        '1/3': '1/3',
+        next: 'Далее',
+      },
+      carForm: {
+        prev: 'Назад',
+        submitButton: 'Создать экипаж',
+        brand: 'Марка',
+        model: 'Модель',
+        inventory: 'Инвентарный',
+      },
+    },
+    login: {
+      title: 'Войти в экипаж',
+      description: 'Войти в экипаж',
+      phone: 'Телефон',
+      password: 'Пароль',
+      forgotPassword: 'Забыли пароль?',
+      submitButton: 'Войти',
+    },
+    recovery: {
+      title: 'Восстановление пароля',
+      description: 'Восстановление пароля',
+      phone: 'Телефон',
+      rememberPassword: 'Вспомнили пароль?',
+      submitButton: 'Восстановить пароль',
+    },
+    validation: {
+      required: 'Обязательное поле',
+      requirements: 'От 3 до 20 символов',
+      passMin: 'Не менее 6 символов',
+      phone: 'Введите корректный номер телефона',
+      mastMatch: 'Пароли должны совпадать',
+      userAlreadyExists: 'Такой пользователь уже существует',
+      userNotAlreadyExists: 'Такой пользователь не зарегистрирован',
+      incorrectPassword: 'Неверный пароль',
+    },
+    toast: {
+      changeDataSuccess: 'Данные успешно изменены',
+      unknownError: 'Неизвестная ошибка',
+      authError: 'Ошибка аутентификации',
+    },
+  },
+} as const;

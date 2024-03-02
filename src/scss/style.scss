@@ -1,0 +1,140 @@
+/* Roboto */
+@font-face {
+  font-weight: 400;
+  font-family: Roboto;
+  src: url('../fonts/Roboto-Regular.ttf');
+}
+
+@font-face {
+  font-weight: 500;
+  font-family: Roboto;
+  src: url('../fonts/Roboto-Medium.ttf');
+}
+
+@font-face {
+  font-weight: 700;
+  font-family: Roboto;
+  src: url('../fonts/Roboto-Bold.ttf');
+}
+
+/* RussoOne */
+@font-face {
+  font-weight: 400;
+  font-family: RussoOne;
+  src: url('../fonts/RussoOne-Regular.ttf');
+}
+
+body {
+  font-family: Roboto, sans-serif;
+  background-color: $background;
+  color: $font;
+}
+
+h1 {
+  font-family: RussoOne, sans-serif;
+  font-size: 1.3em;
+}
+
+.anim-show {
+	opacity: 0;
+	transition: 1s;
+  -webkit-transition: 1s;
+  -moz-transition: 1s;
+  -o-transition: 1s;
+	animation: show 1s 1;
+  animation-fill-mode: forwards;
+}
+
+.button {
+  background-color: $button-background;
+  color: $font;
+  font-family: Roboto, sans-serif !important;
+  font-weight: 500;
+
+  &:active, &:hover {
+    background-color: $button-background-active !important;
+    color: $font !important;
+  }
+}
+
+.border-button {
+  border-color: $button-background;
+
+  .ant-radio-button-wrapper {
+
+    &::before {
+      background-color: $button-background;
+    }
+
+    &:first-child {
+      border-inline-start: 1px solid $button-background;
+    }
+
+    &-checked:first-child {
+      border-inline-start: 1px solid $button-background-active-dark;
+    }
+  }
+
+  .ant-radio-button-wrapper-checked,
+  .ant-radio-button-wrapper-checked:active,
+  .ant-radio-button-wrapper-checked:hover,
+  .ant-radio-button-wrapper-checked:first-child {
+    border-color: $button-background-active-dark;
+    color: $button-background-active-dark;
+
+    &::before {
+      background-color: $button-background-active-dark;
+    }
+  }
+
+  &:hover {
+    color: $button-background-active-dark;
+  }
+}
+
+.ant-color-picker-trigger:hover {
+  border-color: $button-background-active;
+}
+
+.ant-input-outlined {
+  
+  &:hover, &:focus-within {
+    border-color: $button-background;
+  }
+
+  &:focus-within {
+    box-shadow: 0 0 0 2px rgba(255, 188, 5, 0.1);
+  }
+}
+
+.input-height {
+  height: 2.8em;
+}
+
+.mb-3-5 {
+  margin-bottom: 2.2em !important;
+}
+
+.fs-7 {
+  font-size: 0.9em;
+}
+
+.spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+}
+
+.ant-steps {
+  height: 70vh;
+}
+
+@keyframes show {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 767px) {}
