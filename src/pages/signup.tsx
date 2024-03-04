@@ -1,16 +1,19 @@
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { GetServerSideProps } from 'next';
-import { Button, Form, Steps } from 'antd';
+import { Form } from 'antd';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 import Helmet from '@/components/Helmet';
 import UserSignup, { type UserSignupType } from '@/components/forms/UserSignup';
 import CarSignup, { type CarSignupType } from '@/components/forms/CarSignup';
 import routes from '@/routes';
+import BackButton from '@/components/BackButton';
 import type { Brand } from '../../server/types/Cars';
 
 const Signup = ({ brands }: { brands: Brand[] }) => {
   const { t } = useTranslation('translation', { keyPrefix: 'signup' });
+  const { asPath } = useRouter();
 
   const initialUserValues = {
     phone: '',
@@ -20,15 +23,15 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
   };
 
   const initialCarValues = {
-    brand: '',
-    model: '',
+    brand: undefined,
+    model: undefined,
     inventory: undefined,
     call: undefined,
     mileage: undefined,
-    mileage_before_maintenance: undefined,
+    mileage_after_maintenance: undefined,
     remaining_fuel: undefined,
-    fuel_consumption_winter: undefined,
-    fuel_consumption_summer: undefined,
+    fuel_consumption_winter: { city: undefined, highway: undefined },
+    fuel_consumption_summer: { city: undefined, highway: undefined },
   };
 
   const [currentForm, setCurrentForm] = useState(0);
@@ -38,40 +41,38 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
   const next = () => setCurrentForm(currentForm + 1);
   const prev = () => setCurrentForm(currentForm - 1);
 
-  const steps = [
+  const forms = [
     {
-      key: '1',
-      title: '',
+      key: 1,
       content: <UserSignup values={userValues} setValues={setUserValues} next={next} />,
     },
     {
-      key: '2',
-      title: '',
-      content: <CarSignup values={carsValues} setValues={setCarsValues} brands={brands} prev={prev} />,
+      key: 2,
+      content: <CarSignup values={carsValues} setValues={setCarsValues} brands={brands} />,
     },
   ];
 
+  useEffect(() => {
+    // если на форме Car нажал "назад" в браузере - переносим на форму User
+    if (asPath === routes.signupPage && currentForm === 1) {
+      prev();
+    }
+  }, [asPath]);
+
   return (
     <Form.Provider
-      onFormFinish={(name, info) => {
-        if (name === 'signup') {
-          console.log(info);
-        }
-      }}
-      onFormChange={(name, { forms: { signup } }) => {
-        if (name === 'signup') {
-          console.log(signup.isFieldsValidating());
+      onFormFinish={(name) => {
+        if (name === 'car-signup') {
+          console.log({ user: userValues, car: carsValues });
         }
       }}
     >
       <div className="d-flex justify-content-center anim-show">
         <Helmet title={t('title')} description={t('description')} />
+        <BackButton title={t('prev')} />
         <div className="my-5 col-12 d-flex flex-column align-items-center gap-5">
           <h1>{t('title')}</h1>
-          <div className="col-9 d-flex flex-column gap-5">
-            <Steps current={currentForm} size="small" direction="vertical" items={steps} className="position-absolute w-50" style={{ left: 5 }} />
-            <div className="mb-2">{steps[currentForm].content}</div>
-          </div>
+          <div className="col-10">{forms[currentForm].content}</div>
         </div>
       </div>
     </Form.Provider>

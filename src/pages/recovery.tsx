@@ -7,6 +7,7 @@ import { Button, Form } from 'antd';
 import { loginValidation } from '@/validations/validations';
 import routes from '@/routes';
 import Helmet from '@/components/Helmet';
+import BackButton from '@/components/BackButton';
 
 type RecoveryType = {
   phone: string;
@@ -21,31 +22,18 @@ const Recovery = () => {
   };
 
   return (
-    <div className="d-flex vh-100 justify-content-center align-items-center anim-show">
+    <div className="d-flex justify-content-center anim-show">
       <Helmet title={t('title')} description={t('description')} />
-      <div className="col-12 d-flex flex-column align-items-center gap-5">
+      <BackButton title={t('prev')} />
+      <div className="my-5 col-12 d-flex flex-column align-items-center gap-5">
         <h1>{t('title')}</h1>
-        <div className="col-9 d-flex flex-column gap-5">
-          <Form
-            name="recovery"
-            onFinish={onFinish}
-          >
-            <Form.Item<RecoveryType>
-              name="phone"
-              rules={[loginValidation]}
-            >
-              <MaskedInput
-                mask="+7 (000) 000-00-00"
-                className="input-height"
-                prefix={<PhoneOutlined className="site-form-item-icon" />}
-                placeholder={t('phone')}
-              />
+        <div className="col-10">
+          <Form name="recovery" onFinish={onFinish}>
+            <Form.Item<RecoveryType> name="phone" rules={[loginValidation]}>
+              <MaskedInput mask="+7 (000) 000-00-00" className="button-height" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
             </Form.Item>
             <div className="d-flex justify-content-end mb-3-5">
-              <Alert.Link
-                className="text-primary fw-light fs-7"
-                onClick={() => router.push(routes.loginPage)}
-              >
+              <Alert.Link className="text-primary fw-light fs-7" onClick={() => router.push(routes.loginPage)}>
                 {t('rememberPassword')}
               </Alert.Link>
             </div>

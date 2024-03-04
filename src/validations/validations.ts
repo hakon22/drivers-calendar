@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as yup from 'yup';
 import { setLocale, ObjectSchema, AnyObject } from 'yup';
+import { set } from 'lodash';
 import i18n from '../locales';
 
 const { t } = i18n;
@@ -19,8 +20,9 @@ setLocale({
 });
 
 const validate: any = <T extends ObjectSchema<AnyObject>>(schema: ObjectSchema<T>) => ({
-  async validator({ field }: { [key: string]: string }, value: unknown) {
-    await schema.validateSyncAt(field, { [field]: value });
+  async validator({ field }: { field: string }, value: unknown) {
+    const obj = set({}, field, value);
+    await schema.validateSyncAt(field, obj);
   },
 });
 
@@ -75,7 +77,7 @@ const carSchema = yup.object().shape({
     .number()
     .min(1)
     .required(),
-  mileage_before_maintenance: yup
+  mileage_after_maintenance: yup
     .number()
     .min(1)
     .required(),
@@ -83,14 +85,26 @@ const carSchema = yup.object().shape({
     .number()
     .min(1)
     .required(),
-  fuel_consumption_summer: yup
-    .number()
-    .min(1)
-    .required(),
-  fuel_consumption_winter: yup
-    .number()
-    .min(1)
-    .required(),
+  fuel_consumption_summer: yup.object().shape({
+    city: yup
+      .number()
+      .min(1)
+      .required(),
+    highway: yup
+      .number()
+      .min(1)
+      .required(),
+  }),
+  fuel_consumption_winter: yup.object().shape({
+    city: yup
+      .number()
+      .min(1)
+      .required(),
+    highway: yup
+      .number()
+      .min(1)
+      .required(),
+  }),
 });
 
 export const loginValidation = validate(loginSchema);

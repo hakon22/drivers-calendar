@@ -82,7 +82,7 @@ const App = ({ children }: { children: JSX.Element }) => {
         <ModalContext.Provider value={modalServices}>
           <ScrollContext.Provider value={scrollServices}>
             {isLoaded ? (
-              <div className="container">
+              <div className="container position-relative">
                 {children}
               </div>
             ) : (

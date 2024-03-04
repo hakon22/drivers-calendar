@@ -17,8 +17,8 @@ const Welcome = () => {
         <h1>{t('title')}</h1>
         <Image src={pineapple} alt={t('title')} priority />
         <div className="col-9 d-flex flex-column gap-5">
-          <Button type="primary" className="button input-height" onClick={() => router.push(routes.signupPage)}>{t('signupButton')}</Button>
-          <Button type="primary" className="button input-height" onClick={() => router.push(routes.loginPage)}>{t('loginButton')}</Button>
+          <Button type="primary" className="button button-height" onClick={() => router.push(routes.signupPage)}>{t('signupButton')}</Button>
+          <Button type="primary" className="button button-height" onClick={() => router.push(routes.loginPage)}>{t('loginButton')}</Button>
         </div>
       </div>
     </div>

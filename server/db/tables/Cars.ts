@@ -11,7 +11,7 @@ interface CarsModel
   inventory: number;
   call: number;
   mileage: number;
-  mileage_before_maintenance: number;
+  mileage_after_maintenance: number;
   remaining_fuel: number;
   fuel_consumption_summer: number;
   fuel_consumption_winter: number;
@@ -40,7 +40,7 @@ const Cars = db.define<CarsModel>(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    mileage_before_maintenance: {
+    mileage_after_maintenance: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
