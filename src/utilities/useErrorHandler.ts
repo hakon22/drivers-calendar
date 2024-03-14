@@ -12,9 +12,10 @@ const useErrorHandler = (error: Error) => {
       const codeError = parseInt(match, 10);
       if (codeError === 401) {
         toast(t('toast.authError'), 'error');
-      }
-      if (codeError === 500) {
+      } else if (codeError === 500) {
         toast(t('toast.unknownError'), 'error');
+      } else {
+        toast(t('toast.networkError'), 'error');
       }
       console.log(err);
     };

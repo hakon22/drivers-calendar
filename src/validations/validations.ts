@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as yup from 'yup';
 import { setLocale, ObjectSchema, AnyObject } from 'yup';
-import { set } from 'lodash';
+import _ from 'lodash';
 import i18n from '../locales';
 
 const { t } = i18n;
@@ -21,92 +21,72 @@ setLocale({
 
 const validate: any = <T extends ObjectSchema<AnyObject>>(schema: ObjectSchema<T>) => ({
   async validator({ field }: { field: string }, value: unknown) {
-    const obj = set({}, field, value);
+    const obj = _.set({}, field, value);
     await schema.validateSyncAt(field, obj);
+  },
+  async serverValidator(data: typeof schema) {
+    await schema.validate(data);
   },
 });
 
-const loginSchema = yup.object().shape({
-  phone: yup
-    .string()
-    .trim()
-    .required()
+const numberSchema = yup.number().min(1).required();
+const stringSchema = yup.string().required();
+
+const phoneSchema = yup.string().trim().required().transform((value) => value.replace(/[^\d]/g, ''))
+  .length(11)
+  .matches(/^79.../, t('validation.phone'));
+
+const confirmCodeSchema = yup.object().shape({
+  code: stringSchema
     .transform((value) => value.replace(/[^\d]/g, ''))
-    .length(11),
-  password: yup
-    .string()
-    .required(),
+    .test('code', t('validation.code'), (value) => value.length === 4),
+});
+
+const confirmPhoneSchema = yup.object().shape({
+  phone: phoneSchema,
+});
+
+const loginSchema = yup.object().shape({
+  phone: phoneSchema,
+  password: stringSchema,
 });
 
 const userSchema = yup.object().shape({
-  phone: yup
-    .string()
+  phone: phoneSchema,
+  username: stringSchema
     .trim()
-    .required()
-    .transform((value) => value.replace(/[^\d]/g, ''))
-    .length(11),
-  username: yup
-    .string()
-    .trim()
-    .required()
     .min(3)
     .max(20),
-  schedule: yup
-    .string()
-    .required(),
+  schedule: stringSchema.matches(/2\/2|1\/2|1\/3/, t('validation.incorrectSchedule')),
   color: yup
-    .lazy((value) => (typeof value === 'object' ? yup.object().required() : yup.string().required())),
+    .lazy((value) => (typeof value === 'object'
+      ? yup.object()
+        .required()
+      : yup.string()
+        .required()
+        .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t('validation.incorrectColor'))
+    )),
+});
+
+const fuelConsumptionSchema = yup.object().shape({
+  city: numberSchema,
+  highway: numberSchema,
 });
 
 const carSchema = yup.object().shape({
-  brand: yup
-    .string()
-    .required(),
-  model: yup
-    .string()
-    .required(),
-  inventory: yup
-    .number()
-    .min(1)
-    .required(),
-  call: yup
-    .number()
-    .min(1)
-    .required(),
-  mileage: yup
-    .number()
-    .min(1)
-    .required(),
-  mileage_after_maintenance: yup
-    .number()
-    .min(1)
-    .required(),
-  remaining_fuel: yup
-    .number()
-    .min(1)
-    .required(),
-  fuel_consumption_summer: yup.object().shape({
-    city: yup
-      .number()
-      .min(1)
-      .required(),
-    highway: yup
-      .number()
-      .min(1)
-      .required(),
-  }),
-  fuel_consumption_winter: yup.object().shape({
-    city: yup
-      .number()
-      .min(1)
-      .required(),
-    highway: yup
-      .number()
-      .min(1)
-      .required(),
-  }),
+  brand: stringSchema,
+  model: stringSchema,
+  inventory: numberSchema,
+  call: numberSchema,
+  mileage: numberSchema,
+  mileage_after_maintenance: numberSchema,
+  remaining_fuel: numberSchema,
+  fuel_consumption_summer: fuelConsumptionSchema,
+  fuel_consumption_winter: fuelConsumptionSchema,
 });
 
+export const confirmCodeValidation = validate(confirmCodeSchema);
+export const phoneValidation = validate(confirmPhoneSchema);
 export const loginValidation = validate(loginSchema);
 export const userValidation = validate(userSchema);
 export const carValidation = validate(carSchema);

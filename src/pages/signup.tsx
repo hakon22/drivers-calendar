@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import type { GetServerSideProps } from 'next';
 import { Form } from 'antd';
 import axios from 'axios';
@@ -7,13 +7,18 @@ import { useRouter } from 'next/router';
 import Helmet from '@/components/Helmet';
 import UserSignup, { type UserSignupType } from '@/components/forms/UserSignup';
 import CarSignup, { type CarSignupType } from '@/components/forms/CarSignup';
+import { ModalContext } from '@/components/Context';
 import routes from '@/routes';
 import BackButton from '@/components/BackButton';
+import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import type { Brand } from '../../server/types/Cars';
 
 const Signup = ({ brands }: { brands: Brand[] }) => {
   const { t } = useTranslation('translation', { keyPrefix: 'signup' });
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
   const { asPath } = useRouter();
+
+  const { modalOpen } = useContext(ModalContext);
 
   const initialUserValues = {
     phone: '',
@@ -38,6 +43,8 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
   const [userValues, setUserValues] = useState<UserSignupType>(initialUserValues);
   const [carsValues, setCarsValues] = useState<CarSignupType>(initialCarValues);
 
+  const [isSubmit, setIsSubmit] = useState(false);
+
   const next = () => setCurrentForm(currentForm + 1);
   const prev = () => setCurrentForm(currentForm - 1);
 
@@ -48,7 +55,7 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
     },
     {
       key: 2,
-      content: <CarSignup values={carsValues} setValues={setCarsValues} brands={brands} />,
+      content: <CarSignup values={carsValues} setValues={setCarsValues} brands={brands} isSubmit={isSubmit} />,
     },
   ];
 
@@ -61,9 +68,19 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
 
   return (
     <Form.Provider
-      onFormFinish={(name) => {
+      onFormFinish={async (name) => {
         if (name === 'car-signup') {
-          console.log({ user: userValues, car: carsValues });
+          try {
+            setIsSubmit(true);
+            const { data: { code, key } } = await axios.post(routes.signup, { user: userValues, car: carsValues });
+            window.localStorage.setItem('signupKey', key);
+            if (code === 1) {
+              modalOpen('signup');
+            }
+          } catch (e) {
+            setTimeout(setIsSubmit, 1500, false);
+            axiosErrorHandler(e, tToast);
+          }
         }
       }}
     >

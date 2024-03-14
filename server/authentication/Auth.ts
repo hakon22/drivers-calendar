@@ -5,33 +5,39 @@
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
 import passGen from 'generate-password';
+import { getDigitalCode } from 'node-verification-code';
+import {
+  userValidation, carValidation, phoneValidation, confirmCodeValidation,
+} from '@/validations/validations.js';
+import type { UserSignupType } from '@/components/forms/UserSignup';
+import type { CarSignupType } from '@/components/forms/CarSignup';
+import redis from '../db/redis.js';
+import Sms from '../sms/Sms.js';
+import phoneTransform from '../utilities/phoneTransform.js';
 import Users, { PassportRequest } from '../db/tables/Users.js';
+import Cars from '../db/tables/Cars.js';
 import { generateAccessToken, generateRefreshToken } from './tokensGen.js';
+import { upperCase } from '../utilities/textTransform.js';
 
 const adminPhone = ['+79999999999'];
+
+export const codeGen = () => getDigitalCode(4).toString();
 
 class Auth {
   async signup(req: Request, res: Response) {
     try {
-      const {
-        username, phone, password,
-      } = req.body;
-      const candidate = await Users.findOne({ where: { phone } });
-      if (candidate) {
-        return res.json({ code: 2 });
-      }
-      const role = adminPhone.includes(phone) ? 'admin' : 'member';
-      const hashPassword = bcrypt.hashSync(password, 10);
-      const user = await Users.create({
-        username,
-        phone,
-        password: hashPassword,
-        role,
-        refresh_token: [],
-      });
-      const { id } = user;
-      // отправляем сообщение в телегу
-      res.json({ code: 1, id });
+      const { user, car } = req.body as { user: UserSignupType, car: CarSignupType };
+      user.phone = phoneTransform(user.phone);
+      user.username = upperCase(user.username);
+      await userValidation.serverValidator({ ...user });
+      await carValidation.serverValidator({ ...car });
+
+      const timeKey = Date.now().toString();
+      const code = codeGen();
+      await redis.set(timeKey, JSON.stringify({ user, car }), { EX: 3600, NX: true });
+      await Sms.sendCode(user.phone, code);
+
+      res.json({ code: 1, key: timeKey });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -67,6 +73,41 @@ class Auth {
           token, refreshToken, username, role, id, phone,
         },
       });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async confirmPhone(req: Request, res: Response) {
+    try {
+      const { phone, key, code: userCode } = req.body as { phone: string, key?: string, code?: number };
+      await phoneValidation.serverValidator({ phone });
+
+      if (key && userCode) {
+        await confirmCodeValidation.serverValidator({ code: userCode });
+        const cacheData = await redis.get(key);
+        const data: { phone: string, code: string } | null = cacheData ? JSON.parse(cacheData) : null;
+        if (!data) {
+          req.body.code = null;
+          await this.confirmPhone(req, res);
+          return;
+        }
+        if (data.phone === phone && +data.code === userCode) {
+          return res.json({ code: 2, key });
+        }
+        res.json({ code: 3 });
+      }
+
+      const code = codeGen();
+
+      const request_id = Date.now().toString();
+      console.log(code);
+      // const { request_id } = await Sms.sendCode(phoneTransform(phone), code);
+      await redis.set(request_id, JSON.stringify({ phone, code }), { EX: 3600, NX: true });
+
+      const response = key ? { code: 1, key: request_id, oldKey: key } : { code: 1, key: request_id };
+      res.json(response);
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

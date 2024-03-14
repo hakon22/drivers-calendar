@@ -30,6 +30,7 @@ type CarSignupProps = {
   values: CarSignupType,
   setValues: React.Dispatch<React.SetStateAction<CarSignupType>>;
   brands: Brand[];
+  isSubmit: boolean;
 };
 
 const FuelConsumption = ({ name, t, isSubmit }: { name: string, t: (str: string) => string, isSubmit: boolean }) => (
@@ -52,7 +53,9 @@ const FuelConsumption = ({ name, t, isSubmit }: { name: string, t: (str: string)
   </div>
 );
 
-const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
+const CarSignup = ({
+  values, setValues, brands, isSubmit,
+}: CarSignupProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'signup.carForm' });
 
   const [form] = Form.useForm();
@@ -60,9 +63,6 @@ const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
 
   const [models, setModels] = useState<Brand[]>();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSubmit, setIsSubmit] = useState(false);
-
-  const onFinish = () => setIsSubmit(true);
 
   const onValuesChange = (changedValue: CarSignupType) => setValues((preValues: CarSignupType) => {
     const [key, value] = Object.entries(changedValue)[0];
@@ -92,7 +92,7 @@ const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
   }, [brand]);
 
   return (
-    <Form name="car-signup" form={form} onValuesChange={onValuesChange} onFinish={onFinish} initialValues={values} className="signup-form d-flex flex-column">
+    <Form name="car-signup" form={form} onValuesChange={onValuesChange} initialValues={values} className="signup-form d-flex flex-column">
       <Spin tip={t('loading')} spinning={isSubmit} fullscreen size="large" />
       <Form.Item<CarSignupType> name="brand" rules={[carValidation]}>
         <Select size="large" placeholder={t('brand')} options={brands} showSearch filterOption={filterOption} disabled={isSubmit} />
@@ -119,7 +119,7 @@ const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
       <FuelConsumption name="fuel_consumption_winter" t={t} isSubmit={isSubmit} />
       <div className="mt-4 d-flex justify-content-center">
         <Button type="primary" className="col-10 button-height button" htmlType="submit" loading={isSubmit}>
-          {isSubmit ? t('send') : t('submitButton')}
+          {isSubmit ? t('loading') : t('submitButton')}
         </Button>
       </div>
     </Form>

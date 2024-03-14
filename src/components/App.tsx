@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { io } from 'socket.io-client';
 import {
   useCallback, useEffect, useMemo, useState,
@@ -6,13 +7,14 @@ import axios from 'axios';
 import { Spinner } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import useErrorHandler from '@/utilities/useErrorHandler';
-import type { ModalShowType, ModalCloseType } from '@/types/Modal';
+import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import routes from '@/routes';
 import { removeToken } from '@/slices/loginSlice';
 import useAuthHandler from '@/utilities/useAuthHandler';
+import Modals from '@/components/Modals';
 import {
   ApiContext, AuthContext, ModalContext, ScrollContext,
-} from './Context';
+} from '@/components//Context';
 
 const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
 
@@ -37,9 +39,9 @@ const App = ({ children }: { children: JSX.Element }) => {
     setLoggedIn(false);
   }, [id]);
 
-  const [show, setShow] = useState<ModalShowType>(false);
-  const modalClose = (arg?: ModalCloseType) => setShow(arg || false);
-  const modalShow = (arg?: ModalShowType) => setShow(arg || false);
+  const [show, setShow] = useState<ModalShowType | ModalShowObjectType>('none');
+  const modalOpen = (arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>) => (modalSetState ? setShow({ show: arg, modalSetState }) : setShow(arg));
+  const modalClose = () => setShow('none');
 
   const scrollPx = () => window.innerWidth - document.body.clientWidth;
 
@@ -54,7 +56,7 @@ const App = ({ children }: { children: JSX.Element }) => {
   };
 
   const authServices = useMemo(() => ({ loggedIn, logIn, logOut }), [loggedIn, logOut]);
-  const modalServices = useMemo(() => ({ show, modalShow, modalClose }), [show, modalClose]);
+  const modalServices = useMemo(() => ({ show, modalOpen, modalClose }), [show, modalClose]);
   const scrollServices = useMemo(() => ({ scrollBar, setMarginScroll }), [scrollBar, setMarginScroll]);
 
   useErrorHandler(error);
@@ -81,6 +83,7 @@ const App = ({ children }: { children: JSX.Element }) => {
       <AuthContext.Provider value={authServices}>
         <ModalContext.Provider value={modalServices}>
           <ScrollContext.Provider value={scrollServices}>
+            <Modals />
             {isLoaded ? (
               <div className="container position-relative">
                 {children}

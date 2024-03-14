@@ -25,7 +25,7 @@ export default {
         '2/2': '2/2',
         '1/2': '1/2',
         '1/3': '1/3',
-        next: 'Далее',
+        next: 'Подтвердить телефон',
       },
       carForm: {
         loading: 'Загрузка...',
@@ -68,15 +68,30 @@ export default {
       requirements: 'От 3 до 20 символов',
       passMin: 'Не менее 6 символов',
       phone: 'Введите корректный номер телефона',
+      code: 'Введите 4 цифры',
       mastMatch: 'Пароли должны совпадать',
       userAlreadyExists: 'Такой пользователь уже существует',
       userNotAlreadyExists: 'Такой пользователь не зарегистрирован',
       incorrectPassword: 'Неверный пароль',
+      incorrectColor: 'Неверное значение цвета',
+      incorrectSchedule: 'Некорректный график',
     },
     toast: {
       changeDataSuccess: 'Данные успешно изменены',
       unknownError: 'Неизвестная ошибка',
+      networkError: 'Ошибка соединения',
       authError: 'Ошибка аутентификации',
+    },
+    modals: {
+      signup: {
+        title: 'Регистрация прошла успешно!',
+        subTitle: 'Пароль для входа выслан Вам в SMS-сообщении.',
+        loginButton: 'Войти в экипаж',
+      },
+      confirmPhone: {
+        code: 'Код подтверждения',
+        submitButton: 'Отправить',
+      },
     },
   },
 } as const;

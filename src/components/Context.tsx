@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext } from 'react';
-import type { ModalShowType, ModalCloseType } from '@/types/Modal';
+import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 
 export const ApiContext = createContext<{
   [key: string]:(data: unknown) => void,
@@ -16,13 +17,13 @@ export const AuthContext = createContext<{
     });
 
 export const ModalContext = createContext<{
-  show: ModalShowType,
-  modalShow:(arg?: ModalShowType) => void,
-  modalClose: (arg?: ModalCloseType) => void,
+  show: ModalShowType | ModalShowObjectType,
+  modalOpen:(arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>) => void,
+  modalClose:() => void,
     }>({
-      show: false,
-      modalShow: () => undefined,
-      modalClose: () => undefined,
+      show: 'none',
+      modalOpen: (arg) => arg,
+      modalClose: () => 'none',
     });
 
 export const ScrollContext = createContext<{

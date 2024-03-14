@@ -8,7 +8,7 @@ const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
 
 export const fetchLogin = createAsyncThunk(
   'login/fetchLogin',
-  async (data: { phone: string, password: string, save: boolean }) => {
+  async (data: { phone: string, password: string }) => {
     const response = await axios.post(routes.login, data);
     return response.data;
   },

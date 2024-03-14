@@ -1,5 +1,7 @@
-import { toast } from 'react-toastify';
+import { toast as message } from 'react-toastify';
 
 type ToastType = 'info' | 'success' |'warning' | 'error';
 
-export default (text: string, type: ToastType) => toast[type](text);
+const toast = (text: string, type: ToastType) => message[type](text);
+
+export default toast;

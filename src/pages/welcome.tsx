@@ -6,6 +6,12 @@ import routes from '@/routes';
 import pineapple from '../images/pineapple.svg';
 import Helmet from '../components/Helmet';
 
+export const LoginButton = ({ title, className }: { title: string, className: string }) => {
+  const router = useRouter();
+
+  return <Button type="primary" className={className} onClick={() => router.push(routes.loginPage)}>{title}</Button>;
+};
+
 const Welcome = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'welcome' });
   const router = useRouter();
@@ -18,7 +24,7 @@ const Welcome = () => {
         <Image src={pineapple} alt={t('title')} priority />
         <div className="col-9 d-flex flex-column gap-5">
           <Button type="primary" className="button button-height" onClick={() => router.push(routes.signupPage)}>{t('signupButton')}</Button>
-          <Button type="primary" className="button button-height" onClick={() => router.push(routes.loginPage)}>{t('loginButton')}</Button>
+          <LoginButton title={t('loginButton')} className="button button-height" />
         </div>
       </div>
     </div>

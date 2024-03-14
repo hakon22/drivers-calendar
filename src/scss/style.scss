@@ -161,6 +161,14 @@ h1 {
   margin-inline-end: 1em;
 }
 
+.ant-modal .reduced-padding .ant-modal-content {
+  padding: 20px 10px;
+
+  .ant-result {
+    padding: 38px 0;
+  }
+}
+
 @keyframes show {
   0% { opacity: 0; }
   100% { opacity: 1; }

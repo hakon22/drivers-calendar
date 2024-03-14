@@ -12,6 +12,7 @@ const jwtToken = passport.authenticate('jwt', { session: false });
 // auth
 router.post(`${apiPath}/auth/signup`, Auth.signup);
 router.post(`${apiPath}/auth/login`, Auth.login);
+router.post(`${apiPath}/auth/confirmPhone`, Auth.confirmPhone);
 router.post(`${apiPath}/auth/recoveryPassword`, Auth.recoveryPassword);
 router.post(`${apiPath}/auth/logout`, Auth.logout);
 router.get(`${apiPath}/auth/updateTokens`, passport.authenticate('jwt-refresh', { session: false }), Auth.updateTokens);
