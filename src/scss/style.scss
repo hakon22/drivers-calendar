@@ -35,6 +35,11 @@ h1 {
   font-size: 1.3em;
 }
 
+.h1 {
+  font-family: RussoOne, sans-serif;
+  font-size: 1.3em;
+}
+
 .anim-show {
 	opacity: 0;
 	transition: 1s;
@@ -167,6 +172,51 @@ h1 {
   .ant-result {
     padding: 38px 0;
   }
+}
+
+.verification-character {
+  border-radius: 10px;
+  border-color: $border-color;
+  font-size: 1.5rem;
+  line-height: unset;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ant-progress .ant-progress-bg {
+  animation: progress 60s linear;
+  transition: none;
+  background: $button-background;
+}
+
+.text-muted {
+  color: $border-color !important;
+  font-size: 0.9em !important;
+}
+
+.ant-form {
+  font-family: Roboto, sans-serif !important;
+}
+
+.error-message {
+  color: $font-error;
+  font-family: Roboto, sans-serif;
+  font-size: 0.9em;
+  position: absolute;
+  left: 0;
+  bottom: -2em;
+}
+
+.vi__character--selected {
+  color: $font;
+  outline: 2px solid $button-background;
+  border: unset;
+}
+
+@keyframes progress {
+	0% { width: 100%;	}
+	100% { width: 0%;	}
 }
 
 @keyframes show {

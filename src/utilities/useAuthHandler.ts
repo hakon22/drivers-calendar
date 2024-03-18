@@ -1,5 +1,5 @@
 import { useEffect, useContext } from 'react';
-import { fetchTokenStorage, updateTokens } from '@/slices/loginSlice';
+import { fetchTokenStorage, updateTokens } from '@/slices/userSlice';
 import { AuthContext } from '@/components/Context';
 import { useAppDispatch } from './hooks';
 

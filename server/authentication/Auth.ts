@@ -5,7 +5,6 @@
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
 import passGen from 'generate-password';
-import { getDigitalCode } from 'node-verification-code';
 import {
   userValidation, carValidation, phoneValidation, confirmCodeValidation,
 } from '@/validations/validations.js';
@@ -21,8 +20,6 @@ import { upperCase } from '../utilities/textTransform.js';
 
 const adminPhone = ['+79999999999'];
 
-export const codeGen = () => getDigitalCode(4).toString();
-
 class Auth {
   async signup(req: Request, res: Response) {
     try {
@@ -33,9 +30,8 @@ class Auth {
       await carValidation.serverValidator({ ...car });
 
       const timeKey = Date.now().toString();
-      const code = codeGen();
       await redis.set(timeKey, JSON.stringify({ user, car }), { EX: 3600, NX: true });
-      await Sms.sendCode(user.phone, code);
+      await Sms.sendCode(user.phone);
 
       res.json({ code: 1, key: timeKey });
     } catch (e) {
@@ -81,33 +77,35 @@ class Auth {
 
   async confirmPhone(req: Request, res: Response) {
     try {
-      const { phone, key, code: userCode } = req.body as { phone: string, key?: string, code?: number };
+      req.body.phone = phoneTransform(req.body.phone);
+      const { phone, key, code: userCode } = req.body as { phone: string, key?: string, code?: string };
       await phoneValidation.serverValidator({ phone });
 
-      if (key && userCode) {
-        await confirmCodeValidation.serverValidator({ code: userCode });
+      if (key) {
         const cacheData = await redis.get(key);
-        const data: { phone: string, code: string } | null = cacheData ? JSON.parse(cacheData) : null;
-        if (!data) {
-          req.body.code = null;
-          await this.confirmPhone(req, res);
-          return;
+        const data: { phone: string, code: string, result?: 'done' } | null = cacheData ? JSON.parse(cacheData) : null;
+
+        if (data && data.result === 'done' && data.phone === phone) {
+          return res.json({ code: 5 });
         }
-        if (data.phone === phone && +data.code === userCode) {
-          return res.json({ code: 2, key });
+        if (key && userCode) {
+          await confirmCodeValidation.serverValidator({ code: userCode });
+          if (data && data.phone === phone && data.code === userCode) {
+            await redis.setEx(key, 300, JSON.stringify({ phone, result: 'done' }));
+            return res.json({ code: 2, key });
+          }
+          return res.json({ code: 3 }); // код подтверждения не совпадает
         }
-        res.json({ code: 3 });
+      }
+      if (await redis.exists(phone)) {
+        return res.json({ code: 4 });
       }
 
-      const code = codeGen();
+      const { request_id, code } = await Sms.sendCode(phone);
+      await redis.setEx(request_id, 3600, JSON.stringify({ phone, code }));
+      await redis.setEx(phone, 59, JSON.stringify({ phone }));
 
-      const request_id = Date.now().toString();
-      console.log(code);
-      // const { request_id } = await Sms.sendCode(phoneTransform(phone), code);
-      await redis.set(request_id, JSON.stringify({ phone, code }), { EX: 3600, NX: true });
-
-      const response = key ? { code: 1, key: request_id, oldKey: key } : { code: 1, key: request_id };
-      res.json(response);
+      res.json({ code: 1, key: request_id, phone });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

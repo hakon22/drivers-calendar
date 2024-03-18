@@ -13,6 +13,7 @@ export type InitialStateType = InitialState & {
   email?: string;
   username?: string;
   phone?: string;
+  key?: string;
   role?: string;
   orders?: number[],
   [key: string]: number[] | string | number | null | undefined;

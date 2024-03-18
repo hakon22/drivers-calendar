@@ -17,10 +17,11 @@ export default {
   login: [apiPath, 'auth', 'login'].join('/'),
   signup: [apiPath, 'auth', 'signup'].join('/'),
   logout: [apiPath, 'auth', 'logout'].join('/'),
-  confirmPhone: [apiPath, 'auth', 'confirmPhone'].join('/'),
   recoveryPassword: [apiPath, 'auth', 'recoveryPassword'].join('/'),
   updateTokens: [apiPath, 'auth', 'updateTokens'].join('/'),
   // car
   fetchBrands: [serverHost, apiPath, 'car', 'fetchBrands'].join('/'),
   getModels: [apiPath, 'car', 'getModels'].join('/'),
+  // sms
+  confirmPhone: [apiPath, 'auth', 'confirmPhone'].join('/'),
 } as ApiUrl;

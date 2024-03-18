@@ -7,15 +7,23 @@ import routes from '../routes';
 const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
 
 export const fetchLogin = createAsyncThunk(
-  'login/fetchLogin',
+  'user/fetchLogin',
   async (data: { phone: string, password: string }) => {
     const response = await axios.post(routes.login, data);
     return response.data;
   },
 );
 
+export const fetchConfirmCode = createAsyncThunk(
+  'user/fetchConfirmCode',
+  async (data: { phone: string, key?: string, code?: string }) => {
+    const response = await axios.post(routes.confirmPhone, data);
+    return response.data;
+  },
+);
+
 export const fetchTokenStorage = createAsyncThunk(
-  'login/fetchTokenStorage',
+  'user/fetchTokenStorage',
   async (refreshTokenStorage: string) => {
     const response = await axios.get(routes.updateTokens, {
       headers: { Authorization: `Bearer ${refreshTokenStorage}` },
@@ -25,7 +33,7 @@ export const fetchTokenStorage = createAsyncThunk(
 );
 
 export const updateTokens = createAsyncThunk(
-  'login/updateTokens',
+  'user/updateTokens',
   async (refresh: string | undefined) => {
     const refreshTokenStorage = window.localStorage.getItem(storageKey);
     if (refreshTokenStorage) {
@@ -53,8 +61,8 @@ export const initialState: InitialStateType = {
   error: null,
 };
 
-const loginSlice = createSlice({
-  name: 'login',
+const userSlice = createSlice({
+  name: 'user',
   initialState,
   reducers: {
     removeToken: (state) => {
@@ -121,10 +129,27 @@ const loginSlice = createSlice({
       .addCase(updateTokens.rejected, (state, action) => {
         state.loadingStatus = 'failed';
         state.error = action.error.message ?? null;
+      })
+      .addCase(fetchConfirmCode.pending, (state) => {
+        state.loadingStatus = 'loading';
+        state.error = null;
+      })
+      .addCase(fetchConfirmCode.fulfilled, (state, { payload }
+        : PayloadAction<{ code: number, key: string, phone: string }>) => {
+        if (payload.code === 1) {
+          state.key = payload.key;
+          state.phone = payload.phone;
+        }
+        state.loadingStatus = 'finish';
+        state.error = null;
+      })
+      .addCase(fetchConfirmCode.rejected, (state, action) => {
+        state.loadingStatus = 'failed';
+        state.error = action.error.message ?? null;
       });
   },
 });
 
-export const { removeToken } = loginSlice.actions;
+export const { removeToken } = userSlice.actions;
 
-export default loginSlice.reducer;
+export default userSlice.reducer;

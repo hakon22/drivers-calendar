@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import useErrorHandler from '@/utilities/useErrorHandler';
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import routes from '@/routes';
-import { removeToken } from '@/slices/loginSlice';
+import { removeToken } from '@/slices/userSlice';
 import useAuthHandler from '@/utilities/useAuthHandler';
 import Modals from '@/components/Modals';
 import {
@@ -25,7 +25,7 @@ const App = ({ children }: { children: JSX.Element }) => {
 
   const {
     id, token, refreshToken, error,
-  } = useAppSelector((state) => state.login);
+  } = useAppSelector((state) => state.user);
 
   const [loggedIn, setLoggedIn] = useState(false);
   const logIn = () => setLoggedIn(true);

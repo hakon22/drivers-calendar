@@ -4,18 +4,18 @@ import type { Error } from '@/types/InitialState';
 import toast from './toast';
 
 const useErrorHandler = (error: Error) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('translation', { keyPrefix: 'toast' });
 
   useEffect(() => {
     const errorHandler = (err: string) => {
       const [match] = err.match(/\d+/) ?? '500';
       const codeError = parseInt(match, 10);
       if (codeError === 401) {
-        toast(t('toast.authError'), 'error');
+        toast(t('authError'), 'error');
       } else if (codeError === 500) {
-        toast(t('toast.unknownError'), 'error');
+        toast(t('unknownError'), 'error');
       } else {
-        toast(t('toast.networkError'), 'error');
+        toast(t('networkError'), 'error');
       }
       console.log(err);
     };

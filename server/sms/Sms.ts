@@ -2,18 +2,24 @@
 /* eslint-disable class-methods-use-this */
 import axios from 'axios';
 import qs from 'qs';
+import { getDigitalCode } from 'node-verification-code';
+
+export const codeGen = () => getDigitalCode(4).toString();
 
 class Sms {
-  async sendCode(to: string, code: string): Promise<{ request_id: string; }> {
+  async sendCode(phone: string): Promise<{ request_id: string, code: string }> {
     try {
-      const object = { to, txt: `Ваш код подтверждения: ${code}` };
+      const code = codeGen();
+      const object = { to: phone, txt: `Ваш код подтверждения: ${code}` };
 
-      const { data } = await axios.post('https://api3.greensms.ru/sms/send', object, {
+      /* const { data } = await axios.post('https://api3.greensms.ru/sms/send', object, {
         headers: { Authorization: `Bearer ${process.env.SMS_API_KEY}` },
-      });
+      }); */
+      const data = { request_id: Date.now().toString(), error: 'null' };
+      console.log(code);
 
       if (data.request_id) {
-        return data;
+        return { ...data, code };
       }
       throw Error(data.error);
     } catch (e) {

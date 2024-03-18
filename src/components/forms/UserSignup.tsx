@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import MaskedInput from '@/components/forms/MaskedInput';
 import { UserOutlined, PhoneOutlined, QuestionCircleOutlined } from '@ant-design/icons';
@@ -7,9 +6,11 @@ import { useRouter } from 'next/navigation';
 import {
   Form, Input, ColorPicker, Radio, Button,
 } from 'antd';
+import { fetchConfirmCode } from '@/slices/userSlice';
+import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { userValidation } from '@/validations/validations';
-import axiosErrorHandler from '@/utilities/axiosErrorHandler';
-import routes from '@/routes';
+import toast from '@/utilities/toast';
+import useErrorHandler from '@/utilities/useErrorHandler';
 import { ModalContext } from '../Context';
 
 export type UserSignupType = {
@@ -28,36 +29,36 @@ type UserSignupProps = {
 const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'signup.userForm' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
+  const dispatch = useAppDispatch();
+  const { key, error } = useAppSelector((state) => state.user);
 
   const { modalOpen, modalClose } = useContext(ModalContext);
-  const [modalResponse, setModalResponse] = useState<{ code: number, key: string }>();
+  const [isConfirm, setIsConfirm] = useState(false);
   const router = useRouter();
 
   const onFinish = async (userValues: UserSignupType) => {
-    try {
-      setValues(userValues);
-      const { data } = await axios.post(routes.confirmPhone, { phone: userValues.phone }) as
-        { data: { code: number, key: string, oldKey?: string } };
-      if (data.code === 1) {
-        if (data.oldKey) {
-          window.localStorage.removeItem(data.oldKey);
-        }
-        window.localStorage.setItem('confirmData', JSON.stringify({ phone: userValues.phone, key: data.key }));
-        modalOpen('activation', setModalResponse);
-      }
-    } catch (e) {
-      axiosErrorHandler(e, tToast);
+    setValues(userValues);
+    const { payload: { code } } = await dispatch(fetchConfirmCode({ phone: userValues.phone, key })) as { payload: { code: number } };
+    if (code === 1) {
+      modalOpen('activation', setIsConfirm);
+    }
+    if (code === 4) {
+      toast(tToast('timeNotOverForSms'), 'error');
+    }
+    if (code === 5) {
+      setIsConfirm(true);
     }
   };
 
   useEffect(() => {
-    if (modalResponse && modalResponse.code === 2 && modalResponse.key) {
-      window.localStorage.removeItem(modalResponse.key);
+    if (isConfirm) {
       router.push('#car');
       modalClose();
       next();
     }
-  }, [modalResponse?.code]);
+  }, [isConfirm]);
+
+  useErrorHandler(error);
 
   return (
     <Form name="user-signup" initialValues={values} className="signup-form" onFinish={onFinish}>
