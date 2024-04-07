@@ -3,6 +3,7 @@ import {
   Modal, Result, Button, Form, Progress, Spin,
 } from 'antd';
 import { useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchConfirmCode } from '@/slices/userSlice';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
@@ -11,20 +12,30 @@ import { ModalContext } from '@/components/Context';
 import { LoginButton } from '@/pages/welcome';
 import toast from '@/utilities/toast';
 import useErrorHandler from '@/utilities/useErrorHandler';
+import routes from '@/routes';
 
 const ModalSignup = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.signup' });
+  const router = useRouter();
   const { modalClose } = useContext(ModalContext);
 
   return (
-    <Modal centered open footer={null} onCancel={modalClose}>
+    <Modal
+      centered
+      open
+      footer={null}
+      onCancel={() => {
+        modalClose();
+        router.push(routes.loginPage);
+      }}
+    >
       <Result
         status="success"
         title={t('title')}
         subTitle={t('subTitle')}
         extra={(
           <div className="col-9 d-flex mx-auto">
-            <LoginButton title={t('loginButton')} className="button button-height w-100" />
+            <LoginButton title={t('loginButton')} className="button button-height w-100" onClick={modalClose} />
           </div>
         )}
       />
@@ -105,7 +116,7 @@ const ModalConfirmPhone = ({ setState }: { setState: (arg: boolean) => void }) =
             onComplete={onFinish}
             onChange={setValue}
           />
-          {error && <div className="error-message anim-show">{errorMessage}</div>}
+          {errorMessage && <div className="error-message anim-show">{errorMessage}</div>}
         </div>
         <p className="text-muted">{t('didntReceive')}</p>
         {timer ? (

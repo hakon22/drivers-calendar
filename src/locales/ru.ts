@@ -85,6 +85,8 @@ export default {
       unknownError: 'Неизвестная ошибка',
       networkError: 'Ошибка соединения',
       authError: 'Ошибка аутентификации',
+      userAlreadyExists: 'Данный номер телефона уже зарегистрирован',
+      carAlreadyExists: 'Вызывной или инвентарный уже существует',
     },
     modals: {
       signup: {

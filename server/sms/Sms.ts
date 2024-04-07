@@ -2,6 +2,7 @@
 /* eslint-disable class-methods-use-this */
 import axios from 'axios';
 import qs from 'qs';
+import passGen from 'generate-password';
 import { getDigitalCode } from 'node-verification-code';
 
 export const codeGen = () => getDigitalCode(4).toString();
@@ -28,18 +29,25 @@ class Sms {
     }
   }
 
-  async sendPass(phone: number, pass: string) {
+  async sendPass(phone: string) {
     try {
+      const password = passGen.generate({
+        length: 7,
+        numbers: true,
+      });
       const object = {
         method: 'push_msg',
         format: 'json',
         key: process.env.SMS_API_KEY_PASS,
-        text: `Ваш пароль для входа: ${pass}`,
+        text: `Ваш пароль для входа: ${password}`,
         phone,
         sender_name: 'AM-PROJECTS',
       };
+      console.log(password);
+      return password;
       const { data } = await axios.post('https://ssl.bs00.ru', qs.stringify(object));
       console.log(JSON.stringify(data));
+      return password;
     } catch (e) {
       console.error(e);
       throw Error('Произошла ошибка при отправке SMS');

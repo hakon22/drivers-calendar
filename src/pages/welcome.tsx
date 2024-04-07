@@ -6,10 +6,27 @@ import routes from '@/routes';
 import pineapple from '../images/pineapple.svg';
 import Helmet from '../components/Helmet';
 
-export const LoginButton = ({ title, className }: { title: string, className: string }) => {
+export const LoginButton = ({ title, className, onClick }: { title: string, className: string, onClick?: () => void }) => {
   const router = useRouter();
 
-  return <Button type="primary" className={className} onClick={() => router.push(routes.loginPage)}>{title}</Button>;
+  return (
+    <Button
+      type="primary"
+      className={className}
+      onClick={() => {
+        if (onClick) {
+          onClick();
+        }
+        router.push(routes.loginPage);
+      }}
+    >
+      {title}
+    </Button>
+  );
+};
+
+LoginButton.defaultProps = {
+  onClick: undefined,
 };
 
 const Welcome = () => {

@@ -4,12 +4,12 @@
 /* eslint-disable camelcase */
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
-import passGen from 'generate-password';
+import { Op } from 'sequelize';
 import {
   userValidation, carValidation, phoneValidation, confirmCodeValidation,
 } from '@/validations/validations.js';
 import type { UserSignupType } from '@/components/forms/UserSignup';
-import type { CarSignupType } from '@/components/forms/CarSignup';
+import type { CarType } from '../types/Car.js';
 import redis from '../db/redis.js';
 import Sms from '../sms/Sms.js';
 import phoneTransform from '../utilities/phoneTransform.js';
@@ -23,17 +23,49 @@ const adminPhone = ['+79999999999'];
 class Auth {
   async signup(req: Request, res: Response) {
     try {
-      const { user, car } = req.body as { user: UserSignupType, car: CarSignupType };
+      const { user, car } = req.body as { user: UserSignupType, car: CarType };
       user.phone = phoneTransform(user.phone);
       user.username = upperCase(user.username);
       await userValidation.serverValidator({ ...user });
       await carValidation.serverValidator({ ...car });
 
-      const timeKey = Date.now().toString();
-      await redis.set(timeKey, JSON.stringify({ user, car }), { EX: 3600, NX: true });
-      await Sms.sendCode(user.phone);
+      const {
+        fuel_consumption_summer, fuel_consumption_winter, inventory, call, ...rest
+      } = car;
 
-      res.json({ code: 1, key: timeKey });
+      const isExist = await Cars.findAll({ where: { [Op.or]: [{ inventory }, { call }] } });
+      if (isExist.length) {
+        return res.json({ code: 3 });
+      }
+
+      const candidate = await Users.findOne({ where: { phone: user.phone } });
+      if (candidate) {
+        return res.json({ code: 2 });
+      }
+
+      const password = await Sms.sendPass(user.phone);
+
+      const role = adminPhone.includes(user.phone) ? 'admin' : 'member';
+      const hashPassword = bcrypt.hashSync(password, 10);
+
+      await Cars.create({
+        ...rest,
+        inventory,
+        call,
+        fuel_consumption_summer_city: fuel_consumption_summer.city,
+        fuel_consumption_summer_highway: fuel_consumption_summer.highway,
+        fuel_consumption_winter_city: fuel_consumption_winter.city,
+        fuel_consumption_winter_highway: fuel_consumption_winter.highway,
+      });
+
+      await Users.create({
+        ...user,
+        password: hashPassword,
+        role,
+        refresh_token: [],
+      });
+
+      res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -80,6 +112,11 @@ class Auth {
       req.body.phone = phoneTransform(req.body.phone);
       const { phone, key, code: userCode } = req.body as { phone: string, key?: string, code?: string };
       await phoneValidation.serverValidator({ phone });
+
+      const candidate = await Users.findOne({ where: { phone } });
+      if (candidate) {
+        return res.json({ code: 6 });
+      }
 
       if (key) {
         const cacheData = await redis.get(key);
@@ -172,14 +209,10 @@ class Auth {
       if (!user) {
         return res.status(200).json({ code: 2 });
       }
-      const { username, phone } = user;
-      const password = passGen.generate({
-        length: 7,
-        numbers: true,
-      });
+      const { phone } = user;
+      const password = await Sms.sendPass(phone);
       const hashPassword = bcrypt.hashSync(password, 10);
       await Users.update({ password: hashPassword }, { where: { phone } });
-      // отправляем сообщение в телегу
       res.status(200).json({ code: 1 });
     } catch (e) {
       console.log(e);

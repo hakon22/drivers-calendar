@@ -8,13 +8,15 @@ interface CarsModel
   id?: CreationOptional<number>;
   brand: string;
   model: string;
-  inventory: number;
-  call: number;
+  inventory: string;
+  call: string;
   mileage: number;
   mileage_after_maintenance: number;
   remaining_fuel: number;
-  fuel_consumption_summer: number;
-  fuel_consumption_winter: number;
+  fuel_consumption_summer_city: number;
+  fuel_consumption_winter_city: number;
+  fuel_consumption_summer_highway: number;
+  fuel_consumption_winter_highway: number;
 }
 
 const Cars = db.define<CarsModel>(
@@ -29,12 +31,14 @@ const Cars = db.define<CarsModel>(
       allowNull: false,
     },
     inventory: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
     },
     call: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     mileage: {
       type: DataTypes.INTEGER,
@@ -45,15 +49,23 @@ const Cars = db.define<CarsModel>(
       allowNull: false,
     },
     remaining_fuel: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL,
       allowNull: false,
     },
-    fuel_consumption_summer: {
-      type: DataTypes.INTEGER,
+    fuel_consumption_summer_city: {
+      type: DataTypes.DECIMAL,
       allowNull: false,
     },
-    fuel_consumption_winter: {
-      type: DataTypes.INTEGER,
+    fuel_consumption_winter_city: {
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+    },
+    fuel_consumption_summer_highway: {
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+    },
+    fuel_consumption_winter_highway: {
+      type: DataTypes.DECIMAL,
       allowNull: false,
     },
   },

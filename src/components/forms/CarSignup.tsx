@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import {
-  Form, Button, Select, InputNumber, Spin,
+  Form, Button, Select, Input, InputNumber, Spin,
 } from 'antd';
 import axios from 'axios';
 import { carValidation } from '@/validations/validations';
@@ -16,8 +16,8 @@ type FuelConsumptionType = {
 export type CarSignupType = {
   brand?: string;
   model?: string;
-  inventory?: number;
-  call?: number;
+  inventory?: string;
+  call?: string;
   mileage?: number;
   mileage_after_maintenance?: number;
   remaining_fuel?: number;
@@ -100,11 +100,11 @@ const CarSignup = ({
       <Form.Item<CarSignupType> name="model" rules={[carValidation]}>
         <Select size="large" placeholder={t('model')} options={models} showSearch filterOption={filterOption} disabled={!brand || isSubmit} loading={isLoading} />
       </Form.Item>
-      <Form.Item<CarSignupType> name="inventory" rules={[carValidation]}>
-        <InputNumber size="large" className="w-100" placeholder={t('inventory')} min={1} disabled={isSubmit} keyboard />
-      </Form.Item>
       <Form.Item<CarSignupType> name="call" rules={[carValidation]}>
-        <InputNumber size="large" className="w-100" placeholder={t('call')} min={1} disabled={isSubmit} keyboard />
+        <Input size="large" className="w-100" placeholder={t('call')} min={1} disabled={isSubmit} />
+      </Form.Item>
+      <Form.Item<CarSignupType> name="inventory" rules={[carValidation]}>
+        <Input size="large" className="w-100" placeholder={t('inventory')} min={1} disabled={isSubmit} />
       </Form.Item>
       <Form.Item<CarSignupType> name="mileage" rules={[carValidation]}>
         <InputNumber size="large" className="w-100" suffix={t('km')} placeholder={t('mileage')} min={1} disabled={isSubmit} keyboard />

@@ -11,6 +11,8 @@ import { ModalContext } from '@/components/Context';
 import routes from '@/routes';
 import BackButton from '@/components/BackButton';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
+import toast from '@/utilities/toast';
+import scrollTop from '@/utilities/scrollTop';
 import type { Brand } from '../../server/types/Cars';
 
 const Signup = ({ brands }: { brands: Brand[] }) => {
@@ -68,14 +70,26 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
 
   return (
     <Form.Provider
-      onFormFinish={async (name) => {
+      onFormFinish={async (name, { forms: currentForms }) => {
         if (name === 'car-signup') {
           try {
             setIsSubmit(true);
-            const { data: { code, key } } = await axios.post(routes.signup, { user: userValues, car: carsValues });
-            window.localStorage.setItem('signupKey', key);
+            const { data: { code } } = await axios.post(routes.signup, { user: userValues, car: carsValues });
             if (code === 1) {
               modalOpen('signup');
+            }
+            if (code === 2) {
+              toast(tToast('userAlreadyExists'), 'error');
+              setIsSubmit(false);
+            }
+            if (code === 3) {
+              toast(tToast('carAlreadyExists'), 'error');
+              currentForms[name].setFields([
+                { name: 'inventory', errors: [tToast('carAlreadyExists')] },
+                { name: 'call', errors: [tToast('carAlreadyExists')] },
+              ]);
+              scrollTop();
+              setIsSubmit(false);
             }
           } catch (e) {
             setTimeout(setIsSubmit, 1500, false);

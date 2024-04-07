@@ -36,6 +36,8 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
   const [isConfirm, setIsConfirm] = useState(false);
   const router = useRouter();
 
+  const [form] = Form.useForm();
+
   const onFinish = async (userValues: UserSignupType) => {
     setValues(userValues);
     const { payload: { code } } = await dispatch(fetchConfirmCode({ phone: userValues.phone, key })) as { payload: { code: number } };
@@ -47,6 +49,9 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
     }
     if (code === 5) {
       setIsConfirm(true);
+    }
+    if (code === 6) {
+      form.setFields([{ name: 'phone', errors: [tToast('userAlreadyExists')] }]);
     }
   };
 
@@ -61,7 +66,7 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
   useErrorHandler(error);
 
   return (
-    <Form name="user-signup" initialValues={values} className="signup-form" onFinish={onFinish}>
+    <Form name="user-signup" form={form} initialValues={values} className="signup-form" onFinish={onFinish}>
       <Form.Item<UserSignupType> name="phone" rules={[userValidation]} required>
         <MaskedInput mask="+7 (000) 000-00-00" size="large" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
       </Form.Item>
