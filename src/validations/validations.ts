@@ -76,8 +76,8 @@ const fuelConsumptionSchema = yup.object().shape({
 const carSchema = yup.object().shape({
   brand: stringSchema,
   model: stringSchema,
-  inventory: numberSchema,
-  call: numberSchema,
+  inventory: stringSchema,
+  call: stringSchema,
   mileage: numberSchema,
   mileage_after_maintenance: numberSchema,
   remaining_fuel: numberSchema,

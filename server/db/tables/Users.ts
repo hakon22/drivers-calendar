@@ -1,16 +1,18 @@
 import {
   DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional,
 } from 'sequelize';
+import bcrypt from 'bcryptjs';
 import { db } from '../connect.js';
+import Crews from './Crews.js';
 
-export interface UserModel
-  extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>> {
-  id?: CreationOptional<number>;
+export interface UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>> {
+  id: CreationOptional<number>;
   username: string;
   password: string;
   phone: string;
   role: string;
-  refresh_token: string[];
+  color: string;
+  refresh_token: CreationOptional<string[]>;
 }
 
 export interface PassportRequest {
@@ -20,8 +22,13 @@ export interface PassportRequest {
 }
 
 const Users = db.define<UserModel>(
-  'Users',
+  'users',
   {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     username: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -36,12 +43,23 @@ const Users = db.define<UserModel>(
       unique: true,
     },
     role: {
+      type: DataTypes.ENUM('admin', 'member'),
+      allowNull: false,
+    },
+    color: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     refresh_token: {
       type: DataTypes.ARRAY(DataTypes.TEXT),
       defaultValue: [],
+    },
+  },
+  {
+    hooks: {
+      beforeCreate: (user) => {
+        user.password = bcrypt.hashSync(user.password, 10);
+      },
     },
   },
 );

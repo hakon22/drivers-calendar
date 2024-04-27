@@ -4,7 +4,7 @@
 /* eslint-disable camelcase */
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import {
   userValidation, carValidation, phoneValidation, confirmCodeValidation,
 } from '@/validations/validations.js';
@@ -15,6 +15,7 @@ import Sms from '../sms/Sms.js';
 import phoneTransform from '../utilities/phoneTransform.js';
 import Users, { PassportRequest } from '../db/tables/Users.js';
 import Cars from '../db/tables/Cars.js';
+import Crews from '../db/tables/Crews.js';
 import { generateAccessToken, generateRefreshToken } from './tokensGen.js';
 import { upperCase } from '../utilities/textTransform.js';
 
@@ -33,37 +34,43 @@ class Auth {
         fuel_consumption_summer, fuel_consumption_winter, inventory, call, ...rest
       } = car;
 
-      const isExist = await Cars.findAll({ where: { [Op.or]: [{ inventory }, { call }] } });
-      if (isExist.length) {
+      const { schedule, color, ...userValues } = user;
+
+      const [isUser, isCar] = await Promise.all([
+        Users.findOne({ where: { phone: user.phone } }),
+        Cars.findOne({ where: { [Op.or]: [{ inventory }, { call }] } }),
+      ]);
+
+      if (isCar) {
         return res.json({ code: 3 });
       }
 
-      const candidate = await Users.findOne({ where: { phone: user.phone } });
-      if (candidate) {
+      if (isUser) {
         return res.json({ code: 2 });
       }
 
       const password = await Sms.sendPass(user.phone);
 
       const role = adminPhone.includes(user.phone) ? 'admin' : 'member';
-      const hashPassword = bcrypt.hashSync(password, 10);
 
-      await Cars.create({
-        ...rest,
-        inventory,
-        call,
-        fuel_consumption_summer_city: fuel_consumption_summer.city,
-        fuel_consumption_summer_highway: fuel_consumption_summer.highway,
-        fuel_consumption_winter_city: fuel_consumption_winter.city,
-        fuel_consumption_winter_highway: fuel_consumption_winter.highway,
-      });
-
-      await Users.create({
-        ...user,
-        password: hashPassword,
-        role,
-        refresh_token: [],
-      });
+      await Crews.create({
+        schedule,
+        users: {
+          ...userValues,
+          color: typeof color !== 'string' ? color.toHexString() : color,
+          role,
+          password,
+        },
+        cars: {
+          ...rest,
+          inventory,
+          call,
+          fuel_consumption_summer_city: fuel_consumption_summer.city,
+          fuel_consumption_summer_highway: fuel_consumption_summer.highway,
+          fuel_consumption_winter_city: fuel_consumption_winter.city,
+          fuel_consumption_winter_highway: fuel_consumption_winter.highway,
+        },
+      }, { include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }], });
 
       res.json({ code: 1 });
     } catch (e) {

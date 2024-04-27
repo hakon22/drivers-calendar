@@ -11,13 +11,14 @@ import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { userValidation } from '@/validations/validations';
 import toast from '@/utilities/toast';
 import useErrorHandler from '@/utilities/useErrorHandler';
+import { Color } from 'antd/es/color-picker';
 import { ModalContext } from '../Context';
 
 export type UserSignupType = {
   phone: string;
   username: string;
   schedule: string;
-  color: string;
+  color: string | Color;
 };
 
 type UserSignupProps = {
@@ -39,7 +40,7 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
   const [form] = Form.useForm();
 
   const onFinish = async (userValues: UserSignupType) => {
-    setValues(userValues);
+    setValues({ ...userValues, color: typeof userValues.color !== 'string' ? userValues.color.toHexString() : userValues.color } as UserSignupType);
     const { payload: { code } } = await dispatch(fetchConfirmCode({ phone: userValues.phone, key })) as { payload: { code: number } };
     if (code === 1) {
       modalOpen('activation', setIsConfirm);
@@ -81,7 +82,7 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
         </Radio.Group>
       </Form.Item>
       <Form.Item<UserSignupType> name="color" tooltip={{ title: t('colorTooltip'), icon: <QuestionCircleOutlined /> }} rules={[userValidation]} label={t('color')} required>
-        <ColorPicker size="large" className="border-button" disabledAlpha onChangeComplete={(color) => setValues((prevValues) => ({ ...prevValues, color: color.toHexString() }))} />
+        <ColorPicker size="large" className="border-button" disabledAlpha />
       </Form.Item>
       <div className="mt-5 d-flex justify-content-center">
         <Button className="col-10 button-height button" htmlType="submit">

@@ -1,7 +1,10 @@
 export type User = {
-  id: number;
+  id?: number;
   username: string;
+  password: string;
+  color: string;
   phone: string;
-  token: string;
-  refreshToken: string;
+  token?: string;
+  role: string;
+  refresh_token: string[];
 };

@@ -2,10 +2,12 @@ import {
   DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional,
 } from 'sequelize';
 import { db } from '../connect.js';
+import CrewComponents from './CrewComponents.js';
+import Crew from './Crews.js';
+import Crews from './Crews.js';
 
-interface CarsModel
-  extends Model<InferAttributes<CarsModel>, InferCreationAttributes<CarsModel>> {
-  id?: CreationOptional<number>;
+interface CarsModel extends Model<InferAttributes<CarsModel>, InferCreationAttributes<CarsModel>> {
+  id: CreationOptional<number>;
   brand: string;
   model: string;
   inventory: string;
@@ -20,8 +22,13 @@ interface CarsModel
 }
 
 const Cars = db.define<CarsModel>(
-  'Cars',
+  'cars',
   {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     brand: {
       type: DataTypes.STRING,
       allowNull: false,
