@@ -55,13 +55,13 @@ class Auth {
 
       const { id: crewId } = await Crews.create({
         schedule,
-        user: [{
+        users: [{
           ...userValues,
           color: typeof color !== 'string' ? color.toHexString() : color,
           role,
           password,
         } as UserModel],
-        car: [{
+        cars: [{
           ...rest,
           inventory,
           call,
@@ -70,9 +70,7 @@ class Auth {
           fuel_consumption_winter_city: fuel_consumption_winter.city,
           fuel_consumption_winter_highway: fuel_consumption_winter.highway,
         } as CarModel],
-      }, { include: [{ model: Users, as: 'user' }, { model: Cars, as: 'car' }], });
-
-      // await Users.update({ crewId }, { where: { phone: user.phone } })
+      }, { include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }], });
 
       res.json({ code: 1 });
     } catch (e) {
@@ -118,6 +116,8 @@ class Auth {
 
   async confirmPhone(req: Request, res: Response) {
     try {
+      const a = await Crews.findAll({ include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }] });
+      a.forEach((a) => console.log(a.users));
       req.body.phone = phoneTransform(req.body.phone);
       const { phone, key, code: userCode } = req.body as { phone: string, key?: string, code?: string };
       await phoneValidation.serverValidator({ phone });

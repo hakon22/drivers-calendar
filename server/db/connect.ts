@@ -2,7 +2,7 @@ import { Sequelize } from 'sequelize';
 
 const { DB = 'LOCAL', DB_LOCAL = '', DB_HOST = '' } = process.env;
 
-export const db = new Sequelize(DB === 'LOCAL' ? DB_LOCAL : DB_HOST);
+export const db = new Sequelize(DB === 'LOCAL' ? DB_LOCAL : DB_HOST, { schema: 'driver' });
 
 export const connectToDb = async () => {
   try {

@@ -10,8 +10,8 @@ import Cars, { CarModel } from './Cars.js';
 export interface CrewModel extends Model<InferAttributes<CrewModel>, InferCreationAttributes<CrewModel>> {
   id: CreationOptional<number>;
   schedule: string;
-  user?: CreationOptional<UserModel[]>,
-  car?: CreationOptional<CarModel[]>,
+  users?: CreationOptional<UserModel[]>,
+  cars?: CreationOptional<CarModel[]>,
 }
 
 const Crews = db.define<CrewModel>(
@@ -30,9 +30,7 @@ const Crews = db.define<CrewModel>(
   },
 );
 
-Crews.hasMany(Users, { as: 'user' });
-Crews.hasMany(Cars, { as: 'car' });
-Crews.belongsToMany(Users, { through: CrewComponents });
-Crews.belongsToMany(Cars, { through: CrewComponents });
+Crews.hasMany(Users, { as: 'users' });
+Crews.hasMany(Cars, { as: 'cars' });
 
 export default Crews;
