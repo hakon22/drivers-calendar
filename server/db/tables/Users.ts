@@ -13,6 +13,7 @@ export interface UserModel extends Model<InferAttributes<UserModel>, InferCreati
   role: string;
   color: string;
   refresh_token: CreationOptional<string[]>;
+  crewId: CreationOptional<number>;
 }
 
 export interface PassportRequest {
@@ -53,6 +54,9 @@ const Users = db.define<UserModel>(
     refresh_token: {
       type: DataTypes.ARRAY(DataTypes.TEXT),
       defaultValue: [],
+    },
+    crewId: {
+      type: DataTypes.INTEGER,
     },
   },
   {

@@ -13,8 +13,8 @@ import type { CarType } from '../types/Car.js';
 import redis from '../db/redis.js';
 import Sms from '../sms/Sms.js';
 import phoneTransform from '../utilities/phoneTransform.js';
-import Users, { PassportRequest } from '../db/tables/Users.js';
-import Cars from '../db/tables/Cars.js';
+import Users, { PassportRequest, UserModel } from '../db/tables/Users.js';
+import Cars, { CarModel } from '../db/tables/Cars.js';
 import Crews from '../db/tables/Crews.js';
 import { generateAccessToken, generateRefreshToken } from './tokensGen.js';
 import { upperCase } from '../utilities/textTransform.js';
@@ -53,15 +53,15 @@ class Auth {
 
       const role = adminPhone.includes(user.phone) ? 'admin' : 'member';
 
-      await Crews.create({
+      const { id: crewId } = await Crews.create({
         schedule,
-        users: {
+        user: [{
           ...userValues,
           color: typeof color !== 'string' ? color.toHexString() : color,
           role,
           password,
-        },
-        cars: {
+        } as UserModel],
+        car: [{
           ...rest,
           inventory,
           call,
@@ -69,8 +69,10 @@ class Auth {
           fuel_consumption_summer_highway: fuel_consumption_summer.highway,
           fuel_consumption_winter_city: fuel_consumption_winter.city,
           fuel_consumption_winter_highway: fuel_consumption_winter.highway,
-        },
-      }, { include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }], });
+        } as CarModel],
+      }, { include: [{ model: Users, as: 'user' }, { model: Cars, as: 'car' }], });
+
+      // await Users.update({ crewId }, { where: { phone: user.phone } })
 
       res.json({ code: 1 });
     } catch (e) {

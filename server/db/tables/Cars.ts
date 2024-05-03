@@ -6,7 +6,7 @@ import CrewComponents from './CrewComponents.js';
 import Crew from './Crews.js';
 import Crews from './Crews.js';
 
-interface CarsModel extends Model<InferAttributes<CarsModel>, InferCreationAttributes<CarsModel>> {
+export interface CarModel extends Model<InferAttributes<CarModel>, InferCreationAttributes<CarModel>> {
   id: CreationOptional<number>;
   brand: string;
   model: string;
@@ -21,7 +21,7 @@ interface CarsModel extends Model<InferAttributes<CarsModel>, InferCreationAttri
   fuel_consumption_winter_highway: number;
 }
 
-const Cars = db.define<CarsModel>(
+const Cars = db.define<CarModel>(
   'cars',
   {
     id: {
