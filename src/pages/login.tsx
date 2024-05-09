@@ -1,13 +1,17 @@
 import { useTranslation } from 'react-i18next';
+import { useContext } from 'react';
 import MaskedInput from '@/components/forms/MaskedInput';
 import { Alert } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
 import { LockOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
 import { loginValidation } from '@/validations/validations';
+import { SubmitContext } from '@/components/Context';
 import routes from '@/routes';
 import BackButton from '@/components/BackButton';
 import Helmet from '@/components/Helmet';
+import { useAppDispatch } from '@/utilities/hooks';
+import { fetchLogin } from '@/slices/userSlice';
 
 type LoginType = {
   phone: string;
@@ -16,10 +20,22 @@ type LoginType = {
 
 const Login = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'login' });
+  const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
-  const onFinish = (values: LoginType) => {
-    console.log('Received values of form: ', values);
+  const [form] = Form.useForm();
+  const { setIsSubmit } = useContext(SubmitContext);
+
+  const onFinish = async (values: LoginType) => {
+    setIsSubmit(true);
+    const { payload: { code } } = await dispatch(fetchLogin(values)) as { payload: { code: number } };
+    if (code === 2) {
+      form.setFields([{ name: 'password', errors: [tValidation('incorrectPassword')] }]);
+    } else if (code === 3) {
+      form.setFields([{ name: 'phone', errors: [tValidation('userNotAlreadyExists')] }]);
+    }
+    setIsSubmit(false);
   };
 
   return (
@@ -29,7 +45,7 @@ const Login = () => {
       <div className="my-5 col-12 d-flex flex-column align-items-center gap-5">
         <h1>{t('title')}</h1>
         <div className="col-10">
-          <Form name="login" className="login-form" onFinish={onFinish}>
+          <Form name="login" form={form} className="login-form" onFinish={onFinish}>
             <Form.Item<LoginType> name="phone" rules={[loginValidation]}>
               <MaskedInput mask="+7 (000) 000-00-00" size="large" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
             </Form.Item>

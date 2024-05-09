@@ -9,13 +9,42 @@ import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import VerificationInput from 'react-verification-input';
 import { ModalContext } from '@/components/Context';
+import type { ModalShowType } from '@/types/Modal';
 import { LoginButton } from '@/pages/welcome';
 import toast from '@/utilities/toast';
-import useErrorHandler from '@/utilities/useErrorHandler';
 import routes from '@/routes';
 
 const ModalSignup = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.signup' });
+  const router = useRouter();
+  const { modalClose } = useContext(ModalContext);
+
+  return (
+    <Modal
+      centered
+      open
+      footer={null}
+      onCancel={() => {
+        modalClose();
+        router.push(routes.loginPage);
+      }}
+    >
+      <Result
+        status="success"
+        title={t('title')}
+        subTitle={t('subTitle')}
+        extra={(
+          <div className="col-9 d-flex mx-auto">
+            <LoginButton title={t('loginButton')} className="button button-height w-100" onClick={modalClose} />
+          </div>
+        )}
+      />
+    </Modal>
+  );
+};
+
+const ModalRecovery = () => {
+  const { t } = useTranslation('translation', { keyPrefix: 'modals.recovery' });
   const router = useRouter();
   const { modalClose } = useContext(ModalContext);
 
@@ -48,9 +77,8 @@ const ModalConfirmPhone = ({ setState }: { setState: (arg: boolean) => void }) =
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
   const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
   const dispatch = useAppDispatch();
-  const {
-    key, loadingStatus, error, phone = '',
-  } = useAppSelector((state) => state.user);
+
+  const { key, loadingStatus, phone = '' } = useAppSelector((state) => state.user);
   const { modalClose } = useContext(ModalContext);
 
   const [timer, setTimer] = useState<number>(59);
@@ -93,8 +121,6 @@ const ModalConfirmPhone = ({ setState }: { setState: (arg: boolean) => void }) =
     return undefined;
   }, [timer]);
 
-  useErrorHandler(error);
-
   return (
     <Modal centered open footer={null} onCancel={modalClose} className="reduced-padding">
       <Spin tip={t('loading')} spinning={loadingStatus !== 'finish'} fullscreen size="large" />
@@ -134,9 +160,10 @@ const Modals = () => {
   const { show } = useContext(ModalContext);
   const setState = typeof show === 'object' ? show.modalSetState : undefined;
 
-  const modals = {
+  const modals: { [K in ModalShowType]: JSX.Element | null } = {
     none: null,
     signup: <ModalSignup />,
+    recovery: <ModalRecovery />,
     activation: setState ? <ModalConfirmPhone setState={setState} /> : null,
   };
 

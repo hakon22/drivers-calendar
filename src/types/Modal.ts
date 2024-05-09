@@ -1,4 +1,4 @@
-export type ModalShowType = 'none' | 'activation' | 'signup';
+export type ModalShowType = 'none' | 'activation' | 'signup' | 'recovery';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

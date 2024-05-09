@@ -13,6 +13,7 @@ const Index = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { loggedIn } = useContext(AuthContext);
+  const { loadingStatus } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     if (!loggedIn) {

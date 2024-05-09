@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import {
-  Form, Button, Select, Input, InputNumber, Spin,
+  Form, Button, Select, Input, InputNumber,
 } from 'antd';
 import axios from 'axios';
 import { carValidation } from '@/validations/validations';
@@ -30,32 +30,29 @@ type CarSignupProps = {
   values: CarSignupType,
   setValues: React.Dispatch<React.SetStateAction<CarSignupType>>;
   brands: Brand[];
-  isSubmit: boolean;
 };
 
-const FuelConsumption = ({ name, t, isSubmit }: { name: string, t: (str: string) => string, isSubmit: boolean }) => (
+const FuelConsumption = ({ name, t }: { name: string, t: (str: string) => string }) => (
   <div className="label-group d-flex flex-column">
     <div className="mb-3 roboto-500">{t(name)}</div>
     <ul>
       <li className="d-flex">
         <span className="col-4 mt-2 roboto-500">{t('city')}</span>
         <Form.Item<CarSignupType> name={[name, 'city']} rules={[carValidation]}>
-          <InputNumber className="w-100" size="large" suffix={t('litrePerKm')} min={1} keyboard disabled={isSubmit} />
+          <InputNumber className="w-100" size="large" suffix={t('litrePerKm')} min={1} keyboard />
         </Form.Item>
       </li>
       <li className="d-flex">
         <span className="col-4 mt-2 roboto-500">{t('highway')}</span>
         <Form.Item<CarSignupType> name={[name, 'highway']} rules={[carValidation]}>
-          <InputNumber className="w-100" size="large" suffix={t('litrePerKm')} min={1} keyboard disabled={isSubmit} />
+          <InputNumber className="w-100" size="large" suffix={t('litrePerKm')} min={1} keyboard />
         </Form.Item>
       </li>
     </ul>
   </div>
 );
 
-const CarSignup = ({
-  values, setValues, brands, isSubmit,
-}: CarSignupProps) => {
+const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'signup.carForm' });
 
   const [form] = Form.useForm();
@@ -73,7 +70,7 @@ const CarSignup = ({
     return { ...preValues, model: changedValue.brand ? undefined : preValues.model, ...changedValue };
   });
 
-  const fetchModals = async (searchedValue: string): Promise<Brand[]> => {
+  const fetchModels = async (searchedValue: string): Promise<Brand[]> => {
     const { data } = await axios.get(`${routes.getModels}/${searchedValue}`);
     return data;
   };
@@ -86,40 +83,39 @@ const CarSignup = ({
         form.setFieldValue('model', undefined);
       }
       setIsLoading(true);
-      fetchModals(brand).then((result) => setModels(result));
+      fetchModels(brand).then((result) => setModels(result));
       setIsLoading(false);
     }
   }, [brand]);
 
   return (
     <Form name="car-signup" form={form} onValuesChange={onValuesChange} initialValues={values} className="signup-form d-flex flex-column">
-      <Spin tip={t('loading')} spinning={isSubmit} fullscreen size="large" />
       <Form.Item<CarSignupType> name="brand" rules={[carValidation]}>
-        <Select size="large" placeholder={t('brand')} options={brands} showSearch filterOption={filterOption} disabled={isSubmit} />
+        <Select size="large" placeholder={t('brand')} options={brands} showSearch filterOption={filterOption} />
       </Form.Item>
       <Form.Item<CarSignupType> name="model" rules={[carValidation]}>
-        <Select size="large" placeholder={t('model')} options={models} showSearch filterOption={filterOption} disabled={!brand || isSubmit} loading={isLoading} />
+        <Select size="large" placeholder={t('model')} options={models} showSearch filterOption={filterOption} disabled={!brand} loading={isLoading} />
       </Form.Item>
       <Form.Item<CarSignupType> name="call" rules={[carValidation]}>
-        <Input size="large" className="w-100" placeholder={t('call')} min={1} disabled={isSubmit} />
+        <Input size="large" className="w-100" placeholder={t('call')} min={1} />
       </Form.Item>
       <Form.Item<CarSignupType> name="inventory" rules={[carValidation]}>
-        <Input size="large" className="w-100" placeholder={t('inventory')} min={1} disabled={isSubmit} />
+        <Input size="large" className="w-100" placeholder={t('inventory')} min={1} />
       </Form.Item>
       <Form.Item<CarSignupType> name="mileage" rules={[carValidation]}>
-        <InputNumber size="large" className="w-100" suffix={t('km')} placeholder={t('mileage')} min={1} disabled={isSubmit} keyboard />
+        <InputNumber size="large" className="w-100" suffix={t('km')} placeholder={t('mileage')} min={1} keyboard />
       </Form.Item>
       <Form.Item<CarSignupType> name="mileage_after_maintenance" rules={[carValidation]}>
-        <InputNumber size="large" className="w-100" suffix={t('km')} placeholder={t('mileage_after_maintenance')} min={1} disabled={isSubmit} keyboard />
+        <InputNumber size="large" className="w-100" suffix={t('km')} placeholder={t('mileage_after_maintenance')} min={1} keyboard />
       </Form.Item>
       <Form.Item<CarSignupType> name="remaining_fuel" rules={[carValidation]}>
-        <InputNumber size="large" className="w-100" suffix={t('litre')} placeholder={t('remaining_fuel')} min={1} disabled={isSubmit} keyboard />
+        <InputNumber size="large" className="w-100" suffix={t('litre')} placeholder={t('remaining_fuel')} min={1} keyboard />
       </Form.Item>
-      <FuelConsumption name="fuel_consumption_summer" t={t} isSubmit={isSubmit} />
-      <FuelConsumption name="fuel_consumption_winter" t={t} isSubmit={isSubmit} />
+      <FuelConsumption name="fuel_consumption_summer" t={t} />
+      <FuelConsumption name="fuel_consumption_winter" t={t} />
       <div className="mt-4 d-flex justify-content-center">
-        <Button type="primary" className="col-10 button-height button" htmlType="submit" loading={isSubmit}>
-          {isSubmit ? t('loading') : t('submitButton')}
+        <Button type="primary" className="col-10 button-height button" htmlType="submit">
+          {t('submitButton')}
         </Button>
       </div>
     </Form>

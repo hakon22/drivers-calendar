@@ -1,102 +1,50 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { io } from 'socket.io-client';
-import {
-  useCallback, useEffect, useMemo, useState,
-} from 'react';
-import axios from 'axios';
+import { useEffect, useState, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Spinner } from 'react-bootstrap';
-import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
+import { Spin } from 'antd';
+import { useAppSelector } from '@/utilities/hooks';
 import useErrorHandler from '@/utilities/useErrorHandler';
-import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
-import routes from '@/routes';
-import { removeToken } from '@/slices/userSlice';
 import useAuthHandler from '@/utilities/useAuthHandler';
 import Modals from '@/components/Modals';
-import {
-  ApiContext, AuthContext, ModalContext, ScrollContext,
-} from '@/components//Context';
+import { SubmitContext } from './Context';
 
 const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
 
 const App = ({ children }: { children: JSX.Element }) => {
-  const dispatch = useAppDispatch();
-
+  const { t } = useTranslation('translation', { keyPrefix: 'signup.carForm' });
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const {
-    id, token, refreshToken, error,
-  } = useAppSelector((state) => state.user);
-
-  const [loggedIn, setLoggedIn] = useState(false);
-  const logIn = () => setLoggedIn(true);
-  const logOut = useCallback(async () => {
-    const refreshTokenStorage = window.localStorage.getItem(storageKey);
-    if (refreshTokenStorage) {
-      localStorage.removeItem(storageKey);
-    }
-    await axios.post(routes.logout, { id, refreshToken });
-    dispatch(removeToken());
-    setLoggedIn(false);
-  }, [id]);
-
-  const [show, setShow] = useState<ModalShowType | ModalShowObjectType>('none');
-  const modalOpen = (arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>) => (modalSetState ? setShow({ show: arg, modalSetState }) : setShow(arg));
-  const modalClose = () => setShow('none');
-
-  const scrollPx = () => window.innerWidth - document.body.clientWidth;
-
-  const [scrollBar, setScrollBar] = useState(0);
-  const setMarginScroll = () => {
-    const px = scrollPx();
-    if (px) {
-      setScrollBar(px - 1);
-    } else {
-      setScrollBar(px);
-    }
-  };
-
-  const authServices = useMemo(() => ({ loggedIn, logIn, logOut }), [loggedIn, logOut]);
-  const modalServices = useMemo(() => ({ show, modalOpen, modalClose }), [show, modalClose]);
-  const scrollServices = useMemo(() => ({ scrollBar, setMarginScroll }), [scrollBar, setMarginScroll]);
+  const { error, token, loadingStatus } = useAppSelector((state) => state.user);
+  const { isSubmit } = useContext(SubmitContext);
 
   useErrorHandler(error);
-  useAuthHandler(token, refreshToken);
-
-  const socket = io(process.env.NODE_ENV === 'development' ? '' : process.env.NEXT_PUBLIC_SOCKET_HOST ?? '');
-
-  const socketConnect = useCallback((param: string, arg: unknown) => {
-    socket.emit(param, arg);
-  }, [socket]);
-
-  const socketApi = useMemo(() => ({
-    test: (data: unknown) => socketConnect('test', data),
-  }), [socketConnect]);
-
-  // socket.on('test', (data) => dispatch(test(data)));
+  useAuthHandler();
 
   useEffect(() => {
-    setIsLoaded(true);
-  }, []);
+    const tokenStorage = window.localStorage.getItem(storageKey);
+    if (!tokenStorage) {
+      setIsLoaded(true);
+    } else if (token) {
+      setIsLoaded(true);
+    }
+  }, [token, loadingStatus]);
 
   return (
-    <ApiContext.Provider value={socketApi}>
-      <AuthContext.Provider value={authServices}>
-        <ModalContext.Provider value={modalServices}>
-          <ScrollContext.Provider value={scrollServices}>
-            <Modals />
-            {isLoaded ? (
-              <div className="container position-relative">
-                {children}
-              </div>
-            ) : (
-              <div className="spinner">
-                <Spinner animation="border" variant="primary" role="status" />
-              </div>
-            )}
-          </ScrollContext.Provider>
-        </ModalContext.Provider>
-      </AuthContext.Provider>
-    </ApiContext.Provider>
+    <>
+      <Modals />
+      {isLoaded ? (
+        <>
+          <Spin tip={t('loading')} spinning={isSubmit} fullscreen size="large" />
+          <div className="container position-relative">
+            {children}
+          </div>
+        </>
+      ) : (
+        <div className="spinner">
+          <Spinner animation="border" variant="primary" role="status" />
+        </div>
+      )}
+    </>
   );
 };
 

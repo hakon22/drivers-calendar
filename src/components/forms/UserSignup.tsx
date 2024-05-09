@@ -10,9 +10,8 @@ import { fetchConfirmCode } from '@/slices/userSlice';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { userValidation } from '@/validations/validations';
 import toast from '@/utilities/toast';
-import useErrorHandler from '@/utilities/useErrorHandler';
 import { Color } from 'antd/es/color-picker';
-import { ModalContext } from '../Context';
+import { ModalContext, SubmitContext } from '../Context';
 
 export type UserSignupType = {
   phone: string;
@@ -31,15 +30,18 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'signup.userForm' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
   const dispatch = useAppDispatch();
-  const { key, error } = useAppSelector((state) => state.user);
+  const { key } = useAppSelector((state) => state.user);
 
   const { modalOpen, modalClose } = useContext(ModalContext);
+  const { setIsSubmit } = useContext(SubmitContext);
+
   const [isConfirm, setIsConfirm] = useState(false);
   const router = useRouter();
 
   const [form] = Form.useForm();
 
   const onFinish = async (userValues: UserSignupType) => {
+    setIsSubmit(true);
     setValues({ ...userValues, color: typeof userValues.color !== 'string' ? userValues.color.toHexString() : userValues.color } as UserSignupType);
     const { payload: { code } } = await dispatch(fetchConfirmCode({ phone: userValues.phone, key })) as { payload: { code: number } };
     if (code === 1) {
@@ -54,6 +56,7 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
     if (code === 6) {
       form.setFields([{ name: 'phone', errors: [tToast('userAlreadyExists')] }]);
     }
+    setIsSubmit(false);
   };
 
   useEffect(() => {
@@ -63,8 +66,6 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
       next();
     }
   }, [isConfirm]);
-
-  useErrorHandler(error);
 
   return (
     <Form name="user-signup" form={form} initialValues={values} className="signup-form" onFinish={onFinish}>

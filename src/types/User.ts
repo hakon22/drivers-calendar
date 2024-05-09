@@ -6,5 +6,5 @@ export type User = {
   phone: string;
   token?: string;
   role: string;
-  refresh_token: string[];
+  refreshToken: string;
 };

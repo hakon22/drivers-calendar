@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import Helmet from '@/components/Helmet';
 import UserSignup, { type UserSignupType } from '@/components/forms/UserSignup';
 import CarSignup, { type CarSignupType } from '@/components/forms/CarSignup';
-import { ModalContext } from '@/components/Context';
+import { ModalContext, SubmitContext } from '@/components/Context';
 import routes from '@/routes';
 import BackButton from '@/components/BackButton';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
@@ -21,6 +21,7 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
   const { asPath } = useRouter();
 
   const { modalOpen } = useContext(ModalContext);
+  const { setIsSubmit } = useContext(SubmitContext);
 
   const initialUserValues = {
     phone: '',
@@ -45,8 +46,6 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
   const [userValues, setUserValues] = useState<UserSignupType>(initialUserValues);
   const [carsValues, setCarsValues] = useState<CarSignupType>(initialCarValues);
 
-  const [isSubmit, setIsSubmit] = useState(false);
-
   const next = () => setCurrentForm(currentForm + 1);
   const prev = () => setCurrentForm(currentForm - 1);
 
@@ -57,7 +56,7 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
     },
     {
       key: 2,
-      content: <CarSignup values={carsValues} setValues={setCarsValues} brands={brands} isSubmit={isSubmit} />,
+      content: <CarSignup values={carsValues} setValues={setCarsValues} brands={brands} />,
     },
   ];
 
@@ -77,20 +76,17 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
             const { data: { code } } = await axios.post(routes.signup, { user: userValues, car: carsValues });
             if (code === 1) {
               modalOpen('signup');
-            }
-            if (code === 2) {
+            } else if (code === 2) {
               toast(tToast('userAlreadyExists'), 'error');
-              setIsSubmit(false);
-            }
-            if (code === 3) {
+            } else if (code === 3) {
               toast(tToast('carAlreadyExists'), 'error');
               currentForms[name].setFields([
                 { name: 'inventory', errors: [tToast('carAlreadyExists')] },
                 { name: 'call', errors: [tToast('carAlreadyExists')] },
               ]);
               scrollTop();
-              setIsSubmit(false);
             }
+            setIsSubmit(false);
           } catch (e) {
             setTimeout(setIsSubmit, 1500, false);
             axiosErrorHandler(e, tToast);

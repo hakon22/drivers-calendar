@@ -15,6 +15,6 @@ export type InitialStateType = InitialState & {
   phone?: string;
   key?: string;
   role?: string;
-  orders?: number[],
+  color?: string,
   [key: string]: number[] | string | number | null | undefined;
 };

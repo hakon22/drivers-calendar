@@ -1,21 +1,24 @@
 import { useEffect, useContext } from 'react';
 import { fetchTokenStorage, updateTokens } from '@/slices/userSlice';
 import { AuthContext } from '@/components/Context';
-import { useAppDispatch } from './hooks';
+import { useAppDispatch, useAppSelector } from './hooks';
 
-const useAuthHandler = (token?: string, refreshToken?: string) => {
+const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
+
+const useAuthHandler = () => {
   const dispatch = useAppDispatch();
-  const { logIn } = useContext(AuthContext);
+  const { logIn, loggedIn } = useContext(AuthContext);
+  const { token, refreshToken } = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    const tokenStorage = window.localStorage.getItem(process.env.STORAGE_KEY ?? '');
+    const tokenStorage = window.localStorage.getItem(storageKey);
     if (tokenStorage) {
       dispatch(fetchTokenStorage(tokenStorage));
     }
   }, []);
 
   useEffect(() => {
-    if (token) {
+    if (token && !loggedIn) {
       logIn();
     }
   }, [token]);

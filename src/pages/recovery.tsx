@@ -4,10 +4,14 @@ import { Alert } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
 import { PhoneOutlined } from '@ant-design/icons';
 import { Button, Form } from 'antd';
+import { useContext } from 'react';
+import { ModalContext, SubmitContext } from '@/components/Context';
 import { loginValidation } from '@/validations/validations';
 import routes from '@/routes';
 import Helmet from '@/components/Helmet';
 import BackButton from '@/components/BackButton';
+import axiosErrorHandler from '@/utilities/axiosErrorHandler';
+import axios from 'axios';
 
 type RecoveryType = {
   phone: string;
@@ -15,10 +19,27 @@ type RecoveryType = {
 
 const Recovery = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'recovery' });
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
+  const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
   const router = useRouter();
 
-  const onFinish = (values: RecoveryType) => {
-    console.log('Received values of form: ', values);
+  const [form] = Form.useForm();
+  const { modalOpen } = useContext(ModalContext);
+  const { setIsSubmit } = useContext(SubmitContext);
+
+  const onFinish = async (values: RecoveryType) => {
+    try {
+      setIsSubmit(true);
+      const { data: { code } } = await axios.post(routes.recoveryPassword, values);
+      if (code === 1) {
+        modalOpen('recovery');
+      } else if (code === 2) {
+        form.setFields([{ name: 'phone', errors: [tValidation('userNotAlreadyExists')] }]);
+      }
+      setIsSubmit(false);
+    } catch (e) {
+      axiosErrorHandler(e, tToast);
+    }
   };
 
   return (
@@ -28,7 +49,7 @@ const Recovery = () => {
       <div className="my-5 col-12 d-flex flex-column align-items-center gap-5">
         <h1>{t('title')}</h1>
         <div className="col-10">
-          <Form name="recovery" onFinish={onFinish}>
+          <Form name="recovery" form={form} onFinish={onFinish}>
             <Form.Item<RecoveryType> name="phone" rules={[loginValidation]}>
               <MaskedInput mask="+7 (000) 000-00-00" className="button-height" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
             </Form.Item>

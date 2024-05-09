@@ -4,6 +4,8 @@ import type { User } from '../types/User';
 import type { InitialStateType } from '../types/InitialState';
 import routes from '../routes';
 
+type KeysInitialStateType = keyof InitialStateType;
+
 const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
 
 export const fetchLogin = createAsyncThunk(
@@ -56,7 +58,7 @@ export const updateTokens = createAsyncThunk(
   },
 );
 
-export const initialState: InitialStateType = {
+export const initialState: { [K in keyof InitialStateType]: InitialStateType[K] } = {
   loadingStatus: 'idle',
   error: null,
 };
@@ -66,10 +68,10 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     removeToken: (state) => {
-      const entries = Object.keys(state);
+      const entries = Object.keys(state) as KeysInitialStateType[];
       entries.forEach((key) => {
-        if (key !== 'loadingStatus') {
-          state[key] = null;
+        if (key !== 'loadingStatus' && key !== 'error') {
+          delete state[key];
         }
       });
     },
@@ -85,6 +87,7 @@ const userSlice = createSlice({
         if (payload.code === 1) {
           const entries = Object.entries(payload.user);
           entries.forEach(([key, value]) => { state[key] = value; });
+          window.localStorage.setItem(storageKey, payload.user.refreshToken);
         }
         state.loadingStatus = 'finish';
         state.error = null;
@@ -112,6 +115,7 @@ const userSlice = createSlice({
       .addCase(fetchTokenStorage.rejected, (state, action) => {
         state.loadingStatus = 'failed';
         state.error = action.error.message ?? null;
+        window.localStorage.removeItem(storageKey);
       })
       .addCase(updateTokens.pending, (state) => {
         state.loadingStatus = 'loading';
@@ -129,6 +133,7 @@ const userSlice = createSlice({
       .addCase(updateTokens.rejected, (state, action) => {
         state.loadingStatus = 'failed';
         state.error = action.error.message ?? null;
+        window.localStorage.removeItem(storageKey);
       })
       .addCase(fetchConfirmCode.pending, (state) => {
         state.loadingStatus = 'loading';

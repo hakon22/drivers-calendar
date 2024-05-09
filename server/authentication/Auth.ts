@@ -4,7 +4,7 @@
 /* eslint-disable camelcase */
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
-import { Op, QueryTypes } from 'sequelize';
+import { Op } from 'sequelize';
 import {
   userValidation, carValidation, phoneValidation, confirmCodeValidation,
 } from '@/validations/validations.js';
@@ -53,7 +53,7 @@ class Auth {
 
       const role = adminPhone.includes(user.phone) ? 'admin' : 'member';
 
-      const { id: crewId } = await Crews.create({
+      await Crews.create({
         schedule,
         users: [{
           ...userValues,
@@ -70,7 +70,7 @@ class Auth {
           fuel_consumption_winter_city: fuel_consumption_winter.city,
           fuel_consumption_winter_highway: fuel_consumption_winter.highway,
         } as CarModel],
-      }, { include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }], });
+      }, { include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }] });
 
       res.json({ code: 1 });
     } catch (e) {
@@ -81,17 +81,19 @@ class Auth {
 
   async login(req: Request, res: Response) {
     try {
+      req.body.phone = phoneTransform(req.body.phone);
       const { phone, password } = req.body;
+      await phoneValidation.serverValidator({ phone });
       const user = await Users.findOne({ where: { phone } });
       if (!user) {
-        return res.json({ code: 4 });
+        return res.json({ code: 3 });
       }
       const isValidPassword = bcrypt.compareSync(password, user.password);
       if (!isValidPassword) {
-        return res.json({ code: 3 });
+        return res.json({ code: 2 });
       }
-      const token = generateAccessToken(user.id ?? 0, user.phone);
-      const refreshToken = generateRefreshToken(user.id ?? 0, user.phone);
+      const token = generateAccessToken(user.id, user.phone);
+      const refreshToken = generateRefreshToken(user.id, user.phone);
       const {
         id, username, role, refresh_token,
       } = user;
@@ -116,8 +118,6 @@ class Auth {
 
   async confirmPhone(req: Request, res: Response) {
     try {
-      const a = await Crews.findAll({ include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }] });
-      a.forEach((a) => console.log(a.users));
       req.body.phone = phoneTransform(req.body.phone);
       const { phone, key, code: userCode } = req.body as { phone: string, key?: string, code?: string };
       await phoneValidation.serverValidator({ phone });
@@ -210,15 +210,16 @@ class Auth {
 
   async recoveryPassword(req: Request, res: Response) {
     try {
-      const values = req.body;
+      req.body.phone = phoneTransform(req.body.phone);
+      const { phone } = req.body;
+      await phoneValidation.serverValidator({ phone });
       const user = await Users.findOne({
         attributes: ['username', 'phone'],
-        where: { phone: values.phone },
+        where: { phone },
       });
       if (!user) {
         return res.status(200).json({ code: 2 });
       }
-      const { phone } = user;
       const password = await Sms.sendPass(phone);
       const hashPassword = bcrypt.hashSync(password, 10);
       await Users.update({ password: hashPassword }, { where: { phone } });
