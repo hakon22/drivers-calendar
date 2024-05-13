@@ -1,21 +1,20 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useContext } from 'react';
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/navigation';
 import cn from 'classnames';
-import useErrorHandler from '@/utilities/useErrorHandler';
 import { Calendar, type CalendarProps } from 'antd';
 import { CellRenderInfo } from 'rc-picker/lib/interface';
-import CalendarLocale from 'rc-picker/lib/locale/ru_RU';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
-import type { Error } from '@/types/InitialState';
-import store from '@/slices';
 import { AuthContext } from '@/components/Context';
+import locale from '@/locales/pickers.locale.RU';
 import routes from '@/routes';
-import type { User } from '@/types/User';
 import dayjs, { type Dayjs } from 'dayjs';
 import 'dayjs/locale/ru';
+import Helmet from '@/components/Helmet';
 
-const Index = () => {
+const Index = ({ appData }: { appData: string }) => {
+  const { t } = useTranslation('translation', { keyPrefix: 'index' });
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { loggedIn } = useContext(AuthContext);
@@ -82,11 +81,6 @@ const Index = () => {
     );
   };
 
-  const cellRender: CalendarProps<Dayjs>['cellRender'] = (current, info) => {
-    if (info.type === 'date') return dateFullCellRender(current, info);
-    return info.originNode;
-  };
-
   useEffect(() => {
     if (!loggedIn) {
       router.push(routes.welcomePage);
@@ -94,41 +88,25 @@ const Index = () => {
   }, [loggedIn]);
 
   return loggedIn && (
-    <Calendar
-      onPanelChange={onPanelChange}
-      fullscreen={false}
-      fullCellRender={dateFullCellRender}
-      locale={{
-        lang: {
-          placeholder: 'Выберите дату',
-          yearPlaceholder: 'Выберите год',
-          quarterPlaceholder: 'Выберите квартал',
-          monthPlaceholder: 'Выберите месяц',
-          weekPlaceholder: 'Выберите неделю',
-          rangePlaceholder: ['Начальная дата', 'Конечная дата'],
-          rangeYearPlaceholder: ['Начальный год', 'Год окончания'],
-          rangeMonthPlaceholder: ['Начальный месяц', 'Конечный месяц'],
-          rangeWeekPlaceholder: ['Начальная неделя', 'Конечная неделя'],
-          shortWeekDays: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
-          shortMonths: [
-            'Янв',
-            'Фев',
-            'Мар',
-            'Апр',
-            'Май',
-            'Июн',
-            'Июл',
-            'Авг',
-            'Сен',
-            'Окт',
-            'Ноя',
-            'Дек',
-          ],
-          ...CalendarLocale,
-        },
-      }}
-    />
+    <div className="d-flex justify-content-center anim-show">
+      <Helmet title={t('title')} description={t('description')} />
+      <div className="my-4 col-12 d-flex flex-column align-items-center gap-3">
+        <h1>{t('title')}</h1>
+        <Calendar
+          onPanelChange={onPanelChange}
+          fullscreen={false}
+          fullCellRender={dateFullCellRender}
+          locale={locale}
+        />
+      </div>
+    </div>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const data = {};
+
+  return { props: { appData: data } };
 };
 
 export default Index;

@@ -24,4 +24,6 @@ export default {
   getModels: [apiPath, 'car', 'getModels'].join('/'),
   // sms
   confirmPhone: [apiPath, 'auth', 'confirmPhone'].join('/'),
+  // index
+  fetchAppData: [serverHost, apiPath, 'app', 'fetchAppData'].join('/'),
 } as ApiUrl;

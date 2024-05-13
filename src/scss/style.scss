@@ -214,6 +214,10 @@ h1 {
   border: unset;
 }
 
+.ant-picker-calendar-mode-switch {
+  display: none;
+}
+
 @keyframes progress {
 	0% { width: 100%;	}
 	100% { width: 0%;	}

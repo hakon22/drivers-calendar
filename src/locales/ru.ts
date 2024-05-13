@@ -63,6 +63,10 @@ export default {
       submitButton: 'Восстановить пароль',
       prev: 'Назад',
     },
+    index: {
+      title: 'График смен - {{ crew }}',
+      description: 'График смен',
+    },
     validation: {
       required: 'Обязательное поле',
       requirements: 'От 3 до 20 символов',
