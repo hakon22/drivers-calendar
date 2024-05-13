@@ -64,7 +64,7 @@ export default {
       prev: 'Назад',
     },
     index: {
-      title: 'График смен - {{ crew }}',
+      title: 'График смен',
       description: 'График смен',
     },
     validation: {

@@ -218,6 +218,29 @@ h1 {
   display: none;
 }
 
+.ant-drawer {
+  height: 100vh;
+
+  &-content {
+    background-color: $background !important;
+    align-items: center;
+
+    .ant-drawer-header {
+      padding-top: 1.5em;
+      width: 100%;
+      text-align: center;
+    }
+
+    .ant-drawer-body {
+      width: 80%;
+
+      .button {
+        background-color: $button-background-menu;
+      }
+    }
+  }
+}
+
 @keyframes progress {
 	0% { width: 100%;	}
 	100% { width: 0%;	}

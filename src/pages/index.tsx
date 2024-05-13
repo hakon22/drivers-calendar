@@ -12,6 +12,7 @@ import routes from '@/routes';
 import dayjs, { type Dayjs } from 'dayjs';
 import 'dayjs/locale/ru';
 import Helmet from '@/components/Helmet';
+import NavBar from '@/components/NavBar';
 
 const Index = ({ appData }: { appData: string }) => {
   const { t } = useTranslation('translation', { keyPrefix: 'index' });
@@ -90,6 +91,7 @@ const Index = ({ appData }: { appData: string }) => {
   return loggedIn && (
     <div className="d-flex justify-content-center anim-show">
       <Helmet title={t('title')} description={t('description')} />
+      <NavBar />
       <div className="my-4 col-12 d-flex flex-column align-items-center gap-3">
         <h1>{t('title')}</h1>
         <Calendar
