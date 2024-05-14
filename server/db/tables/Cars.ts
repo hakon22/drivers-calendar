@@ -2,9 +2,6 @@ import {
   DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional,
 } from 'sequelize';
 import { db } from '../connect.js';
-import CrewComponents from './CrewComponents.js';
-import Crew from './Crews.js';
-import Crews from './Crews.js';
 
 export interface CarModel extends Model<InferAttributes<CarModel>, InferCreationAttributes<CarModel>> {
   id: CreationOptional<number>;

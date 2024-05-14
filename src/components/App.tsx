@@ -15,9 +15,11 @@ const App = ({ children }: { children: JSX.Element }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const { error, token, loadingStatus } = useAppSelector((state) => state.user);
+  const { error: crewError } = useAppSelector((state) => state.crew);
   const { isSubmit } = useContext(SubmitContext);
 
   useErrorHandler(error);
+  useErrorHandler(crewError);
   useAuthHandler();
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import express from 'express';
 import passport from 'passport';
 import Auth from './authentication/Auth.js';
 import Car from './car/Car.js';
+import Crew from './crew/Crew.js';
 
 const router = express.Router();
 
@@ -22,5 +23,9 @@ router.get(`${apiPath}/car/getModels/:brand`, Car.getModels);
 
 // sms
 router.post(`${apiPath}/auth/confirmPhone`, Auth.confirmPhone);
+
+// crew
+router.get(`${apiPath}/crew/fetchCrew`, jwtToken, Crew.fetchCrew);
+router.post(`${apiPath}/crew/makeSchedule`, jwtToken, Crew.makeSchedule);
 
 export default router;

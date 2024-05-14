@@ -95,7 +95,7 @@ class Auth {
       const token = generateAccessToken(user.id, user.phone);
       const refreshToken = generateRefreshToken(user.id, user.phone);
       const {
-        id, username, role, refresh_token,
+        id, username, role, refresh_token, crewId,
       } = user;
 
       if (refresh_token.length < 4) {
@@ -107,7 +107,7 @@ class Auth {
       res.status(200).send({
         code: 1,
         user: {
-          token, refreshToken, username, role, id, phone,
+          token, refreshToken, username, role, id, phone, crewId,
         },
       });
     } catch (e) {
@@ -162,7 +162,7 @@ class Auth {
     try {
       const {
         dataValues: {
-          id, username, refresh_token, phone, role,
+          id, username, refresh_token, phone, role, crewId,
         }, token, refreshToken,
       } = req.user as PassportRequest;
       const oldRefreshToken = req.get('Authorization')?.split(' ')[1] ?? '';
@@ -177,7 +177,7 @@ class Auth {
       res.status(200).send({
         code: 1,
         user: {
-          id, username, token, refreshToken, role, phone,
+          id, username, token, refreshToken, role, phone, crewId,
         },
       });
     } catch (e) {

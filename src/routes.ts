@@ -25,5 +25,6 @@ export default {
   // sms
   confirmPhone: [apiPath, 'auth', 'confirmPhone'].join('/'),
   // index
-  fetchAppData: [serverHost, apiPath, 'app', 'fetchAppData'].join('/'),
+  fetchCrew: [apiPath, 'crew', 'fetchCrew'].join('/'),
+  makeSchedule: [apiPath, 'crew', 'makeSchedule'].join('/'),
 } as ApiUrl;

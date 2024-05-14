@@ -66,6 +66,15 @@ export default {
     index: {
       title: 'График смен',
       description: 'График смен',
+      navbar: {
+        menu: 'Меню',
+        buttons: {
+          makeSchedule: 'Составить график',
+          inviteReplacement: 'Пригласить сменщика',
+          addCar: 'Добавить автомобиль',
+          exit: 'Выйти из экипажа',
+        },
+      },
     },
     validation: {
       required: 'Обязательное поле',
