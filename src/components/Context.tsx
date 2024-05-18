@@ -24,6 +24,14 @@ export const SubmitContext = createContext<{
       setIsSubmit: () => undefined,
     });
 
+export const NavbarContext = createContext<{
+  isActive: boolean,
+  setIsActive: React.Dispatch<React.SetStateAction<boolean>>,
+    }>({
+      isActive: false,
+      setIsActive: () => undefined,
+    });
+
 export const ModalContext = createContext<{
   show: ModalShowType | ModalShowObjectType,
   modalOpen:(arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>) => void,

@@ -5,7 +5,9 @@ import {
 } from 'antd';
 import type { DatePickerProps } from 'antd';
 import type { Dayjs } from 'dayjs';
-import { useContext, useState, useEffect, useRef } from 'react';
+import {
+  useContext, useState, useEffect, useRef,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchConfirmCode } from '@/slices/userSlice';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
@@ -14,11 +16,13 @@ import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers';
 import VerificationInput from 'react-verification-input';
-import { ModalContext } from '@/components/Context';
+import locale from '@/locales/pickers.locale.RU';
+import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
 import type { ModalShowType } from '@/types/Modal';
 import { LoginButton } from '@/pages/welcome';
 import toast from '@/utilities/toast';
 import routes from '@/routes';
+import { fetchMakeSchedule } from '@/slices/crewSlice';
 import SortableItem from './SortableItem';
 import { UserModel } from '../../server/db/tables/Users';
 
@@ -83,11 +87,15 @@ const ModalRecovery = () => {
 const ModalMakeSchedule = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.makeSchedule' });
   const { modalClose } = useContext(ModalContext);
+  const { setIsSubmit } = useContext(SubmitContext);
+  const { setIsActive } = useContext(NavbarContext);
+  const dispatch = useAppDispatch();
+  const { token } = useAppSelector((state) => state.user);
   const { users } = useAppSelector((state) => state.crew);
   const [sortableUsers, setSortableUsers] = useState(users);
   const [activeId, setActiveId] = useState(0);
   const [page, setPage] = useState(0);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -105,8 +113,16 @@ const ModalMakeSchedule = () => {
     setActiveId(+active.id);
   };
 
-  const onFinish: DatePickerProps<Dayjs[]>['onChange'] = (date, dateString) => {
-    console.log(date, dateString);
+  const onFinish: DatePickerProps<Dayjs[]>['onChange'] = async (date, startDate) => {
+    if (!Array.isArray(startDate)) {
+      setIsSubmit(true);
+      const { payload: { code } } = await dispatch(fetchMakeSchedule({ token, startDate, users: sortableUsers }));
+      if (code) {
+        modalClose();
+        setIsActive(false);
+        setIsSubmit(false);
+      }
+    }
   };
 
   return (
@@ -116,7 +132,7 @@ const ModalMakeSchedule = () => {
       footer={null}
       onCancel={modalClose}
     >
-      <div className="my-4 d-flex flex-column gap-3" ref={ref}>
+      <div className="my-4 d-flex flex-column align-items-center gap-3">
         {!page ? (
           <>
             <div className="h1">{t('selectQueue')}</div>
@@ -126,7 +142,7 @@ const ModalMakeSchedule = () => {
               modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
             >
               <SortableContext items={sortableUsers} strategy={verticalListSortingStrategy}>
-                <ul className="d-flex flex-column gap-2 ps-0">
+                <ul className="d-flex flex-column gap-2 ps-0 col-12">
                   {sortableUsers.map((user, index) => <SortableItem user={user} key={user.id} index={index + 1} activeId={activeId} />)}
                 </ul>
               </SortableContext>
@@ -137,9 +153,19 @@ const ModalMakeSchedule = () => {
           </>
         ) : (
           <>
-            <DatePicker onChange={onFinish} needConfirm open={!!page} getPopupContainer={ref?.current ? ref.current : <div /> as HTMLElement} />
+            <div className="h1" ref={ref}>{t('selectDate')}</div>
+            <DatePicker
+              onChange={onFinish}
+              needConfirm
+              open
+              locale={locale}
+              getPopupContainer={(defaultContainer) => {
+                defaultContainer.classList.add('d-none');
+                return ref?.current ? ref.current : defaultContainer;
+              }}
+            />
             <Button className="col-4 mx-auto mt-3 button" onClick={() => setPage(0)}>
-              {t('next')}
+              {t('back')}
             </Button>
           </>
         )}

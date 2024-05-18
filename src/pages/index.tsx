@@ -10,8 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { AuthContext } from '@/components/Context';
 import locale from '@/locales/pickers.locale.RU';
 import routes from '@/routes';
-import dayjs, { type Dayjs } from 'dayjs';
-import 'dayjs/locale/ru';
+import type { Dayjs } from 'dayjs';
 import Helmet from '@/components/Helmet';
 import NavBar from '@/components/NavBar';
 import axios from 'axios';
@@ -37,7 +36,7 @@ const Index = () => {
   };
 
   const dateFullCellRender = (value: Dayjs, info: CellRenderInfo<Dayjs>) => {
-    if (!(info.type === 'date')) return info.originNode;
+    if (info.type !== 'date') return info.originNode;
     const listData = getListData(value, info);
     const className = cn('d-flex justify-content-center align-items-center', { 'text-danger': value.format('DD-MM-YYYY') === info.today.format('DD-MM-YYYY') });
     return (

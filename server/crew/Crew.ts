@@ -66,12 +66,12 @@ class Crew {
   async makeSchedule(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
-      const { startDate } = req.body;
-      const crew = await Crews.findByPk(crewId, { include: { attributes: ['username', 'color'], model: Users, as: 'users' } });
-      if (!crew || !crew.users?.length) {
+      const { startDate, users } = req.body;
+      const crew = await Crews.findByPk(crewId);
+      if (!crew) {
         return res.json({ code: 2 });
       }
-      const scheduleSchema = generateScheduleSchema(dayjs(startDate), 500, crew.users);
+      const scheduleSchema = generateScheduleSchema(dayjs(startDate), 500, users);
       await Crews.update({ schedule_schema: scheduleSchema }, { where: { id: crew.id } });
       return res.json({ code: 1, scheduleSchema });
     } catch (e) {

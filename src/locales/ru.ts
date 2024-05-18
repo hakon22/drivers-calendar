@@ -125,7 +125,9 @@ export default {
       },
       makeSchedule: {
         selectQueue: 'Выберите порядок расстановки',
+        selectDate: 'Выберите дату начала',
         next: 'Далее',
+        back: 'Назад',
       },
     },
   },

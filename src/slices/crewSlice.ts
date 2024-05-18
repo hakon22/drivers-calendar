@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { type Dayjs } from 'dayjs';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { CrewInitialState } from '../types/Crew';
 import routes from '../routes';
 import { CrewModel } from '../../server/db/tables/Crews';
 import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
+import { UserModel } from '../../server/db/tables/Users';
 
 export const fetchCrew = createAsyncThunk(
   'crew/fetchCrew',
@@ -18,8 +18,8 @@ export const fetchCrew = createAsyncThunk(
 
 export const fetchMakeSchedule = createAsyncThunk(
   'crew/fetchMakeSchedule',
-  async ({ token, startDate }: { token?: string, startDate: Dayjs }) => {
-    const response = await axios.post(routes.makeSchedule, { startDate }, {
+  async ({ token, startDate, users }: { token?: string, startDate: string, users: UserModel[] }) => {
+    const response = await axios.post(routes.makeSchedule, { startDate, users }, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;

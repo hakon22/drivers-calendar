@@ -38,6 +38,7 @@ h1 {
 .h1 {
   font-family: RussoOne, sans-serif;
   font-size: 1.3em;
+  text-align: center;
 }
 
 .anim-show {
@@ -148,6 +149,10 @@ h1 {
   -o-transform: translate(-50%, -50%) !important;
 }
 
+.ant-spin-fullscreen {
+  z-index: 1500;
+}
+
 .ant-steps {
   height: 70vh;
 }
@@ -252,6 +257,11 @@ h1 {
     position: absolute;
     left: 1em;
   }
+}
+
+.ant-modal .ant-picker-dropdown {
+  position: static;
+  margin-top: 2em;
 }
 
 @keyframes progress {
