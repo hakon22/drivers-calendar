@@ -1,18 +1,26 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  Modal, Result, Button, Form, Progress, Spin,
+  Modal, Result, Button, Form, Progress, Spin, DatePicker,
 } from 'antd';
-import { useContext, useState, useEffect } from 'react';
+import type { DatePickerProps } from 'antd';
+import type { Dayjs } from 'dayjs';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchConfirmCode } from '@/slices/userSlice';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
+import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers';
 import VerificationInput from 'react-verification-input';
 import { ModalContext } from '@/components/Context';
 import type { ModalShowType } from '@/types/Modal';
 import { LoginButton } from '@/pages/welcome';
 import toast from '@/utilities/toast';
 import routes from '@/routes';
+import SortableItem from './SortableItem';
+import { UserModel } from '../../server/db/tables/Users';
 
 const ModalSignup = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.signup' });
@@ -68,6 +76,74 @@ const ModalRecovery = () => {
           </div>
         )}
       />
+    </Modal>
+  );
+};
+
+const ModalMakeSchedule = () => {
+  const { t } = useTranslation('translation', { keyPrefix: 'modals.makeSchedule' });
+  const { modalClose } = useContext(ModalContext);
+  const { users } = useAppSelector((state) => state.crew);
+  const [sortableUsers, setSortableUsers] = useState(users);
+  const [activeId, setActiveId] = useState(0);
+  const [page, setPage] = useState(0);
+  const ref = useRef(null);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over?.id && active.id !== over.id) {
+      setSortableUsers((items) => {
+        const oldIndex = items.indexOf(items.find((item) => item.id === active.id) as UserModel);
+        const newIndex = items.indexOf(items.find((item) => item.id === over.id) as UserModel);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    setActiveId(+active.id);
+  };
+
+  const onFinish: DatePickerProps<Dayjs[]>['onChange'] = (date, dateString) => {
+    console.log(date, dateString);
+  };
+
+  return (
+    <Modal
+      centered
+      open
+      footer={null}
+      onCancel={modalClose}
+    >
+      <div className="my-4 d-flex flex-column gap-3" ref={ref}>
+        {!page ? (
+          <>
+            <div className="h1">{t('selectQueue')}</div>
+            <DndContext
+              onDragEnd={handleDragEnd}
+              onDragStart={handleDragStart}
+              modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
+            >
+              <SortableContext items={sortableUsers} strategy={verticalListSortingStrategy}>
+                <ul className="d-flex flex-column gap-2 ps-0">
+                  {sortableUsers.map((user, index) => <SortableItem user={user} key={user.id} index={index + 1} activeId={activeId} />)}
+                </ul>
+              </SortableContext>
+            </DndContext>
+            <Button className="col-4 mx-auto mt-3 button" onClick={() => setPage(1)}>
+              {t('next')}
+            </Button>
+          </>
+        ) : (
+          <>
+            <DatePicker onChange={onFinish} needConfirm open={!!page} getPopupContainer={ref?.current ? ref.current : <div /> as HTMLElement} />
+            <Button className="col-4 mx-auto mt-3 button" onClick={() => setPage(0)}>
+              {t('next')}
+            </Button>
+          </>
+        )}
+      </div>
     </Modal>
   );
 };
@@ -164,6 +240,7 @@ const Modals = () => {
     none: null,
     signup: <ModalSignup />,
     recovery: <ModalRecovery />,
+    makeSchedule: <ModalMakeSchedule />,
     activation: setState ? <ModalConfirmPhone setState={setState} /> : null,
   };
 

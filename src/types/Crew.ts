@@ -7,8 +7,8 @@ import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
 export type CrewInitialState = InitialState & {
   id?: number;
   schedule?: CrewScheduleEnum;
-  schedule_schema?: ScheduleSchemaType;
-  users?: UserModel[];
-  cars?: CarModel[];
+  schedule_schema: ScheduleSchemaType;
+  users: UserModel[];
+  cars: CarModel[];
   [key: string]: string | number | null | undefined | UserModel[] | CarModel[] | ScheduleSchemaType;
 };

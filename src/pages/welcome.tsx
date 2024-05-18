@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useContext } from 'react';
+import { AuthContext } from '@/components/Context';
 import routes from '@/routes';
 import pineapple from '../images/pineapple.svg';
 import Helmet from '../components/Helmet';
@@ -32,8 +34,9 @@ LoginButton.defaultProps = {
 const Welcome = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'welcome' });
   const router = useRouter();
+  const { loggedIn } = useContext(AuthContext);
 
-  return (
+  return !loggedIn && (
     <div className="d-flex justify-content-center anim-show">
       <Helmet title={t('title')} description={t('description')} />
       <div className="my-5 col-12 d-flex flex-column align-items-center gap-5">

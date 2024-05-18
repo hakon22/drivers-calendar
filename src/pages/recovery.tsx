@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { PhoneOutlined } from '@ant-design/icons';
 import { Button, Form } from 'antd';
 import { useContext } from 'react';
-import { ModalContext, SubmitContext } from '@/components/Context';
+import { ModalContext, SubmitContext, AuthContext } from '@/components/Context';
 import { loginValidation } from '@/validations/validations';
 import routes from '@/routes';
 import Helmet from '@/components/Helmet';
@@ -26,6 +26,7 @@ const Recovery = () => {
   const [form] = Form.useForm();
   const { modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
+  const { loggedIn } = useContext(AuthContext);
 
   const onFinish = async (values: RecoveryType) => {
     try {
@@ -42,7 +43,7 @@ const Recovery = () => {
     }
   };
 
-  return (
+  return !loggedIn && (
     <div className="d-flex justify-content-center anim-show">
       <Helmet title={t('title')} description={t('description')} />
       <BackButton title={t('prev')} />

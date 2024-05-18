@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { LockOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
 import { loginValidation } from '@/validations/validations';
-import { SubmitContext } from '@/components/Context';
+import { AuthContext, SubmitContext } from '@/components/Context';
 import routes from '@/routes';
 import BackButton from '@/components/BackButton';
 import Helmet from '@/components/Helmet';
@@ -26,6 +26,7 @@ const Login = () => {
 
   const [form] = Form.useForm();
   const { setIsSubmit } = useContext(SubmitContext);
+  const { loggedIn } = useContext(AuthContext);
 
   const onFinish = async (values: LoginType) => {
     setIsSubmit(true);
@@ -38,7 +39,7 @@ const Login = () => {
     setIsSubmit(false);
   };
 
-  return (
+  return !loggedIn && (
     <div className="d-flex justify-content-center anim-show">
       <Helmet title={t('title')} description={t('description')} />
       <BackButton title={t('prev')} />

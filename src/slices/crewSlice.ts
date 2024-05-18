@@ -29,6 +29,9 @@ export const fetchMakeSchedule = createAsyncThunk(
 export const initialState: { [K in keyof CrewInitialState]: CrewInitialState[K] } = {
   loadingStatus: 'idle',
   error: null,
+  users: [],
+  cars: [],
+  schedule_schema: {},
 };
 
 const crewSlice = createSlice({

@@ -241,6 +241,19 @@ h1 {
   }
 }
 
+.sortable-item {
+  touch-action: none;
+  padding: 0.8em 1em;
+  box-shadow: 0 0 0 calc(1px) rgba(63, 63, 68, 0.05), 0 1px calc(3px) 0 rgba(34, 33, 81, 0.15);
+  font-size: 1rem;
+  border-radius: calc(4px);
+
+  & span:first-child {
+    position: absolute;
+    left: 1em;
+  }
+}
+
 @keyframes progress {
 	0% { width: 100%;	}
 	100% { width: 0%;	}

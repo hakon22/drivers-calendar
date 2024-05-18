@@ -123,6 +123,10 @@ export default {
         sendAgain: 'Отправить код еще раз',
         loading: 'Проверка...',
       },
+      makeSchedule: {
+        selectQueue: 'Выберите порядок расстановки',
+        next: 'Далее',
+      },
     },
   },
 } as const;

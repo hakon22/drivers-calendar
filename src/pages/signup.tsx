@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import Helmet from '@/components/Helmet';
 import UserSignup, { type UserSignupType } from '@/components/forms/UserSignup';
 import CarSignup, { type CarSignupType } from '@/components/forms/CarSignup';
-import { ModalContext, SubmitContext } from '@/components/Context';
+import { ModalContext, SubmitContext, AuthContext } from '@/components/Context';
 import routes from '@/routes';
 import BackButton from '@/components/BackButton';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
@@ -22,6 +22,7 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
 
   const { modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
+  const { loggedIn } = useContext(AuthContext);
 
   const initialUserValues = {
     phone: '',
@@ -67,7 +68,7 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
     }
   }, [asPath]);
 
-  return (
+  return !loggedIn && (
     <Form.Provider
       onFormFinish={async (name, { forms: currentForms }) => {
         if (name === 'car-signup') {
