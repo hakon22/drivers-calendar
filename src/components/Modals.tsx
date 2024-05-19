@@ -4,6 +4,7 @@ import {
   Modal, Result, Button, Form, Progress, Spin, DatePicker,
 } from 'antd';
 import type { DatePickerProps } from 'antd';
+import { PhoneOutlined } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 import {
   useContext, useState, useEffect, useRef,
@@ -17,14 +18,19 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-ki
 import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers';
 import VerificationInput from 'react-verification-input';
 import locale from '@/locales/pickers.locale.RU';
-import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
+import {
+  ApiContext, ModalContext, NavbarContext, SubmitContext,
+} from '@/components/Context';
 import type { ModalShowType } from '@/types/Modal';
+import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import { LoginButton } from '@/pages/welcome';
 import toast from '@/utilities/toast';
 import routes from '@/routes';
-import { fetchMakeSchedule } from '@/slices/crewSlice';
+import axios from 'axios';
 import SortableItem from './SortableItem';
 import { UserModel } from '../../server/db/tables/Users';
+import { loginValidation } from '@/validations/validations';
+import MaskedInput from './forms/MaskedInput';
 
 const ModalSignup = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.signup' });
@@ -86,15 +92,20 @@ const ModalRecovery = () => {
 
 const ModalMakeSchedule = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.makeSchedule' });
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
+
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
   const { setIsActive } = useContext(NavbarContext);
-  const dispatch = useAppDispatch();
+  const { makeSchedule } = useContext(ApiContext);
+
   const { token } = useAppSelector((state) => state.user);
   const { users } = useAppSelector((state) => state.crew);
+
   const [sortableUsers, setSortableUsers] = useState(users);
   const [activeId, setActiveId] = useState(0);
   const [page, setPage] = useState(0);
+
   const ref = useRef<HTMLDivElement>(null);
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -114,14 +125,24 @@ const ModalMakeSchedule = () => {
   };
 
   const onFinish: DatePickerProps<Dayjs[]>['onChange'] = async (date, startDate) => {
-    if (!Array.isArray(startDate)) {
-      setIsSubmit(true);
-      const { payload: { code } } = await dispatch(fetchMakeSchedule({ token, startDate, users: sortableUsers }));
-      if (code) {
-        modalClose();
-        setIsActive(false);
-        setIsSubmit(false);
+    try {
+      if (!Array.isArray(startDate)) {
+        setIsSubmit(true);
+        const { data } = await axios.post(routes.makeSchedule, { startDate, users: sortableUsers }, {
+          headers: { Authorization: `Bearer ${token}` },
+        }) as { data: { code: number } };
+        if (data.code === 1) {
+          makeSchedule(data);
+          modalClose();
+          setIsActive(false);
+          setIsSubmit(false);
+        } else {
+          toast(tToast('crewNotExists'), 'error');
+          setIsSubmit(false);
+        }
       }
+    } catch (e) {
+      axiosErrorHandler(e, tToast);
     }
   };
 
@@ -169,6 +190,59 @@ const ModalMakeSchedule = () => {
             </Button>
           </>
         )}
+      </div>
+    </Modal>
+  );
+};
+
+const ModalInviteReplacement = () => {
+  const { t } = useTranslation('translation', { keyPrefix: 'modals.inviteReplacement' });
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
+
+  const { modalClose } = useContext(ModalContext);
+  const { setIsSubmit } = useContext(SubmitContext);
+  const { setIsActive } = useContext(NavbarContext);
+  const { makeSchedule } = useContext(ApiContext);
+
+  const { token } = useAppSelector((state) => state.user);
+  const { users } = useAppSelector((state) => state.crew);
+
+  const onFinish = async ({ phone }: { phone: string }) => {
+    if (!Array.isArray(startDate)) {
+      setIsSubmit(true);
+      const { data } = await axios.post(routes.makeSchedule, { startDate, users: sortableUsers }, {
+        headers: { Authorization: `Bearer ${token}` },
+      }) as { data: { code: number } };
+      if (data.code === 1) {
+        makeSchedule(data);
+        modalClose();
+        setIsActive(false);
+        setIsSubmit(false);
+      } else {
+        toast(tToast('crewNotExists'), 'error');
+        setIsSubmit(false);
+      }
+    }
+  };
+
+  return (
+    <Modal
+      centered
+      open
+      footer={null}
+      onCancel={modalClose}
+    >
+      <div className="col-10 my-4 d-flex flex-column align-items-center gap-3">
+        <Form name="recovery" onFinish={onFinish}>
+          <Form.Item<{ phone: string }> name="phone" rules={[loginValidation]}>
+            <MaskedInput mask="+7 (000) 000-00-00" className="button-height" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
+          </Form.Item>
+          <div className="d-flex col-12">
+            <Button type="primary" htmlType="submit" className="w-100 button">
+              {t('submitButton')}
+            </Button>
+          </div>
+        </Form>
       </div>
     </Modal>
   );
@@ -267,6 +341,7 @@ const Modals = () => {
     signup: <ModalSignup />,
     recovery: <ModalRecovery />,
     makeSchedule: <ModalMakeSchedule />,
+    inviteReplacement: <ModalInviteReplacement />,
     activation: setState ? <ModalConfirmPhone setState={setState} /> : null,
   };
 

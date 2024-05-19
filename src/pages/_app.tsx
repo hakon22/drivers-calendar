@@ -5,7 +5,9 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/navigation';
 import { io } from 'socket.io-client';
-import { useCallback, useMemo, useState } from 'react';
+import {
+  useCallback, useEffect, useMemo, useState,
+} from 'react';
 import { Provider } from 'react-redux';
 import { I18nextProvider } from 'react-i18next';
 import { ToastContainer } from 'react-toastify';
@@ -14,6 +16,7 @@ import {
   ApiContext, AuthContext, ModalContext, ScrollContext, SubmitContext, NavbarContext,
 } from '@/components//Context';
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
+import { soketMakeSchedule } from '@/slices/crewSlice';
 import routes from '@/routes';
 import { removeToken } from '@/slices/userSlice';
 import favicon from '../images/favicon.ico';
@@ -66,15 +69,17 @@ const Init = (props: AppProps) => {
 
   const socket = io(process.env.NODE_ENV === 'development' ? '' : process.env.NEXT_PUBLIC_SOCKET_HOST ?? '');
 
+  useEffect(() => {
+    socket.on('makeSchedule', (data) => dispatch(soketMakeSchedule(data)));
+  }, []);
+
   const socketConnect = useCallback((param: string, arg: unknown) => {
     socket.emit(param, arg);
   }, [socket]);
 
   const socketApi = useMemo(() => ({
-    test: (data: unknown) => socketConnect('test', data),
+    makeSchedule: (data: unknown) => socketConnect('makeSchedule', data),
   }), [socketConnect]);
-
-  // socket.on('test', (data) => dispatch(test(data)));
 
   const authServices = useMemo(() => ({ loggedIn, logIn, logOut }), [loggedIn]);
   const modalServices = useMemo(() => ({ show, modalOpen, modalClose }), [show]);

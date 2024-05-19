@@ -14,7 +14,9 @@ const NavBar = () => {
   const className = cn('menu-btn', { active: isActive });
 
   const onChangeHandler = () => setIsActive(!isActive);
-  const onChangePickerHandler = () => modalOpen('makeSchedule');
+
+  const scheduleHandler = () => modalOpen('makeSchedule');
+  const inviteReplacementHandler = () => modalOpen('inviteReplacement');
   const container = useRef(null);
 
   return (
@@ -32,10 +34,10 @@ const NavBar = () => {
         open={isActive}
       >
         <div className="d-flex flex-column gap-3">
-          <Button className="w-100 button button-height" onClick={onChangePickerHandler}>
+          <Button className="w-100 button button-height" onClick={scheduleHandler}>
             {t('buttons.makeSchedule')}
           </Button>
-          <Button className="w-100 button button-height">
+          <Button className="w-100 button button-height" onClick={inviteReplacementHandler}>
             {t('buttons.inviteReplacement')}
           </Button>
           <Button className="w-100 button button-height">

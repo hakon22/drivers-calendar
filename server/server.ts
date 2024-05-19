@@ -37,7 +37,7 @@ app.prepare().then(() => {
   const io = new Server(socketServer);
 
   io.on('connection', (socket) => {
-    socket.on('test', (data) => io.emit('test', data));
+    socket.on('makeSchedule', (data) => io.emit('makeSchedule', data));
   });
 
   server.all('*', (req, res) => handle(req, res));

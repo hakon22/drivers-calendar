@@ -100,6 +100,7 @@ export default {
       authError: 'Ошибка аутентификации',
       userAlreadyExists: 'Данный номер телефона уже зарегистрирован',
       carAlreadyExists: 'Вызывной или инвентарный уже существует',
+      crewNotExists: 'Экипаж не существует',
     },
     modals: {
       signup: {
