@@ -16,5 +16,5 @@ export type InitialStateType = InitialState & {
   key?: string;
   role?: string;
   color?: string,
-  [key: string]: number[] | string | number | null | undefined;
+  [key: string]: number[] | string[] | string | number | null | undefined;
 };

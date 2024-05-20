@@ -90,6 +90,7 @@ export default {
       timeNotOver: 'Время повторной отправки СМС не подошло',
       incorrectColor: 'Неверное значение цвета',
       incorrectSchedule: 'Некорректный график',
+      userInCrew: 'Пользователь уже состоит в экипаже',
     },
     toast: {
       sendSmsSuccess: 'СМС успешно отправлено',
@@ -101,6 +102,7 @@ export default {
       userAlreadyExists: 'Данный номер телефона уже зарегистрирован',
       carAlreadyExists: 'Вызывной или инвентарный уже существует',
       crewNotExists: 'Экипаж не существует',
+      userInYouCrew: 'Пользователь уже в вашем экипаже!',
     },
     modals: {
       signup: {
@@ -129,6 +131,18 @@ export default {
         selectDate: 'Выберите дату начала',
         next: 'Далее',
         back: 'Назад',
+      },
+      inviteReplacement: {
+        submitButton: 'Выслать приглашение',
+        title: 'Приглашение отправлено!',
+        subTitle: 'Высланный пароль действует 24 часа',
+        back: 'Вернуться в календарь',
+      },
+      acceptInvite: {
+        start: 'Старт!',
+        username: 'Имя',
+        color: 'Цвет рабочих смен',
+        colorTooltip: 'Этим цветом будут отображаться ваши рабочие смены на календаре',
       },
     },
   },

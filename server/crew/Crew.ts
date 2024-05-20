@@ -4,13 +4,19 @@
 /* eslint-disable camelcase */
 import { Request, Response } from 'express';
 import dayjs, { type Dayjs } from 'dayjs';
+import bcrypt from 'bcryptjs';
+import { phoneValidation } from '@/validations/validations';
 import type { PassportRequest } from '../db/tables/Users';
 import Crews, { CrewModel } from '../db/tables/Crews';
 import Users from '../db/tables/Users';
 import Cars from '../db/tables/Cars';
 import { ScheduleSchemaType } from '../types/crew/ScheduleSchemaType';
+import phoneTransform from '../utilities/phoneTransform';
+import Sms from '../sms/Sms';
+import Auth from '../authentication/Auth';
+import redis from '../db/redis';
 
-const generateScheduleSchema = (startDate: dayjs.Dayjs, numDays: number, users: CrewModel['users']) => {
+const generateScheduleSchema = (startDate: Dayjs, numDays: number, users: CrewModel['users']) => {
   const schedule: ScheduleSchemaType = {};
   if (!users) return schedule;
 
@@ -54,7 +60,7 @@ class Crew {
           { model: Cars, as: 'cars' }],
       });
       if (!crew) {
-        return res.json({ code: 2 });
+        throw new Error('Экипаж не существует');
       }
       return res.json({ code: 1, crew });
     } catch (e) {
@@ -69,11 +75,43 @@ class Crew {
       const { startDate, users } = req.body;
       const crew = await Crews.findByPk(crewId);
       if (!crew) {
-        return res.json({ code: 2 });
+        throw new Error('Экипаж не существует');
       }
       const scheduleSchema = generateScheduleSchema(dayjs(startDate), 500, users);
       await Crews.update({ schedule_schema: scheduleSchema }, { where: { id: crew.id } });
       return res.json({ code: 1, scheduleSchema });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async inviteReplacement(req: Request, res: Response) {
+    try {
+      await phoneValidation.serverValidator(req.body.phone);
+      req.body.phone = phoneTransform(req.body.phone);
+      const { phone } = req.body.phone;
+      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const crew = await Crews.findByPk(crewId);
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      const users = await Users.findAll();
+      const candidate = users.find((user) => user.phone === phone);
+      if (candidate) {
+        if (candidate.crewId) {
+          return res.json({ code: 2 });
+        }
+        // уведомление существующему пользователю
+      } else {
+        const password = await Sms.sendPass(phone);
+        const role = Auth.adminPhone.includes(phone) ? 'admin' : 'member';
+        await redis.setEx(phone, 86400, JSON.stringify({
+          phone, password: bcrypt.hashSync(password, 10), role, crewId,
+        }));
+      }
+      return res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

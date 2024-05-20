@@ -101,13 +101,18 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchTokenStorage.fulfilled, (state, { payload }
-        : PayloadAction<{ code: number, user: User }>) => {
+        : PayloadAction<{ code: number, user: User, crew?: { users: string[], cars: string[] }, phone: string }>) => {
         if (payload.code === 1) {
           if (window.localStorage.getItem(storageKey)) {
             window.localStorage.setItem(storageKey, payload.user.refreshToken);
           }
           const entries = Object.entries(payload.user);
           entries.forEach(([key, value]) => { state[key] = value; });
+        }
+        if (payload.code === 4 && payload.crew) {
+          state.users = payload.crew.users;
+          state.cars = payload.crew.cars;
+          state.phone = payload.phone;
         }
         state.loadingStatus = 'finish';
         state.error = null;

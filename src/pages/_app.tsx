@@ -51,6 +51,8 @@ const Init = (props: AppProps) => {
     setLoggedIn(false);
   }, [id]);
 
+  const closeNavbar = () => setIsActive(false);
+
   const [show, setShow] = useState<ModalShowType | ModalShowObjectType>('none'); // modals
   const modalOpen = (arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>) => (modalSetState ? setShow({ show: arg, modalSetState }) : setShow(arg));
   const modalClose = () => setShow('none');
@@ -85,7 +87,7 @@ const Init = (props: AppProps) => {
   const modalServices = useMemo(() => ({ show, modalOpen, modalClose }), [show]);
   const scrollServices = useMemo(() => ({ scrollBar, setMarginScroll }), [scrollBar]);
   const submitServices = useMemo(() => ({ isSubmit, setIsSubmit }), [isSubmit]);
-  const navbarServices = useMemo(() => ({ isActive, setIsActive }), [isActive]);
+  const navbarServices = useMemo(() => ({ isActive, setIsActive, closeNavbar }), [isActive]);
 
   return (
     <I18nextProvider i18n={i18n}>

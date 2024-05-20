@@ -16,6 +16,7 @@ router.post(`${apiPath}/auth/login`, Auth.login);
 router.post(`${apiPath}/auth/recoveryPassword`, Auth.recoveryPassword);
 router.post(`${apiPath}/auth/logout`, Auth.logout);
 router.get(`${apiPath}/auth/updateTokens`, passport.authenticate('jwt-refresh', { session: false }), Auth.updateTokens);
+router.post(`${apiPath}/auth/inviteSignup`, Auth.inviteSignup);
 
 // car
 router.get(`${apiPath}/car/fetchBrands`, Car.fetchBrands);
@@ -27,5 +28,6 @@ router.post(`${apiPath}/auth/confirmPhone`, Auth.confirmPhone);
 // crew
 router.get(`${apiPath}/crew/fetchCrew`, jwtToken, Crew.fetchCrew);
 router.post(`${apiPath}/crew/makeSchedule`, jwtToken, Crew.makeSchedule);
+router.post(`${apiPath}/crew/inviteReplacement`, jwtToken, Crew.inviteReplacement);
 
 export default router;

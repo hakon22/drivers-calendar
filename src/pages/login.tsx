@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { LockOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
 import { loginValidation } from '@/validations/validations';
-import { AuthContext, SubmitContext } from '@/components/Context';
+import { AuthContext, ModalContext, SubmitContext } from '@/components/Context';
 import routes from '@/routes';
 import BackButton from '@/components/BackButton';
 import Helmet from '@/components/Helmet';
@@ -26,6 +26,7 @@ const Login = () => {
 
   const [form] = Form.useForm();
   const { setIsSubmit } = useContext(SubmitContext);
+  const { modalOpen } = useContext(ModalContext);
   const { loggedIn } = useContext(AuthContext);
 
   const onFinish = async (values: LoginType) => {
@@ -35,6 +36,8 @@ const Login = () => {
       form.setFields([{ name: 'password', errors: [tValidation('incorrectPassword')] }]);
     } else if (code === 3) {
       form.setFields([{ name: 'phone', errors: [tValidation('userNotAlreadyExists')] }]);
+    } else if (code === 4) {
+      modalOpen('acceptInvite');
     }
     setIsSubmit(false);
   };

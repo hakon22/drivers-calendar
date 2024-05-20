@@ -1,4 +1,10 @@
-export type ModalShowType = 'none' | 'activation' | 'signup' | 'recovery' | 'makeSchedule' | 'inviteReplacement';
+export type ModalShowType = 'none'
+  | 'activation'
+  | 'signup'
+  | 'recovery'
+  | 'makeSchedule'
+  | 'inviteReplacement'
+  | 'acceptInvite';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

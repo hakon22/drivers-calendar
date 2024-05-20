@@ -19,6 +19,7 @@ export default {
   logout: [apiPath, 'auth', 'logout'].join('/'),
   recoveryPassword: [apiPath, 'auth', 'recoveryPassword'].join('/'),
   updateTokens: [apiPath, 'auth', 'updateTokens'].join('/'),
+  inviteSignup: [apiPath, 'auth', 'inviteSignup'].join('/'),
   // car
   fetchBrands: [serverHost, apiPath, 'car', 'fetchBrands'].join('/'),
   getModels: [apiPath, 'car', 'getModels'].join('/'),
@@ -27,4 +28,5 @@ export default {
   // index
   fetchCrew: [apiPath, 'crew', 'fetchCrew'].join('/'),
   makeSchedule: [apiPath, 'crew', 'makeSchedule'].join('/'),
+  inviteReplacement: [apiPath, 'crew', 'inviteReplacement'].join('/'),
 } as ApiUrl;

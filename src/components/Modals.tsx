@@ -2,15 +2,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Modal, Result, Button, Form, Progress, Spin, DatePicker,
+  Input, ColorPicker,
 } from 'antd';
 import type { DatePickerProps } from 'antd';
-import { PhoneOutlined } from '@ant-design/icons';
+import { PhoneOutlined, UserOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Color } from 'antd/es/color-picker';
 import type { Dayjs } from 'dayjs';
 import {
   useContext, useState, useEffect, useRef,
 } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchConfirmCode } from '@/slices/userSlice';
+import { fetchConfirmCode, fetchLogin } from '@/slices/userSlice';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
@@ -25,12 +27,13 @@ import type { ModalShowType } from '@/types/Modal';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import { LoginButton } from '@/pages/welcome';
 import toast from '@/utilities/toast';
+import { loginValidation, userValidation } from '@/validations/validations';
 import routes from '@/routes';
 import axios from 'axios';
 import SortableItem from './SortableItem';
 import { UserModel } from '../../server/db/tables/Users';
-import { loginValidation } from '@/validations/validations';
 import MaskedInput from './forms/MaskedInput';
+import phoneTransform from '../../server/utilities/phoneTransform';
 
 const ModalSignup = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.signup' });
@@ -96,7 +99,7 @@ const ModalMakeSchedule = () => {
 
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
-  const { setIsActive } = useContext(NavbarContext);
+  const { closeNavbar } = useContext(NavbarContext);
   const { makeSchedule } = useContext(ApiContext);
 
   const { token } = useAppSelector((state) => state.user);
@@ -134,12 +137,9 @@ const ModalMakeSchedule = () => {
         if (data.code === 1) {
           makeSchedule(data);
           modalClose();
-          setIsActive(false);
-          setIsSubmit(false);
-        } else {
-          toast(tToast('crewNotExists'), 'error');
-          setIsSubmit(false);
+          closeNavbar();
         }
+        setIsSubmit(false);
       }
     } catch (e) {
       axiosErrorHandler(e, tToast);
@@ -198,31 +198,44 @@ const ModalMakeSchedule = () => {
 const ModalInviteReplacement = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.inviteReplacement' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
+  const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
+
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
-  const { setIsActive } = useContext(NavbarContext);
-  const { makeSchedule } = useContext(ApiContext);
+  const { closeNavbar } = useContext(NavbarContext);
 
   const { token } = useAppSelector((state) => state.user);
   const { users } = useAppSelector((state) => state.crew);
 
-  const onFinish = async ({ phone }: { phone: string }) => {
-    if (!Array.isArray(startDate)) {
+  const [form] = Form.useForm();
+
+  const onFinish = async (value: { phone: string }) => {
+    try {
       setIsSubmit(true);
-      const { data } = await axios.post(routes.makeSchedule, { startDate, users: sortableUsers }, {
-        headers: { Authorization: `Bearer ${token}` },
-      }) as { data: { code: number } };
-      if (data.code === 1) {
-        makeSchedule(data);
-        modalClose();
-        setIsActive(false);
-        setIsSubmit(false);
+      if (users.find((user) => user.phone === phoneTransform(value.phone))) {
+        toast(tToast('userInYouCrew'), 'error');
+        form.setFields([{ name: 'phone', errors: [tValidation('userInCrew')] }]);
       } else {
-        toast(tToast('crewNotExists'), 'error');
-        setIsSubmit(false);
+        const { data: { code } } = await axios.post(routes.recoveryPassword, value, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (code === 1) {
+          setIsSuccess(true);
+        } else if (code === 2) {
+          form.setFields([{ name: 'phone', errors: [tValidation('userInCrew')] }]);
+        }
       }
+      setIsSubmit(false);
+    } catch (e) {
+      axiosErrorHandler(e, tToast);
     }
+  };
+
+  const back = () => {
+    modalClose();
+    closeNavbar();
   };
 
   return (
@@ -232,18 +245,87 @@ const ModalInviteReplacement = () => {
       footer={null}
       onCancel={modalClose}
     >
-      <div className="col-10 my-4 d-flex flex-column align-items-center gap-3">
-        <Form name="recovery" onFinish={onFinish}>
-          <Form.Item<{ phone: string }> name="phone" rules={[loginValidation]}>
-            <MaskedInput mask="+7 (000) 000-00-00" className="button-height" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
-          </Form.Item>
-          <div className="d-flex col-12">
-            <Button type="primary" htmlType="submit" className="w-100 button">
-              {t('submitButton')}
-            </Button>
-          </div>
-        </Form>
-      </div>
+      {isSuccess ? (
+        <Result
+          status="success"
+          title={t('title')}
+          subTitle={t('subTitle')}
+          extra={(
+            <div className="col-9 d-flex mx-auto">
+              <LoginButton title={t('back')} className="button button-height w-100" onClick={back} />
+            </div>
+        )}
+        />
+      ) : (
+        <div className="col-10 my-4 d-flex flex-column align-items-center gap-3">
+          <Form name="inviteReplacement" onFinish={onFinish} form={form}>
+            <Form.Item<{ phone: string }> name="phone" rules={[loginValidation]}>
+              <MaskedInput mask="+7 (000) 000-00-00" className="button-height" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
+            </Form.Item>
+            <div className="d-flex col-12">
+              <Button type="primary" htmlType="submit" className="w-100 button">
+                {t('submitButton')}
+              </Button>
+            </div>
+          </Form>
+        </div>
+      )}
+    </Modal>
+  );
+};
+
+const ModalAcceptInvite = () => {
+  type UserSignupType = {
+    username: string;
+    color: string | Color;
+  };
+
+  const { t } = useTranslation('translation', { keyPrefix: 'modals.acceptInvite' });
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
+  const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
+
+  const dispatch = useAppDispatch();
+
+  const { setIsSubmit } = useContext(SubmitContext);
+
+  const { users, cars } = useAppSelector((state) => state.user);
+
+  const [form] = Form.useForm();
+
+  const onFinish = async (values: UserSignupType) => {
+    try {
+      setIsSubmit(true);
+      const { data: { code } } = await axios.post(routes.inviteSignup, values);
+      if (code === 1) {
+        await dispatch(fetchLogin(values));
+      } else if (code === 2) {
+        form.setFields([{ name: 'phone', errors: [tValidation('userInCrew')] }]);
+      }
+      setIsSubmit(false);
+    } catch (e) {
+      axiosErrorHandler(e, tToast);
+    }
+  };
+
+  return (
+    <Modal
+      centered
+      open
+      footer={null}
+    >
+      <Form name="user-signup" form={form} className="signup-form" onFinish={onFinish}>
+        <Form.Item<UserSignupType> name="username" rules={[userValidation]} required>
+          <Input size="large" prefix={<UserOutlined className="site-form-item-icon" />} placeholder={t('username')} />
+        </Form.Item>
+        <Form.Item<UserSignupType> name="color" tooltip={{ title: t('colorTooltip'), icon: <QuestionCircleOutlined /> }} rules={[userValidation]} label={t('color')} required>
+          <ColorPicker size="large" className="border-button" disabledAlpha />
+        </Form.Item>
+        <div className="mt-5 d-flex justify-content-center">
+          <Button className="col-10 button-height button" htmlType="submit">
+            {t('start')}
+          </Button>
+        </div>
+      </Form>
     </Modal>
   );
 };
@@ -342,6 +424,7 @@ const Modals = () => {
     recovery: <ModalRecovery />,
     makeSchedule: <ModalMakeSchedule />,
     inviteReplacement: <ModalInviteReplacement />,
+    acceptInvite: <ModalAcceptInvite />,
     activation: setState ? <ModalConfirmPhone setState={setState} /> : null,
   };
 

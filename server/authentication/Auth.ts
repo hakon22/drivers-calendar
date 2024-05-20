@@ -19,9 +19,9 @@ import Crews from '../db/tables/Crews.js';
 import { generateAccessToken, generateRefreshToken } from './tokensGen.js';
 import { upperCase } from '../utilities/textTransform.js';
 
-const adminPhone = ['+79999999999'];
-
 class Auth {
+  public adminPhone = ['+79999999999'];
+
   async signup(req: Request, res: Response) {
     try {
       const { user, car } = req.body as { user: UserSignupType, car: CarType };
@@ -51,7 +51,7 @@ class Auth {
 
       const password = await Sms.sendPass(user.phone);
 
-      const role = adminPhone.includes(user.phone) ? 'admin' : 'member';
+      const role = this.adminPhone.includes(user.phone) ? 'admin' : 'member';
 
       await Crews.create({
         schedule,
@@ -85,31 +85,110 @@ class Auth {
       const { phone, password } = req.body;
       await phoneValidation.serverValidator({ phone });
       const user = await Users.findOne({ where: { phone } });
-      if (!user) {
+      const cacheData = await redis.get(phone);
+      if (!user && !cacheData) {
         return res.json({ code: 3 });
       }
-      const isValidPassword = bcrypt.compareSync(password, user.password);
-      if (!isValidPassword) {
-        return res.json({ code: 2 });
+      if (cacheData) { // если пришёл по приглашению
+        const candidate: { phone: string, password: string, role: string, crewId: number } = JSON.parse(cacheData);
+        const isValidPassword = bcrypt.compareSync(password, candidate.password);
+        if (!isValidPassword) {
+          return res.json({ code: 2 });
+        }
+        const crew = await Crews.findByPk(
+          candidate.crewId,
+          {
+            include: [
+              { attributes: ['username'], model: Users, as: 'users' },
+              { attributes: ['model', 'brand', 'inventory', 'call'], model: Cars, as: 'cars' },
+            ],
+          },
+        );
+        return res.json({
+          code: 4, crew, phone, password,
+        });
       }
-      const token = generateAccessToken(user.id, user.phone);
-      const refreshToken = generateRefreshToken(user.id, user.phone);
-      const {
-        id, username, role, refresh_token, crewId,
-      } = user;
+      if (user) {
+        const isValidPassword = bcrypt.compareSync(password, user.password);
+        if (!isValidPassword) {
+          return res.json({ code: 2 });
+        }
+        const token = generateAccessToken(user.id, user.phone);
+        const refreshToken = generateRefreshToken(user.id, user.phone);
+        const {
+          id, username, role, refresh_token, crewId,
+        } = user;
 
-      if (refresh_token.length < 4) {
-        refresh_token.push(refreshToken);
-        await Users.update({ refresh_token }, { where: { phone } });
-      } else {
-        await Users.update({ refresh_token: [refreshToken] }, { where: { phone } });
+        if (refresh_token.length < 4) {
+          refresh_token.push(refreshToken);
+          await Users.update({ refresh_token }, { where: { phone } });
+        } else {
+          await Users.update({ refresh_token: [refreshToken] }, { where: { phone } });
+        }
+        res.status(200).send({
+          code: 1,
+          user: {
+            token, refreshToken, username, role, id, phone, crewId,
+          },
+        });
       }
-      res.status(200).send({
-        code: 1,
-        user: {
-          token, refreshToken, username, role, id, phone, crewId,
-        },
-      });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async inviteSignup(req: Request, res: Response) {
+    try {
+      req.body.phone = phoneTransform(req.body.phone);
+      const { phone, password } = req.body;
+      await phoneValidation.serverValidator({ phone });
+      const user = await Users.findOne({ where: { phone } });
+      const cacheData = await redis.get(phone);
+      if (!user && !cacheData) {
+        return res.json({ code: 3 });
+      }
+      if (cacheData) { // если пришёл по приглашению
+        const candidate: { phone: string, password: string, role: string, crewId: number } = JSON.parse(cacheData);
+        const isValidPassword = bcrypt.compareSync(password, candidate.password);
+        if (!isValidPassword) {
+          return res.json({ code: 2 });
+        }
+        const crew = await Crews.findByPk(
+          candidate.crewId,
+          {
+            include: [
+              { attributes: ['username'], model: Users, as: 'users' },
+              { attributes: ['model', 'brand', 'inventory', 'call'], model: Cars, as: 'cars' },
+            ],
+          },
+        );
+        return res.json({ code: 4, crew, phone });
+      }
+      if (user) {
+        const isValidPassword = bcrypt.compareSync(password, user.password);
+        if (!isValidPassword) {
+          return res.json({ code: 2 });
+        }
+        const token = generateAccessToken(user.id, user.phone);
+        const refreshToken = generateRefreshToken(user.id, user.phone);
+        const {
+          id, username, role, refresh_token, crewId,
+        } = user;
+
+        if (refresh_token.length < 4) {
+          refresh_token.push(refreshToken);
+          await Users.update({ refresh_token }, { where: { phone } });
+        } else {
+          await Users.update({ refresh_token: [refreshToken] }, { where: { phone } });
+        }
+        res.status(200).send({
+          code: 1,
+          user: {
+            token, refreshToken, username, role, id, phone, crewId,
+          },
+        });
+      }
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
