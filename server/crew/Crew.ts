@@ -56,7 +56,7 @@ class Crew {
       const { dataValues: { crewId } } = req.user as PassportRequest;
       const crew = await Crews.findByPk(crewId, {
         include: [
-          { attributes: ['id', 'username', 'color'], model: Users, as: 'users' },
+          { attributes: ['id', 'username', 'color', 'phone'], model: Users, as: 'users' },
           { model: Cars, as: 'cars' }],
       });
       if (!crew) {
@@ -88,9 +88,9 @@ class Crew {
 
   async inviteReplacement(req: Request, res: Response) {
     try {
-      await phoneValidation.serverValidator(req.body.phone);
+      await phoneValidation.serverValidator(req.body);
       req.body.phone = phoneTransform(req.body.phone);
-      const { phone } = req.body.phone;
+      const { phone }: { phone: string } = req.body;
       const { dataValues: { crewId } } = req.user as PassportRequest;
       const crew = await Crews.findByPk(crewId);
       if (!crew) {

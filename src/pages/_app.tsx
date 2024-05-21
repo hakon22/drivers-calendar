@@ -37,6 +37,9 @@ const Init = (props: AppProps) => {
   const [isSubmit, setIsSubmit] = useState(false); // submit spinner
   const [isActive, setIsActive] = useState(false); // navbar
   const [loggedIn, setLoggedIn] = useState(false); // auth service
+
+  const closeNavbar = () => setIsActive(false);
+
   const logIn = () => {
     setLoggedIn(true);
     router.push(routes.homePage);
@@ -47,11 +50,12 @@ const Init = (props: AppProps) => {
       localStorage.removeItem(storageKey);
     }
     await axios.post(routes.logout, { id, refreshToken });
+    if (isActive) {
+      closeNavbar();
+    }
     dispatch(removeToken());
     setLoggedIn(false);
   }, [id]);
-
-  const closeNavbar = () => setIsActive(false);
 
   const [show, setShow] = useState<ModalShowType | ModalShowObjectType>('none'); // modals
   const modalOpen = (arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>) => (modalSetState ? setShow({ show: arg, modalSetState }) : setShow(arg));

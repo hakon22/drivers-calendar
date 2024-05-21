@@ -68,6 +68,22 @@ const userSchema = yup.object().shape({
     )),
 });
 
+const userInviteSchema = yup.object().shape({
+  phone: phoneSchema,
+  username: stringSchema
+    .trim()
+    .min(3)
+    .max(20),
+  color: yup
+    .lazy((value) => (typeof value === 'object'
+      ? yup.object()
+        .required()
+      : yup.string()
+        .required()
+        .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t('validation.incorrectColor'))
+    )),
+});
+
 const fuelConsumptionSchema = yup.object().shape({
   city: numberSchema,
   highway: numberSchema,
@@ -89,4 +105,5 @@ export const confirmCodeValidation = validate(confirmCodeSchema);
 export const phoneValidation = validate(confirmPhoneSchema);
 export const loginValidation = validate(loginSchema);
 export const userValidation = validate(userSchema);
+export const userInviteValidation = validate(userInviteSchema);
 export const carValidation = validate(carSchema);

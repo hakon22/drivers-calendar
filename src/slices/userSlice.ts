@@ -1,8 +1,11 @@
+/* eslint-disable no-param-reassign */
 import axios from 'axios';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { User } from '../types/User';
 import type { InitialStateType } from '../types/InitialState';
 import routes from '../routes';
+import { UserModel } from '../../server/db/tables/Users';
+import { CarModel } from '../../server/db/tables/Cars';
 
 type KeysInitialStateType = keyof InitialStateType;
 
@@ -12,6 +15,17 @@ export const fetchLogin = createAsyncThunk(
   'user/fetchLogin',
   async (data: { phone: string, password: string }) => {
     const response = await axios.post(routes.login, data);
+    return response.data;
+  },
+);
+
+export const fetchInviteSignup = createAsyncThunk(
+  'user/fetchInviteSignup',
+  async (data: { color: string, username: string, temporaryToken: string }) => {
+    const { temporaryToken, ...body } = data;
+    const response = await axios.post(routes.inviteSignup, body, {
+      headers: { Authorization: `Bearer ${temporaryToken}` },
+    });
     return response.data;
   },
 );
@@ -83,11 +97,18 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchLogin.fulfilled, (state, { payload }
-        : PayloadAction<{ code: number, user: User }>) => {
+        : PayloadAction<{ code: number, user: User, crew?: { users: UserModel[], cars: CarModel[] }, temporaryToken?: string }>) => {
         if (payload.code === 1) {
           const entries = Object.entries(payload.user);
           entries.forEach(([key, value]) => { state[key] = value; });
           window.localStorage.setItem(storageKey, payload.user.refreshToken);
+        }
+        if (payload.code === 4 && payload.crew && payload.temporaryToken) {
+          state.users = payload.crew.users.map(({ username }) => username).join(', ');
+          state.cars = payload.crew.cars.map(({
+            brand, model, inventory, call,
+          }) => `${brand} ${model} (${call}/${inventory})`).join(', ');
+          state.temporaryToken = payload.temporaryToken;
         }
         state.loadingStatus = 'finish';
         state.error = null;
@@ -96,23 +117,41 @@ const userSlice = createSlice({
         state.loadingStatus = 'failed';
         state.error = action.error.message ?? null;
       })
+      .addCase(fetchInviteSignup.pending, (state) => {
+        state.loadingStatus = 'loading';
+        state.error = null;
+      })
+      .addCase(fetchInviteSignup.fulfilled, (state, { payload }
+        : PayloadAction<{ code: number, user: User }>) => {
+        if (payload.code === 1) {
+          if (state.users && state.cars && state.temporaryToken) {
+            delete state.users;
+            delete state.cars;
+            delete state.temporaryToken;
+          }
+          const entries = Object.entries(payload.user);
+          entries.forEach(([key, value]) => { state[key] = value; });
+          window.localStorage.setItem(storageKey, payload.user.refreshToken);
+        }
+        state.loadingStatus = 'finish';
+        state.error = null;
+      })
+      .addCase(fetchInviteSignup.rejected, (state, action) => {
+        state.loadingStatus = 'failed';
+        state.error = action.error.message ?? null;
+      })
       .addCase(fetchTokenStorage.pending, (state) => {
         state.loadingStatus = 'loading';
         state.error = null;
       })
       .addCase(fetchTokenStorage.fulfilled, (state, { payload }
-        : PayloadAction<{ code: number, user: User, crew?: { users: string[], cars: string[] }, phone: string }>) => {
+        : PayloadAction<{ code: number, user: User }>) => {
         if (payload.code === 1) {
           if (window.localStorage.getItem(storageKey)) {
             window.localStorage.setItem(storageKey, payload.user.refreshToken);
           }
           const entries = Object.entries(payload.user);
           entries.forEach(([key, value]) => { state[key] = value; });
-        }
-        if (payload.code === 4 && payload.crew) {
-          state.users = payload.crew.users;
-          state.cars = payload.crew.cars;
-          state.phone = payload.phone;
         }
         state.loadingStatus = 'finish';
         state.error = null;

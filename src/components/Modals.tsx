@@ -5,14 +5,14 @@ import {
   Input, ColorPicker,
 } from 'antd';
 import type { DatePickerProps } from 'antd';
-import { PhoneOutlined, UserOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Color } from 'antd/es/color-picker';
+import { PhoneOutlined, UserOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 import {
   useContext, useState, useEffect, useRef,
 } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchConfirmCode, fetchLogin } from '@/slices/userSlice';
+import { fetchConfirmCode, fetchInviteSignup } from '@/slices/userSlice';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
@@ -211,14 +211,14 @@ const ModalInviteReplacement = () => {
 
   const [form] = Form.useForm();
 
-  const onFinish = async (value: { phone: string }) => {
+  const onFinish = async ({ phone }: { phone: string }) => {
     try {
       setIsSubmit(true);
-      if (users.find((user) => user.phone === phoneTransform(value.phone))) {
+      if (users.find((user) => user.phone === phoneTransform(phone))) {
         toast(tToast('userInYouCrew'), 'error');
         form.setFields([{ name: 'phone', errors: [tValidation('userInCrew')] }]);
       } else {
-        const { data: { code } } = await axios.post(routes.recoveryPassword, value, {
+        const { data: { code } } = await axios.post(routes.inviteReplacement, { phone }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (code === 1) {
@@ -252,13 +252,15 @@ const ModalInviteReplacement = () => {
           subTitle={t('subTitle')}
           extra={(
             <div className="col-9 d-flex mx-auto">
-              <LoginButton title={t('back')} className="button button-height w-100" onClick={back} />
+              <Button className="button button-height" onClick={back}>
+                {t('back')}
+              </Button>
             </div>
         )}
         />
       ) : (
-        <div className="col-10 my-4 d-flex flex-column align-items-center gap-3">
-          <Form name="inviteReplacement" onFinish={onFinish} form={form}>
+        <div className="col-12 my-4 d-flex flex-column align-items-center gap-3">
+          <Form name="inviteReplacement" className="col-10" onFinish={onFinish} form={form}>
             <Form.Item<{ phone: string }> name="phone" rules={[loginValidation]}>
               <MaskedInput mask="+7 (000) 000-00-00" className="button-height" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
             </Form.Item>
@@ -281,29 +283,16 @@ const ModalAcceptInvite = () => {
   };
 
   const { t } = useTranslation('translation', { keyPrefix: 'modals.acceptInvite' });
-  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
-  const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
-
   const dispatch = useAppDispatch();
-
   const { setIsSubmit } = useContext(SubmitContext);
 
-  const { users, cars } = useAppSelector((state) => state.user);
+  const { users, cars, temporaryToken } = useAppSelector((state) => state.user);
 
-  const [form] = Form.useForm();
-
-  const onFinish = async (values: UserSignupType) => {
-    try {
+  const onFinish = async ({ username, color }: UserSignupType) => {
+    if (temporaryToken && typeof temporaryToken === 'string') {
       setIsSubmit(true);
-      const { data: { code } } = await axios.post(routes.inviteSignup, values);
-      if (code === 1) {
-        await dispatch(fetchLogin(values));
-      } else if (code === 2) {
-        form.setFields([{ name: 'phone', errors: [tValidation('userInCrew')] }]);
-      }
+      await dispatch(fetchInviteSignup({ username, color: typeof color !== 'string' ? color.toHexString() : color, temporaryToken }));
       setIsSubmit(false);
-    } catch (e) {
-      axiosErrorHandler(e, tToast);
     }
   };
 
@@ -313,19 +302,26 @@ const ModalAcceptInvite = () => {
       open
       footer={null}
     >
-      <Form name="user-signup" form={form} className="signup-form" onFinish={onFinish}>
-        <Form.Item<UserSignupType> name="username" rules={[userValidation]} required>
-          <Input size="large" prefix={<UserOutlined className="site-form-item-icon" />} placeholder={t('username')} />
-        </Form.Item>
-        <Form.Item<UserSignupType> name="color" tooltip={{ title: t('colorTooltip'), icon: <QuestionCircleOutlined /> }} rules={[userValidation]} label={t('color')} required>
-          <ColorPicker size="large" className="border-button" disabledAlpha />
-        </Form.Item>
-        <div className="mt-5 d-flex justify-content-center">
-          <Button className="col-10 button-height button" htmlType="submit">
-            {t('start')}
-          </Button>
-        </div>
-      </Form>
+      <Result
+        status="info"
+        title={t('title', { users })}
+        subTitle={t('subTitle', { cars })}
+        extra={(
+          <Form name="user-signup" className="signup-form text-start" onFinish={onFinish}>
+            <Form.Item<UserSignupType> label={t('username')} name="username" rules={[userValidation]} required>
+              <Input size="large" prefix={<UserOutlined className="site-form-item-icon" />} placeholder={t('username')} />
+            </Form.Item>
+            <Form.Item<UserSignupType> name="color" tooltip={{ title: t('colorTooltip'), icon: <QuestionCircleOutlined /> }} rules={[userValidation]} label={t('color')} required>
+              <ColorPicker size="large" className="border-button" disabledAlpha />
+            </Form.Item>
+            <div className="mt-5 d-flex justify-content-center">
+              <Button className="col-10 button-height button" htmlType="submit">
+                {t('start')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      />
     </Modal>
   );
 };

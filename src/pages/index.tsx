@@ -38,7 +38,7 @@ const Index = () => {
   const dateFullCellRender = (value: Dayjs, info: CellRenderInfo<Dayjs>) => {
     if (info.type !== 'date') return info.originNode;
     const listData = getListData(value, info);
-    const className = cn('d-flex justify-content-center align-items-center', { 'text-danger': value.format('DD-MM-YYYY') === info.today.format('DD-MM-YYYY') });
+    const className = cn('d-flex justify-content-center align-items-center', { 'text-danger fw-bold': value.format('DD-MM-YYYY') === info.today.format('DD-MM-YYYY') });
     return (
       <div className={className} style={{ backgroundColor: listData.user.color, height: '3.6em', width: '3.6em' }}>
         {listData.content}

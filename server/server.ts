@@ -11,6 +11,7 @@ import passport from 'passport';
 import { Server } from 'socket.io';
 import tokenChecker from './authentication/tokenChecker.js';
 import refreshTokenChecker from './authentication/refreshTokenChecker.js';
+import temporaryTokenChecker from './authentication/temporaryTokenChecker.js';
 import { connectToDb } from './db/connect.js';
 import router from './api.js';
 
@@ -27,6 +28,7 @@ app.prepare().then(() => {
   const server = express();
   tokenChecker(passport);
   refreshTokenChecker(passport);
+  temporaryTokenChecker(passport);
 
   server.use(express.json());
   server.use(cors());
