@@ -10,6 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { AuthContext } from '@/components/Context';
 import locale from '@/locales/pickers.locale.RU';
 import routes from '@/routes';
+import FloatButtons from '@/components/FloatButtons';
 import type { Dayjs } from 'dayjs';
 import Helmet from '@/components/Helmet';
 import NavBar from '@/components/NavBar';
@@ -67,6 +68,7 @@ const Index = () => {
           locale={locale}
         />
       </div>
+      <FloatButtons />
     </div>
   );
 };

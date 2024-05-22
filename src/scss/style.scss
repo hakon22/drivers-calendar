@@ -260,6 +260,17 @@ h1 {
   margin-top: 2em;
 }
 
+.float-button {
+  &.notification-btn {
+    top: 1.3em;
+    left: 1em;
+  }
+  
+  &.invitation-btn {
+    left: 1em;
+  }
+}
+
 @keyframes progress {
 	0% { width: 100%;	}
 	100% { width: 0%;	}

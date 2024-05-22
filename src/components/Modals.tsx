@@ -276,6 +276,41 @@ const ModalInviteReplacement = () => {
   );
 };
 
+const ModalInviteNotification = () => {
+  const { t } = useTranslation('translation', { keyPrefix: 'modals.inviteReplacement' });
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
+  const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
+
+  const { modalClose } = useContext(ModalContext);
+  const { setIsSubmit } = useContext(SubmitContext);
+  const { closeNavbar } = useContext(NavbarContext);
+
+  const { token } = useAppSelector((state) => state.user);
+  const { users } = useAppSelector((state) => state.crew);
+
+  return (
+    <Modal
+      centered
+      open
+      footer={null}
+      onCancel={modalClose}
+    >
+      <Result
+        status="info"
+        title={t('title', { users })}
+        subTitle={t('subTitle', { cars })}
+        extra={(
+          <div className="mt-5 d-flex justify-content-center">
+            <Button className="col-10 button-height button" htmlType="submit">
+              {t('start')}
+            </Button>
+          </div>
+        )}
+      />
+    </Modal>
+  );
+};
+
 const ModalAcceptInvite = () => {
   type UserSignupType = {
     username: string;
@@ -421,6 +456,7 @@ const Modals = () => {
     makeSchedule: <ModalMakeSchedule />,
     inviteReplacement: <ModalInviteReplacement />,
     acceptInvite: <ModalAcceptInvite />,
+    inviteNotification: <ModalInviteNotification />,
     activation: setState ? <ModalConfirmPhone setState={setState} /> : null,
   };
 
