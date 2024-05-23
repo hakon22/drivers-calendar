@@ -29,4 +29,6 @@ export default {
   fetchCrew: [apiPath, 'crew', 'fetchCrew'].join('/'),
   makeSchedule: [apiPath, 'crew', 'makeSchedule'].join('/'),
   inviteReplacement: [apiPath, 'crew', 'inviteReplacement'].join('/'),
+  // notification
+  fetchNotifications: [apiPath, 'notification', 'fetchNotifications'].join('/'),
 } as ApiUrl;

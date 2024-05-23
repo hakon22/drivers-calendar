@@ -1,13 +1,10 @@
 /* eslint-disable no-param-reassign */
 import axios from 'axios';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { User } from '../types/User';
-import type { InitialStateType } from '../types/InitialState';
+import type { User, UserInitialState } from '../types/User';
 import routes from '../routes';
-import { UserModel } from '../../server/db/tables/Users';
-import { CarModel } from '../../server/db/tables/Cars';
 
-type KeysInitialStateType = keyof InitialStateType;
+type KeysUserInitialState = keyof UserInitialState;
 
 const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
 
@@ -72,7 +69,7 @@ export const updateTokens = createAsyncThunk(
   },
 );
 
-export const initialState: { [K in keyof InitialStateType]: InitialStateType[K] } = {
+export const initialState: { [K in keyof UserInitialState]: UserInitialState[K] } = {
   loadingStatus: 'idle',
   error: null,
 };
@@ -82,7 +79,7 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     removeToken: (state) => {
-      const entries = Object.keys(state) as KeysInitialStateType[];
+      const entries = Object.keys(state) as KeysUserInitialState[];
       entries.forEach((key) => {
         if (key !== 'loadingStatus' && key !== 'error') {
           delete state[key];
@@ -97,17 +94,15 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchLogin.fulfilled, (state, { payload }
-        : PayloadAction<{ code: number, user: User, crew?: { users: UserModel[], cars: CarModel[] }, temporaryToken?: string }>) => {
+        : PayloadAction<{ code: number, user: User, crew?: { users: string, cars: string }, temporaryToken?: string }>) => {
         if (payload.code === 1) {
           const entries = Object.entries(payload.user);
           entries.forEach(([key, value]) => { state[key] = value; });
           window.localStorage.setItem(storageKey, payload.user.refreshToken);
         }
         if (payload.code === 4 && payload.crew && payload.temporaryToken) {
-          state.users = payload.crew.users.map(({ username }) => username).join(', ');
-          state.cars = payload.crew.cars.map(({
-            brand, model, inventory, call,
-          }) => `${brand} ${model} (${call}/${inventory})`).join(', ');
+          state.users = payload.crew.users;
+          state.cars = payload.crew.cars;
           state.temporaryToken = payload.temporaryToken;
         }
         state.loadingStatus = 'finish';

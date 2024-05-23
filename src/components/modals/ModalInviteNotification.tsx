@@ -1,20 +1,18 @@
 import { Modal, Result, Button } from 'antd';
 import { useContext } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
+import { selectors } from '@/slices/notificationSlice';
 import { useTranslation } from 'react-i18next';
-import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
+import { ModalContext } from '@/components/Context';
+import UserNotificationEnum from '../../../server/types/user/enum/UserNotificationEnum';
 
 const ModalInviteNotification = () => {
-  const { t } = useTranslation('translation', { keyPrefix: 'modals.inviteReplacement' });
-  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
-  const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
+  const { t } = useTranslation('translation', { keyPrefix: 'modals.inviteNotification' });
 
   const { modalClose } = useContext(ModalContext);
-  const { setIsSubmit } = useContext(SubmitContext);
-  const { closeNavbar } = useContext(NavbarContext);
 
-  const { token } = useAppSelector((state) => state.user);
-  const { users } = useAppSelector((state) => state.crew);
+  const notifications = useAppSelector(selectors.selectAll);
+  const inviteNotifications = notifications.filter((notification) => notification.type === UserNotificationEnum.INVITE);
 
   return (
     <Modal

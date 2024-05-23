@@ -3,6 +3,7 @@ import passport from 'passport';
 import Auth from './authentication/Auth.js';
 import Car from './car/Car.js';
 import Crew from './crew/Crew.js';
+import Notification from './notification/Notification.js';
 
 const router = express.Router();
 
@@ -29,5 +30,8 @@ router.post(`${apiPath}/auth/confirmPhone`, Auth.confirmPhone);
 router.get(`${apiPath}/crew/fetchCrew`, jwtToken, Crew.fetchCrew);
 router.post(`${apiPath}/crew/makeSchedule`, jwtToken, Crew.makeSchedule);
 router.post(`${apiPath}/crew/inviteReplacement`, jwtToken, Crew.inviteReplacement);
+
+// notification
+router.get(`${apiPath}/notification/fetchNotification`, jwtToken, Notification.fetchNotifications);
 
 export default router;

@@ -10,7 +10,9 @@ import type { PassportRequest } from '../db/tables/Users';
 import Crews, { CrewModel } from '../db/tables/Crews';
 import Users from '../db/tables/Users';
 import Cars from '../db/tables/Cars';
-import { ScheduleSchemaType } from '../types/crew/ScheduleSchemaType';
+import type { ScheduleSchemaType } from '../types/crew/ScheduleSchemaType';
+import Notification from '../notification/Notification';
+import UserNotificationEnum from '../types/user/enum/UserNotificationEnum';
 import phoneTransform from '../utilities/phoneTransform';
 import Sms from '../sms/Sms';
 import Auth from '../authentication/Auth';
@@ -92,18 +94,36 @@ class Crew {
       req.body.phone = phoneTransform(req.body.phone);
       const { phone }: { phone: string } = req.body;
       const { dataValues: { crewId } } = req.user as PassportRequest;
-      const crew = await Crews.findByPk(crewId);
+      const crew = await Crews.findByPk(crewId, {
+        include: [
+          { attributes: ['username'], model: Users, as: 'users' },
+          { attributes: ['brand', 'model', 'call', 'inventory'], model: Cars, as: 'cars' }],
+      });
       if (!crew) {
         throw new Error('Экипаж не существует');
       }
 
-      const users = await Users.findAll();
-      const candidate = users.find((user) => user.phone === phone);
+      const candidate = await Users.findOne({ where: { phone } });
       if (candidate) {
         if (candidate.crewId) {
           return res.json({ code: 2 });
         }
-        // уведомление существующему пользователю
+        const users = crew?.users
+          ? crew.users.map(({ username }) => username).join(', ')
+          : 'Отсутствуют.';
+        const cars = crew?.cars
+          ? crew.cars.map(({
+            brand, model, inventory, call,
+          }) => `${brand} ${model} (${call}/${inventory})`).join(', ')
+          : 'Отсутствуют.';
+        await Notification.send(
+          candidate.id,
+          `${candidate.username}, вас приглашают в экипаж с графиком ${crew.schedule}.
+          Водители: ${users}
+          Автомобили: ${cars}
+          `,
+          UserNotificationEnum.INVITE,
+        );
       } else {
         const password = await Sms.sendPass(phone);
         const role = Auth.adminPhone.includes(phone) ? 'admin' : 'member';

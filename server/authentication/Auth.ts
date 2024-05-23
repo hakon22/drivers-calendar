@@ -110,8 +110,16 @@ class Auth {
         if (!crew) {
           throw new Error('Экипаж не существует');
         }
+        const users = crew?.users
+          ? crew.users.map(({ username }) => username).join(', ')
+          : 'Отсутствуют.';
+        const cars = crew?.cars
+          ? crew.cars.map(({
+            brand, model, inventory, call,
+          }) => `${brand} ${model} (${call}/${inventory})`).join(', ')
+          : 'Отсутствуют.';
         const temporaryToken = generateTemporaryToken(crew.id, phone);
-        return res.json({ code: 4, crew, temporaryToken });
+        return res.json({ code: 4, crew: { users, cars }, temporaryToken });
       }
       if (user) {
         const isValidPassword = bcrypt.compareSync(password, user.password);
