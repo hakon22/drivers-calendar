@@ -52,9 +52,6 @@ const Init = (props: AppProps) => {
       localStorage.removeItem(storageKey);
     }
     await axios.post(routes.logout, { id, refreshToken });
-    if (isActive) {
-      closeNavbar();
-    }
     dispatch(removeToken());
     setLoggedIn(false);
   }, [id]);

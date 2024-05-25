@@ -32,6 +32,6 @@ router.post(`${apiPath}/crew/makeSchedule`, jwtToken, Crew.makeSchedule);
 router.post(`${apiPath}/crew/inviteReplacement`, jwtToken, Crew.inviteReplacement);
 
 // notification
-router.get(`${apiPath}/notification/fetchNotification`, jwtToken, Notification.fetchNotifications);
+router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.fetchNotifications);
 
 export default router;

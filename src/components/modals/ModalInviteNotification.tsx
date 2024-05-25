@@ -23,8 +23,8 @@ const ModalInviteNotification = () => {
     >
       <Result
         status="info"
-        title={t('title', { users })}
-        subTitle={t('subTitle', { cars })}
+        title={t('title', { inviteNotifications })}
+        subTitle={t('subTitle', { inviteNotifications })}
         extra={(
           <div className="mt-5 d-flex justify-content-center">
             <Button className="col-10 button-height button" htmlType="submit">

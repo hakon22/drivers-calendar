@@ -3,6 +3,7 @@ import {
 } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { db } from '../connect.js';
+import UserNotifications from './UserNotifications.js';
 
 export interface UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>> {
   id: CreationOptional<number>;
@@ -66,5 +67,7 @@ const Users = db.define<UserModel>(
     },
   },
 );
+
+Users.hasMany(UserNotifications, { as: 'notifications' });
 
 export default Users;

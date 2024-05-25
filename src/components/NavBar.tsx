@@ -9,7 +9,7 @@ const NavBar = () => {
 
   const { logOut } = useContext(AuthContext);
   const { modalOpen } = useContext(ModalContext);
-  const { isActive, setIsActive } = useContext(NavbarContext);
+  const { isActive, closeNavbar, setIsActive } = useContext(NavbarContext);
 
   const className = cn('menu-btn', { active: isActive });
 
@@ -43,7 +43,13 @@ const NavBar = () => {
           <Button className="w-100 button button-height">
             {t('buttons.addCar')}
           </Button>
-          <Button className="w-100 button button-height" onClick={logOut}>
+          <Button
+            className="w-100 button button-height"
+            onClick={() => {
+              logOut();
+              closeNavbar();
+            }}
+          >
             {t('buttons.exit')}
           </Button>
         </div>

@@ -15,6 +15,7 @@ import type { Dayjs } from 'dayjs';
 import Helmet from '@/components/Helmet';
 import NavBar from '@/components/NavBar';
 import axios from 'axios';
+import { fetchNotifications } from '@/slices/notificationSlice';
 import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
 
 const Index = () => {
@@ -22,7 +23,7 @@ const Index = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { loggedIn } = useContext(AuthContext);
-  const { token } = useAppSelector((state) => state.user);
+  const { token, crewId } = useAppSelector((state) => state.user);
   const { loadingStatus, schedule_schema: scheduleSchema } = useAppSelector((state) => state.crew);
 
   const onPanelChange = (value: Dayjs, mode: CalendarProps<Dayjs>['mode']) => {
@@ -51,7 +52,10 @@ const Index = () => {
     if (!loggedIn) {
       router.push(routes.welcomePage);
     } else {
-      dispatch(fetchCrew(token));
+      if (crewId) {
+        dispatch(fetchCrew(token));
+      }
+      dispatch(fetchNotifications(token));
     }
   }, [loggedIn]);
 

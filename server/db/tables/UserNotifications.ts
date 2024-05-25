@@ -3,7 +3,6 @@ import {
 } from 'sequelize';
 import UserNotificationEnum from '../../types/user/enum/UserNotificationEnum.js';
 import { db } from '../connect.js';
-import Users from './Users.js';
 
 export interface UserNotificationsModel extends Model<InferAttributes<UserNotificationsModel>, InferCreationAttributes<UserNotificationsModel>> {
   id: CreationOptional<number>;
@@ -35,11 +34,8 @@ const UserNotifications = db.define<UserNotificationsModel>(
     },
     userId: {
       type: DataTypes.INTEGER,
-      defaultValue: null,
     },
   },
 );
-
-Users.hasMany(UserNotifications, { as: 'notifications' });
 
 export default UserNotifications;
