@@ -27,7 +27,7 @@ const crewSlice = createSlice({
   name: 'crew',
   initialState,
   reducers: {
-    soketMakeSchedule: (state, { payload }: PayloadAction<{ code: number, scheduleSchema: ScheduleSchemaType }>) => {
+    socketMakeSchedule: (state, { payload }: PayloadAction<{ code: number, scheduleSchema: ScheduleSchemaType }>) => {
       if (payload.code === 1) {
         state.schedule_schema = payload.scheduleSchema;
       }
@@ -56,7 +56,7 @@ const crewSlice = createSlice({
 });
 
 export const {
-  soketMakeSchedule,
+  socketMakeSchedule,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

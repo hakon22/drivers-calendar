@@ -28,7 +28,7 @@ const notificationSlice = createSlice({
   name: 'notification',
   initialState: notificationAdapter.getInitialState(initialState),
   reducers: {
-    notificationAdd: notificationAdapter.addOne,
+    socketSendNotification: notificationAdapter.addOne,
     notificationRemove: notificationAdapter.removeOne,
   },
   extraReducers: (builder) => {
@@ -52,7 +52,7 @@ const notificationSlice = createSlice({
   },
 });
 
-export const { notificationAdd, notificationRemove } = notificationSlice.actions;
+export const { socketSendNotification, notificationRemove } = notificationSlice.actions;
 export const selectors = notificationAdapter.getSelectors<RootState>((state) => state.notification);
 
 export default notificationSlice.reducer;

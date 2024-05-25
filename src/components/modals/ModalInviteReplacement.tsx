@@ -5,7 +5,9 @@ import { PhoneOutlined } from '@ant-design/icons';
 import { useContext, useState } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
-import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
+import {
+  ApiContext, ModalContext, NavbarContext, SubmitContext,
+} from '@/components/Context';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import toast from '@/utilities/toast';
 import { loginValidation } from '@/validations/validations';
@@ -24,6 +26,7 @@ const ModalInviteReplacement = () => {
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
+  const { sendNotification } = useContext(ApiContext);
 
   const { token } = useAppSelector((state) => state.user);
   const { users } = useAppSelector((state) => state.crew);
@@ -37,10 +40,11 @@ const ModalInviteReplacement = () => {
         toast(tToast('userInYouCrew'), 'error');
         form.setFields([{ name: 'phone', errors: [tValidation('userInCrew')] }]);
       } else {
-        const { data: { code } } = await axios.post(routes.inviteReplacement, { phone }, {
+        const { data: { code, notification } } = await axios.post(routes.inviteReplacement, { phone }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (code === 1) {
+          sendNotification(notification);
           setIsSuccess(true);
         } else if (code === 2) {
           form.setFields([{ name: 'phone', errors: [tValidation('userInCrew')] }]);

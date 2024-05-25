@@ -9,7 +9,7 @@ import { PassportRequest } from '../db/tables/Users.js';
 import UserNotificationEnum from '../types/user/enum/UserNotificationEnum';
 
 class Notification {
-  public async send(userId: number, message: string, type: UserNotificationEnum) {
+  public async send({ userId, message, type }: { userId: number, message: string, type: UserNotificationEnum }) {
     try {
       if (!message || !type) {
         throw new Error('[Notification.Error]: Не указан один или более параметров');

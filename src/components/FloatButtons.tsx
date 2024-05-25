@@ -19,7 +19,7 @@ const FloatButtons = () => {
   return (
     <>
       <FloatButton badge={{ count: 3 }} icon={<MessageOutlined />} />
-      {inviteNotifications && <FloatButton className="float-button invitation-btn" badge={{ count: inviteNotifications }} onClick={invitationHandler} icon={<UserAddOutlined />} />}
+      {inviteNotifications ? <FloatButton className="float-button invitation-btn" badge={{ count: inviteNotifications }} onClick={invitationHandler} icon={<UserAddOutlined />} /> : null}
       <FloatButton className="float-button notification-btn" badge={{ count: 1 }} icon={<BellOutlined />} />
     </>
   );

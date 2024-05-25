@@ -116,21 +116,23 @@ class Crew {
             brand, model, inventory, call,
           }) => `${brand} ${model} (${call}/${inventory})`).join(', ')
           : 'Отсутствуют.';
-        await Notification.send(
-          candidate.id,
-          `${candidate.username}, вас приглашают в экипаж с графиком ${crew.schedule}.
+        const notification = {
+          userId: candidate.id,
+          message: `${candidate.username}, вас приглашают в экипаж с графиком ${crew.schedule}.
           Водители: ${users}
           Автомобили: ${cars}
           `,
-          UserNotificationEnum.INVITE,
-        );
-      } else {
-        const password = await Sms.sendPass(phone);
-        const role = Auth.adminPhone.includes(phone) ? 'admin' : 'member';
-        await redis.setEx(phone, 86400, JSON.stringify({
-          phone, password: bcrypt.hashSync(password, 10), role, crewId,
-        }));
+          type: UserNotificationEnum.INVITE,
+        };
+        await Notification.send(notification);
+        return res.json({ code: 1, notification });
       }
+      const password = await Sms.sendPass(phone);
+      const role = Auth.adminPhone.includes(phone) ? 'admin' : 'member';
+      await redis.setEx(phone, 86400, JSON.stringify({
+        phone, password: bcrypt.hashSync(password, 10), role, crewId,
+      }));
+
       return res.json({ code: 1 });
     } catch (e) {
       console.log(e);

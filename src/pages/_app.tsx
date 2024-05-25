@@ -16,8 +16,9 @@ import {
   ApiContext, AuthContext, ModalContext, ScrollContext, SubmitContext, NavbarContext,
 } from '@/components//Context';
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
-import { soketMakeSchedule } from '@/slices/crewSlice';
+import { socketMakeSchedule } from '@/slices/crewSlice';
 import routes from '@/routes';
+import { socketSendNotification } from '@/slices/notificationSlice';
 import { removeToken } from '@/slices/userSlice';
 import favicon from '../images/favicon.ico';
 import store from '../slices/index';
@@ -26,6 +27,7 @@ import i18n from '../locales';
 import '../scss/app.scss';
 
 const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
+const socket = io(process.env.NODE_ENV === 'development' ? '' : process.env.NEXT_PUBLIC_SOCKET_HOST ?? '');
 
 const Init = (props: AppProps) => {
   const { pageProps, Component } = props;
@@ -73,11 +75,13 @@ const Init = (props: AppProps) => {
     }
   };
 
-  const socket = io(process.env.NODE_ENV === 'development' ? '' : process.env.NEXT_PUBLIC_SOCKET_HOST ?? '');
-
   useEffect(() => {
-    socket.on('makeSchedule', (data) => dispatch(soketMakeSchedule(data)));
-  }, []);
+    if (loggedIn) {
+      socket.emit('userConnection', id);
+      socket.on('makeSchedule', (data) => dispatch(socketMakeSchedule(data)));
+      socket.on('sendNotification', (data) => dispatch(socketSendNotification(data)));
+    }
+  }, [loggedIn]);
 
   const socketConnect = useCallback((param: string, arg: unknown) => {
     socket.emit(param, arg);
@@ -85,6 +89,7 @@ const Init = (props: AppProps) => {
 
   const socketApi = useMemo(() => ({
     makeSchedule: (data: unknown) => socketConnect('makeSchedule', data),
+    sendNotification: (data: unknown) => socketConnect('sendNotification', data),
   }), [socketConnect]);
 
   const authServices = useMemo(() => ({ loggedIn, logIn, logOut }), [loggedIn]);
