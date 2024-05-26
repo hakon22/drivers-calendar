@@ -147,6 +147,11 @@ export default {
         color: 'Цвет рабочих смен',
         colorTooltip: 'Этим цветом будут отображаться ваши рабочие смены на календаре',
       },
+      inviteNotification: {
+        accept: 'Принять',
+        decline: 'Отклонить',
+        invitations: 'Приглашения',
+      },
     },
   },
 } as const;

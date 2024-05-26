@@ -1,4 +1,4 @@
-enum UserNotificationEnum {
+enum NotificationEnum {
   INVITE = 'INVITE',
   EXILE = 'EXILE',
   CHAT = 'CHAT',
@@ -10,4 +10,4 @@ enum UserNotificationEnum {
   VACATION = 'VACATION',
 }
 
-export default UserNotificationEnum;
+export default NotificationEnum;

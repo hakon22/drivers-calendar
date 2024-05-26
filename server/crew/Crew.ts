@@ -12,7 +12,7 @@ import Users from '../db/tables/Users';
 import Cars from '../db/tables/Cars';
 import type { ScheduleSchemaType } from '../types/crew/ScheduleSchemaType';
 import Notification from '../notification/Notification';
-import UserNotificationEnum from '../types/user/enum/UserNotificationEnum';
+import UserNotificationEnum from '../types/notification/enum/NotificationEnum';
 import phoneTransform from '../utilities/phoneTransform';
 import Sms from '../sms/Sms';
 import Auth from '../authentication/Auth';
@@ -118,10 +118,9 @@ class Crew {
           : 'Отсутствуют.';
         const notification = {
           userId: candidate.id,
-          message: `${candidate.username}, вас приглашают в экипаж с графиком ${crew.schedule}.
-          Водители: ${users}
-          Автомобили: ${cars}
-          `,
+          title: `Вас приглашают в экипаж с графиком ${crew.schedule}`,
+          description: `Водители: ${users}`,
+          description2: `Автомобили: ${cars}`,
           type: UserNotificationEnum.INVITE,
         };
         await Notification.send(notification);

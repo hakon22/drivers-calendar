@@ -5,7 +5,8 @@ export type ModalShowType = 'none'
   | 'makeSchedule'
   | 'inviteReplacement'
   | 'acceptInvite'
-  | 'inviteNotification';
+  | 'inviteNotification'
+  | 'notifications';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

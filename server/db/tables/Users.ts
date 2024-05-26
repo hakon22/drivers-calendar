@@ -3,7 +3,7 @@ import {
 } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { db } from '../connect.js';
-import UserNotifications from './UserNotifications.js';
+import UserNotifications from './Notifications.js';
 
 export interface UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>> {
   id: CreationOptional<number>;

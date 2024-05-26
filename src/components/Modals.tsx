@@ -8,6 +8,7 @@ import ModalInviteReplacement from './modals/ModalInviteReplacement';
 import ModalAcceptInvite from './modals/ModalAcceptInvite';
 import ModalInviteNotification from './modals/ModalInviteNotification';
 import ModalConfirmPhone from './modals/ModalConfirmPhone';
+import ModalNotifications from './modals/ModalNotifications';
 
 const Modals = () => {
   const { show } = useContext(ModalContext);
@@ -21,6 +22,7 @@ const Modals = () => {
     inviteReplacement: <ModalInviteReplacement />,
     acceptInvite: <ModalAcceptInvite />,
     inviteNotification: <ModalInviteNotification />,
+    notifications: <ModalNotifications />,
     activation: setState ? <ModalConfirmPhone setState={setState} /> : null,
   };
 

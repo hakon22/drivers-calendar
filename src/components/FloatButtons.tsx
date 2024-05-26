@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { selectors } from '@/slices/notificationSlice';
 import { useAppSelector } from '@/utilities/hooks';
 import { ModalContext } from './Context';
-import UserNotificationEnum from '../../server/types/user/enum/UserNotificationEnum';
+import UserNotificationEnum from '../../server/types/notification/enum/NotificationEnum';
 
 const FloatButtons = () => {
   const { modalOpen } = useContext(ModalContext);
@@ -14,13 +14,13 @@ const FloatButtons = () => {
 
   const invitationHandler = () => modalOpen('inviteNotification');
   const chatHandler = () => modalOpen('');
-  const notificationHandler = () => modalOpen('');
+  const notificationHandler = () => modalOpen('notifications');
 
   return (
     <>
       <FloatButton badge={{ count: 3 }} icon={<MessageOutlined />} />
       {inviteNotifications ? <FloatButton className="float-button invitation-btn" badge={{ count: inviteNotifications }} onClick={invitationHandler} icon={<UserAddOutlined />} /> : null}
-      <FloatButton className="float-button notification-btn" badge={{ count: 1 }} icon={<BellOutlined />} />
+      <FloatButton className="float-button notification-btn" badge={{ count: 1 }} icon={<BellOutlined />} onClick={notificationHandler} />
     </>
   );
 };

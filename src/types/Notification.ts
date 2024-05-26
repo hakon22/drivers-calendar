@@ -1,10 +1,12 @@
-import UserNotificationEnum from '../../server/types/user/enum/UserNotificationEnum';
+import NotificationEnum from '../../server/types/notification/enum/NotificationEnum';
 import { InitialState } from './InitialState';
 
 export type Notification = {
   id: number;
-  message: string;
-  type: UserNotificationEnum;
+  title: string;
+  description: string;
+  description2: string;
+  type: NotificationEnum;
   isRead: boolean;
 };
 
