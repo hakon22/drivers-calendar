@@ -31,4 +31,6 @@ export default {
   inviteReplacement: [apiPath, 'crew', 'inviteReplacement'].join('/'),
   // notification
   fetchNotifications: [apiPath, 'notification', 'fetchNotifications'].join('/'),
+  notificationReadUpdate: [apiPath, 'notification', 'readUpdate'].join('/'),
+  notificationRemove: [apiPath, 'notification', 'remove'].join('/'),
 } as ApiUrl;

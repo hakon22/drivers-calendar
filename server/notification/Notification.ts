@@ -14,8 +14,9 @@ class Notification {
       if (!notification.title || !notification.type) {
         throw new Error('[Notification.Error]: Не указан один или более параметров');
       }
-      await Notifications.create(notification);
+      const result = await Notifications.create(notification);
       console.log(`[Notification]: создано уведомление для пользователя с userId: ${notification?.userId}`);
+      return result;
     } catch (e) {
       console.log(e);
     }
@@ -27,6 +28,30 @@ class Notification {
       const notifications = await Notifications.findAll({ where: { userId: or(id, null) } }) || [];
 
       return res.json({ code: 1, notifications });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async readUpdate(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      await Notifications.update({ isRead: true }, { where: { id } });
+
+      return res.json({ code: 1, id });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async remove(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      await Notifications.destroy({ where: { id } });
+
+      return res.json({ code: 1, id });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

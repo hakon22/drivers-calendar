@@ -116,14 +116,14 @@ class Crew {
             brand, model, inventory, call,
           }) => `${brand} ${model} (${call}/${inventory})`).join(', ')
           : 'Отсутствуют.';
-        const notification = {
+        const preparedNotification = {
           userId: candidate.id,
           title: `Вас приглашают в экипаж с графиком ${crew.schedule}`,
           description: `Водители: ${users}`,
           description2: `Автомобили: ${cars}`,
           type: UserNotificationEnum.INVITE,
         };
-        await Notification.send(notification);
+        const notification = await Notification.send(preparedNotification);
         return res.json({ code: 1, notification });
       }
       const password = await Sms.sendPass(phone);

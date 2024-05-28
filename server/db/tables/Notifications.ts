@@ -24,7 +24,7 @@ const Notifications = db.define<NotificationsModel>(
       allowNull: false,
     },
     title: {
-      type: DataTypes.CHAR,
+      type: DataTypes.TEXT,
     },
     description: {
       type: DataTypes.TEXT,

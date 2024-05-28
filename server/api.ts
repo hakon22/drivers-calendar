@@ -33,5 +33,7 @@ router.post(`${apiPath}/crew/inviteReplacement`, jwtToken, Crew.inviteReplacemen
 
 // notification
 router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.fetchNotifications);
+router.get(`${apiPath}/notification/readUpdate/:id`, jwtToken, Notification.readUpdate);
+router.delete(`${apiPath}/notification/remove/:id`, jwtToken, Notification.remove);
 
 export default router;

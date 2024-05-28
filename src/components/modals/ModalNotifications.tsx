@@ -4,7 +4,7 @@ import {
 } from 'antd';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { useContext } from 'react';
-import { useAppSelector } from '@/utilities/hooks';
+import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { selectors } from '@/slices/notificationSlice';
 import { useTranslation } from 'react-i18next';
 import { ModalContext } from '@/components/Context';
@@ -12,6 +12,7 @@ import NotificationEnum from '../../../server/types/notification/enum/Notificati
 
 const ModalNotifications = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.inviteNotification' });
+  const dispatch = useAppDispatch();
 
   const { modalClose } = useContext(ModalContext);
 
