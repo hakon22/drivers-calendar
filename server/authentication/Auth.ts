@@ -10,6 +10,7 @@ import {
   userInviteValidation,
 } from '@/validations/validations.js';
 import type { UserSignupType } from '@/components/forms/UserSignup';
+import dayjs from 'dayjs';
 import type { CarType } from '../types/Car.js';
 import redis from '../db/redis.js';
 import Sms from '../sms/Sms.js';
@@ -19,6 +20,7 @@ import Cars, { CarModel } from '../db/tables/Cars.js';
 import Crews from '../db/tables/Crews.js';
 import { generateAccessToken, generateRefreshToken, generateTemporaryToken } from './tokensGen.js';
 import { upperCase } from '../utilities/textTransform.js';
+import Notifications from '../db/tables/Notifications.js';
 
 const adminPhone = ['79999999999'];
 
@@ -187,7 +189,12 @@ class Auth {
   async acceptInvitation(req: Request, res: Response) {
     try {
       const { dataValues: { id, crewId } } = req.user as PassportRequest;
-      const { authorId } = req.body;
+      const { id: notificationId, authorId } = req.body;
+
+      const notification = await Notifications.findByPk(notificationId);
+      if (dayjs(notification.createAt)) {
+        return res.json({ code: 2 });
+      }
 
       if (crewId) {
         return res.json({ code: 3 });

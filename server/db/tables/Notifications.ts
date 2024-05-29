@@ -14,6 +14,7 @@ export interface NotificationsModel extends Model<InferAttributes<NotificationsM
   crewId: CreationOptional<number>;
   isRead: CreationOptional<boolean>;
   userId: CreationOptional<number>;
+  createAt: CreationOptional<Date>;
 }
 
 const Notifications = db.define<NotificationsModel>(
