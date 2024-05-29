@@ -18,6 +18,7 @@ router.post(`${apiPath}/auth/recoveryPassword`, Auth.recoveryPassword);
 router.post(`${apiPath}/auth/logout`, Auth.logout);
 router.get(`${apiPath}/auth/updateTokens`, passport.authenticate('jwt-refresh', { session: false }), Auth.updateTokens);
 router.post(`${apiPath}/auth/inviteSignup`, passport.authenticate('jwt-temporary', { session: false }), Auth.inviteSignup);
+router.post(`${apiPath}/auth/acceptInvitation`, jwtToken, Auth.acceptInvitation);
 
 // car
 router.get(`${apiPath}/car/fetchBrands`, Car.fetchBrands);

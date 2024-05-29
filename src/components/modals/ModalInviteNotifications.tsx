@@ -3,22 +3,28 @@ import {
   Modal, Button, Collapse, type CollapseProps,
 } from 'antd';
 import { CaretRightOutlined } from '@ant-design/icons';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import cn from 'classnames';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { selectors, fetchNotificationReadUpdate, fetchNotificationRemove } from '@/slices/notificationSlice';
 import { useTranslation } from 'react-i18next';
-import { ModalContext } from '@/components/Context';
+import { ModalContext, SubmitContext } from '@/components/Context';
+import { fetchAcceptInvitation } from '@/slices/userSlice';
+import toast from '@/utilities/toast';
 import NotificationEnum from '../../../server/types/notification/enum/NotificationEnum';
 
-const ModalInviteNotification = () => {
+const ModalInviteNotifications = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.inviteNotification' });
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
   const dispatch = useAppDispatch();
 
   const { modalClose } = useContext(ModalContext);
+  const { setIsSubmit } = useContext(SubmitContext);
 
   const { token } = useAppSelector((state) => state.user);
   const notifications = useAppSelector(selectors.selectAll);
+
+  const filteredNotifications = notifications.filter((notification) => notification.type === NotificationEnum.INVITE);
 
   const isReadHandler = (key: string | string[]) => {
     if (key.length) {
@@ -29,11 +35,28 @@ const ModalInviteNotification = () => {
     }
   };
 
-  const accept = (id: number) => dispatch(fetchNotificationReadUpdate({ id, token }));
   const decline = (id: number) => dispatch(fetchNotificationRemove({ id, token }));
 
-  const inviteNotifications: CollapseProps['items'] = notifications
-    .filter((notification) => notification.type === NotificationEnum.INVITE)
+  const accept = async (id: number) => {
+    setIsSubmit(true);
+    const { payload: { code } } = await dispatch(fetchAcceptInvitation({
+      id,
+      authorId: filteredNotifications.find((notification) => notification.id === id)?.authorId,
+      token,
+    })) as { payload: { code: number } };
+    if (code === 1) {
+      modalClose();
+      decline(id);
+    } else if (code === 2) {
+      toast(tToast('invalidInvitation'), 'error');
+      decline(id);
+    } else if (code === 3) {
+      toast(tToast('alreadyOnCrew'), 'error');
+    }
+    setIsSubmit(false);
+  };
+
+  const inviteNotifications: CollapseProps['items'] = filteredNotifications
     .map(({
       id, title, description, description2, isRead,
     }) => {
@@ -50,13 +73,12 @@ const ModalInviteNotification = () => {
       <span>{description2}</span>
     </div>
     <div className="d-flex flex-column align-items-center gap-3">
-      <Button className="col-10 mx-auto button-height button" htmlType="submit" onClick={() => accept(id)}>
+      <Button className="col-10 mx-auto button-height button" onClick={() => accept(id)}>
         {t('accept')}
       </Button>
       <Button
         className="col-10 mx-auto button-height button"
         style={{ backgroundColor: '#CDD5EC', border: 'none' }}
-        htmlType="submit"
         onClick={() => decline(id)}
       >
         {t('decline')}
@@ -66,6 +88,18 @@ const ModalInviteNotification = () => {
       };
     })
     .sort((a, b) => b.key - a.key);
+
+  useEffect(() => {
+    if (inviteNotifications.length === 1) {
+      isReadHandler([inviteNotifications[0].key as string]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!inviteNotifications.length) {
+      modalClose();
+    }
+  }, [inviteNotifications.length]);
 
   return (
     <Modal
@@ -87,7 +121,7 @@ const ModalInviteNotification = () => {
           accordion
           bordered
           onChange={isReadHandler}
-          defaultActiveKey={inviteNotifications.length === 1 ? 1 : undefined}
+          defaultActiveKey={inviteNotifications.length === 1 ? inviteNotifications[0].key as string : undefined}
           expandIcon={({ isActive }) => <CaretRightOutlined className="d-flex align-items-center" rotate={isActive ? 90 : 0} />}
           items={inviteNotifications}
         />
@@ -96,4 +130,4 @@ const ModalInviteNotification = () => {
   );
 };
 
-export default ModalInviteNotification;
+export default ModalInviteNotifications;

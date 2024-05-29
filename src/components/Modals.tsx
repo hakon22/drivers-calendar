@@ -6,7 +6,7 @@ import ModalRecovery from './modals/ModalRecovery';
 import ModalMakeSchedule from './modals/ModalMakeSchedule';
 import ModalInviteReplacement from './modals/ModalInviteReplacement';
 import ModalAcceptInvite from './modals/ModalAcceptInvite';
-import ModalInviteNotification from './modals/ModalInviteNotification';
+import ModalInviteNotifications from './modals/ModalInviteNotifications';
 import ModalConfirmPhone from './modals/ModalConfirmPhone';
 import ModalNotifications from './modals/ModalNotifications';
 
@@ -21,7 +21,7 @@ const Modals = () => {
     makeSchedule: <ModalMakeSchedule />,
     inviteReplacement: <ModalInviteReplacement />,
     acceptInvite: <ModalAcceptInvite />,
-    inviteNotification: <ModalInviteNotification />,
+    inviteNotification: <ModalInviteNotifications />,
     notifications: <ModalNotifications />,
     activation: setState ? <ModalConfirmPhone setState={setState} /> : null,
   };

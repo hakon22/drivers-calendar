@@ -10,6 +10,8 @@ export interface NotificationsModel extends Model<InferAttributes<NotificationsM
   description: string;
   description2: string;
   type: NotificationEnum;
+  authorId: CreationOptional<number>;
+  crewId: CreationOptional<number>;
   isRead: CreationOptional<boolean>;
   userId: CreationOptional<number>;
 }
@@ -31,6 +33,12 @@ const Notifications = db.define<NotificationsModel>(
     },
     description2: {
       type: DataTypes.TEXT,
+    },
+    authorId: {
+      type: DataTypes.INTEGER,
+    },
+    crewId: {
+      type: DataTypes.INTEGER,
     },
     type: {
       type: DataTypes.ENUM(...Object.keys(NotificationEnum).filter((v) => Number.isNaN(Number(v)))),

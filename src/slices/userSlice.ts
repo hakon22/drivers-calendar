@@ -27,6 +27,17 @@ export const fetchInviteSignup = createAsyncThunk(
   },
 );
 
+export const fetchAcceptInvitation = createAsyncThunk(
+  'user/fetchAcceptInvitation',
+  async (data: { id: number, authorId?: number, token?: string }) => {
+    const { id, authorId, token } = data;
+    const response = await axios.post(routes.acceptInvitation, { id, authorId }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  },
+);
+
 export const fetchConfirmCode = createAsyncThunk(
   'user/fetchConfirmCode',
   async (data: { phone: string, key?: string, code?: string }) => {
@@ -188,6 +199,22 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchConfirmCode.rejected, (state, action) => {
+        state.loadingStatus = 'failed';
+        state.error = action.error.message ?? null;
+      })
+      .addCase(fetchAcceptInvitation.pending, (state) => {
+        state.loadingStatus = 'loading';
+        state.error = null;
+      })
+      .addCase(fetchAcceptInvitation.fulfilled, (state, { payload }
+        : PayloadAction<{ code: number, crewId: number }>) => {
+        if (payload.code === 1) {
+          state.crewId = payload.crewId;
+        }
+        state.loadingStatus = 'finish';
+        state.error = null;
+      })
+      .addCase(fetchAcceptInvitation.rejected, (state, action) => {
         state.loadingStatus = 'failed';
         state.error = action.error.message ?? null;
       });

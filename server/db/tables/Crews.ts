@@ -6,6 +6,7 @@ import type { ScheduleSchemaType } from '../../types/crew/ScheduleSchemaType.js'
 import { db } from '../connect.js';
 import Users, { UserModel } from './Users.js';
 import Cars, { CarModel } from './Cars.js';
+import Notifications from './Notifications.js';
 
 export interface CrewModel extends Model<InferAttributes<CrewModel>, InferCreationAttributes<CrewModel>> {
   id: CreationOptional<number>;
@@ -36,5 +37,6 @@ const Crews = db.define<CrewModel>(
 
 Crews.hasMany(Users, { as: 'users' });
 Crews.hasMany(Cars, { as: 'cars' });
+Notifications.belongsTo(Crews, { foreignKey: 'crewId' });
 
 export default Crews;

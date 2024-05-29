@@ -20,6 +20,7 @@ export default {
   recoveryPassword: [apiPath, 'auth', 'recoveryPassword'].join('/'),
   updateTokens: [apiPath, 'auth', 'updateTokens'].join('/'),
   inviteSignup: [apiPath, 'auth', 'inviteSignup'].join('/'),
+  acceptInvitation: [apiPath, 'auth', 'acceptInvitation'].join('/'),
   // car
   fetchBrands: [serverHost, apiPath, 'car', 'fetchBrands'].join('/'),
   getModels: [apiPath, 'car', 'getModels'].join('/'),

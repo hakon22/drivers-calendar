@@ -52,12 +52,15 @@ const Index = () => {
     if (!loggedIn) {
       router.push(routes.welcomePage);
     } else {
-      if (crewId) {
-        dispatch(fetchCrew(token));
-      }
       dispatch(fetchNotifications(token));
     }
   }, [loggedIn]);
+
+  useEffect(() => {
+    if (crewId) {
+      dispatch(fetchCrew(token));
+    }
+  }, [crewId]);
 
   return loggedIn && (
     <div className="d-flex justify-content-center anim-show">

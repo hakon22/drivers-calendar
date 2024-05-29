@@ -184,6 +184,30 @@ class Auth {
     }
   }
 
+  async acceptInvitation(req: Request, res: Response) {
+    try {
+      const { dataValues: { id, crewId } } = req.user as PassportRequest;
+      const { authorId } = req.body;
+
+      if (crewId) {
+        return res.json({ code: 3 });
+      }
+
+      const author = await Users.findByPk(authorId);
+
+      if (!author?.crewId) {
+        return res.json({ code: 2 });
+      }
+
+      await Users.update({ crewId: author.crewId }, { where: { id } });
+
+      res.status(200).json({ code: 1, crewId: author.crewId });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
   async confirmPhone(req: Request, res: Response) {
     try {
       req.body.phone = phoneTransform(req.body.phone);

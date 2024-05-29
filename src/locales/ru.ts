@@ -103,6 +103,8 @@ export default {
       carAlreadyExists: 'Вызывной или инвентарный уже существует',
       crewNotExists: 'Экипаж не существует',
       userInYouCrew: 'Пользователь уже в вашем экипаже!',
+      invalidInvitation: 'Приглашение недействительно',
+      alreadyOnCrew: 'Вы уже состоите в экипаже!',
     },
     modals: {
       signup: {

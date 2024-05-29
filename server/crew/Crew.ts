@@ -93,7 +93,7 @@ class Crew {
       await phoneValidation.serverValidator(req.body);
       req.body.phone = phoneTransform(req.body.phone);
       const { phone }: { phone: string } = req.body;
-      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { dataValues: { id, crewId } } = req.user as PassportRequest;
       const crew = await Crews.findByPk(crewId, {
         include: [
           { attributes: ['username'], model: Users, as: 'users' },
@@ -118,6 +118,7 @@ class Crew {
           : 'Отсутствуют.';
         const preparedNotification = {
           userId: candidate.id,
+          authorId: id,
           title: `Вас приглашают в экипаж с графиком ${crew.schedule}`,
           description: `Водители: ${users}`,
           description2: `Автомобили: ${cars}`,

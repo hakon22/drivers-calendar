@@ -21,6 +21,6 @@ export type UserInitialState = InitialState & {
   key?: string;
   role?: string;
   color?: string;
-  crewId?: string;
+  crewId?: number;
   [key: string]: number[] | string[] | string | number | null | undefined;
 };

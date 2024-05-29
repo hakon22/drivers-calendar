@@ -14,7 +14,7 @@ import { ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import {
   ApiContext, AuthContext, ModalContext, ScrollContext, SubmitContext, NavbarContext,
-} from '@/components//Context';
+} from '@/components/Context';
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import { socketMakeSchedule } from '@/slices/crewSlice';
 import routes from '@/routes';
