@@ -10,7 +10,7 @@ import {
   userInviteValidation,
 } from '@/validations/validations.js';
 import type { UserSignupType } from '@/components/forms/UserSignup';
-import dayjs from 'dayjs';
+import checkDateDiff from '@/utilities/checkDateDiff.js';
 import type { CarType } from '../types/Car.js';
 import redis from '../db/redis.js';
 import Sms from '../sms/Sms.js';
@@ -192,7 +192,8 @@ class Auth {
       const { id: notificationId, authorId } = req.body;
 
       const notification = await Notifications.findByPk(notificationId);
-      if (dayjs(notification.createAt)) {
+      if (checkDateDiff(notification?.createAt as Date, 1)) {
+        await Notifications.destroy({ where: { id: notificationId } });
         return res.json({ code: 2 });
       }
 

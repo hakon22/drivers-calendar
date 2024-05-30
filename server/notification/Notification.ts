@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable consistent-return */
 /* eslint-disable camelcase */
 import { or } from 'sequelize';
 import { Request, Response } from 'express';
-import Notifications from '../db/tables/Notifications.js';
+import checkDateDiff from '@/utilities/checkDateDiff.js';
+import Notifications, { NotificationsModel } from '../db/tables/Notifications.js';
 import { PassportRequest } from '../db/tables/Users.js';
 import type NotificationType from '../types/notification/NotificationType.js';
 
@@ -24,8 +26,21 @@ class Notification {
 
   async fetchNotifications(req: Request, res: Response) {
     try {
-      const { dataValues: { id } } = req.user as PassportRequest;
-      const notifications = await Notifications.findAll({ where: { userId: or(id, null) } }) || [];
+      const { dataValues: { id, crewId } } = req.user as PassportRequest;
+      const condition: { where: { userId: any, crewId?: number } } = { where: { userId: or(id, null) } };
+      if (crewId) {
+        condition.where.crewId = crewId;
+      }
+      const fetchedNotifications = await Notifications.findAll({ where: { userId: or(id, null) } }) || [];
+      const notifications: NotificationsModel[] = [];
+
+      for (const fetchedNotifiction of fetchedNotifications) {
+        if (checkDateDiff(fetchedNotifiction.createAt as Date, 1)) {
+          await Notifications.destroy({ where: { id: fetchedNotifiction.id } });
+        } else {
+          notifications.push(fetchedNotifiction);
+        }
+      }
 
       return res.json({ code: 1, notifications });
     } catch (e) {

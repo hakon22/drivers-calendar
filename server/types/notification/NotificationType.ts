@@ -8,7 +8,6 @@ type NotificationType = {
   authorId: number;
   crewId?: number;
   userId?: number;
-  createAt?: Date;
 };
 
 export default NotificationType;
