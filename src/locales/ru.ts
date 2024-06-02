@@ -71,7 +71,10 @@ export default {
         buttons: {
           makeSchedule: 'Составить график',
           inviteReplacement: 'Пригласить сменщика',
-          addCar: 'Добавить автомобиль',
+          car: {
+            title: 'Автомобиль',
+            addCar: 'Добавить автомобиль',
+          },
           exit: 'Выйти из экипажа',
         },
       },
@@ -153,6 +156,13 @@ export default {
         accept: 'Принять',
         decline: 'Отклонить',
         invitations: 'Приглашения',
+      },
+      notifications: {
+        title: 'Уведомления',
+        noNotifications: 'Уведомлений нет',
+        delete: 'Прочитать',
+        accept: 'Принять',
+        decline: 'Отклонить',
       },
     },
   },

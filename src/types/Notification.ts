@@ -7,6 +7,7 @@ export type Notification = {
   description: string;
   description2: string;
   type: NotificationEnum;
+  userId: number;
   authorId: number;
   crewId: number;
   isRead: boolean;

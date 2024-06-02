@@ -41,7 +41,7 @@ const NavBar = () => {
             {t('buttons.inviteReplacement')}
           </Button>
           <Button className="w-100 button button-height">
-            {t('buttons.addCar')}
+            {t('buttons.car.title')}
           </Button>
           <Button
             className="w-100 button button-height"

@@ -10,4 +10,16 @@ enum NotificationEnum {
   VACATION = 'VACATION',
 }
 
+export enum TranslateNotificationEnum {
+  INVITE = 'Приглашения',
+  EXILE = 'Изгнания',
+  CHAT = 'Чат',
+  SHIFT = 'График',
+  CREW = 'Экипаж',
+  CAR = 'Автомобиль',
+  USER = 'Пользователь',
+  HOSPITAL = 'Больничный',
+  VACATION = 'Отпуск',
+}
+
 export default NotificationEnum;

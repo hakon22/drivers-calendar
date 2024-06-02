@@ -10,7 +10,9 @@ const FloatButtons = () => {
   const { modalOpen } = useContext(ModalContext);
 
   const notifications = useAppSelector(selectors.selectAll);
-  const inviteNotifications = notifications.filter((notification) => notification.type === UserNotificationEnum.INVITE).length;
+  const inviteNotifications = notifications.filter((notification) => notification.type === UserNotificationEnum.INVITE);
+  const unreadInviteCount = inviteNotifications.filter(({ isRead }) => !isRead).length;
+  const unreadAllCount = notifications.filter(({ isRead }) => !isRead).length;
 
   const invitationHandler = () => modalOpen('inviteNotification');
   const chatHandler = () => modalOpen('');
@@ -19,8 +21,8 @@ const FloatButtons = () => {
   return (
     <>
       <FloatButton badge={{ count: 3 }} icon={<MessageOutlined />} />
-      {inviteNotifications ? <FloatButton className="float-button invitation-btn animate__heartBeat" badge={{ count: inviteNotifications }} onClick={invitationHandler} icon={<UserAddOutlined />} /> : null}
-      <FloatButton className="float-button notification-btn" badge={{ count: notifications.length - inviteNotifications }} icon={<BellOutlined />} onClick={notificationHandler} />
+      {inviteNotifications.length ? <FloatButton className="float-button invitation-btn animate__heartBeat" badge={{ count: unreadInviteCount }} onClick={invitationHandler} icon={<UserAddOutlined />} /> : null}
+      <FloatButton className="float-button notification-btn" badge={{ count: unreadAllCount - unreadInviteCount }} icon={<BellOutlined />} onClick={notificationHandler} />
     </>
   );
 };
