@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { ModalContext } from '@/components/Context';
 import { fetchAcceptInvitation } from '@/slices/userSlice';
 import type { Notification } from '@/types/Notification';
-import NotificationEnum, { TranslateNotificationEnum } from '../../../server/types/notification/enum/NotificationEnum';
+import NotificationEnum, { TranslateNotificationEnum } from '../../../../server/types/notification/enum/NotificationEnum';
 
 const ModalNotifications = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.notifications' });

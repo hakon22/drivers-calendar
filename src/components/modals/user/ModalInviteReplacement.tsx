@@ -13,8 +13,8 @@ import toast from '@/utilities/toast';
 import { loginValidation } from '@/validations/validations';
 import routes from '@/routes';
 import axios from 'axios';
-import MaskedInput from '../forms/MaskedInput';
-import phoneTransform from '../../../server/utilities/phoneTransform';
+import MaskedInput from '../../forms/MaskedInput';
+import phoneTransform from '../../../../server/utilities/phoneTransform';
 
 const ModalInviteReplacement = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.inviteReplacement' });

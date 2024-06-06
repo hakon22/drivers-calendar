@@ -16,9 +16,9 @@ import {
   ApiContext, AuthContext, ModalContext, ScrollContext, SubmitContext, NavbarContext,
 } from '@/components/Context';
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
-import { socketMakeSchedule } from '@/slices/crewSlice';
+import { socketMakeSchedule, socketActiveCarsUpdate, fetchCrew } from '@/slices/crewSlice';
 import routes from '@/routes';
-import { socketSendNotification } from '@/slices/notificationSlice';
+import { fetchNotifications, socketSendNotification } from '@/slices/notificationSlice';
 import { removeToken } from '@/slices/userSlice';
 import favicon from '../images/favicon.ico';
 import store from '../slices/index';
@@ -34,7 +34,9 @@ const Init = (props: AppProps) => {
   const { dispatch } = store;
   const router = useRouter();
 
-  const { id, refreshToken } = store.getState().user;
+  const {
+    id, token, refreshToken, crewId,
+  } = store.getState().user;
 
   const [isSubmit, setIsSubmit] = useState(false); // submit spinner
   const [isActive, setIsActive] = useState(false); // navbar
@@ -57,7 +59,15 @@ const Init = (props: AppProps) => {
   }, [id]);
 
   const [show, setShow] = useState<ModalShowType | ModalShowObjectType>('none'); // modals
-  const modalOpen = (arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>) => (modalSetState ? setShow({ show: arg, modalSetState }) : setShow(arg));
+  const modalOpen = (arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>, modalContext?: number) => {
+    if (modalSetState) {
+      setShow({ show: arg, modalSetState });
+    } else if (modalContext) {
+      setShow({ show: arg, modalContext });
+    } else {
+      setShow(arg);
+    }
+  };
   const modalClose = () => setShow('none');
 
   const scrollPx = () => window.innerWidth - document.body.clientWidth;
@@ -74,9 +84,15 @@ const Init = (props: AppProps) => {
 
   useEffect(() => {
     if (loggedIn) {
+      dispatch(fetchNotifications(token));
+      if (crewId) {
+        dispatch(fetchCrew(token));
+        socket.emit('crewConnection', crewId);
+      }
       socket.emit('userConnection', id);
       socket.on('makeSchedule', (data) => dispatch(socketMakeSchedule(data)));
       socket.on('sendNotification', (data) => dispatch(socketSendNotification(data)));
+      socket.on('activeCarUpdate', (data) => dispatch(socketActiveCarsUpdate(data)));
     }
   }, [loggedIn]);
 
@@ -87,6 +103,7 @@ const Init = (props: AppProps) => {
   const socketApi = useMemo(() => ({
     makeSchedule: (data: unknown) => socketConnect('makeSchedule', data),
     sendNotification: (data: unknown) => socketConnect('sendNotification', data),
+    activeCarUpdate: (data: unknown) => socketConnect('activeCarUpdate', data),
   }), [socketConnect]);
 
   const authServices = useMemo(() => ({ loggedIn, logIn, logOut }), [loggedIn]);

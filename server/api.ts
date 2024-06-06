@@ -31,6 +31,7 @@ router.post(`${apiPath}/auth/confirmPhone`, Auth.confirmPhone);
 router.get(`${apiPath}/crew/fetchCrew`, jwtToken, Crew.fetchCrew);
 router.post(`${apiPath}/crew/makeSchedule`, jwtToken, Crew.makeSchedule);
 router.post(`${apiPath}/crew/inviteReplacement`, jwtToken, Crew.inviteReplacement);
+router.post(`${apiPath}/crew/activeCarsUpdate`, jwtToken, Crew.activeCarsUpdate);
 
 // notification
 router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.fetchNotifications);

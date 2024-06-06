@@ -9,6 +9,7 @@ import isOverdueDate from '@/utilities/isOverdueDate.js';
 import Notifications, { NotificationsModel } from '../db/tables/Notifications.js';
 import { PassportRequest } from '../db/tables/Users.js';
 import type NotificationType from '../types/notification/NotificationType.js';
+import NotificationEnum from '../types/notification/enum/NotificationEnum.js';
 
 class Notification {
   public async send(notification: NotificationType) {
@@ -35,7 +36,7 @@ class Notification {
       const notifications: NotificationsModel[] = [];
 
       fetchedNotifications.forEach(async (fetchedNotifiction) => {
-        if (isOverdueDate(fetchedNotifiction.createdAt as Date, 1)) {
+        if (fetchedNotifiction.type === NotificationEnum.INVITE && isOverdueDate(fetchedNotifiction.createdAt as Date, 1)) {
           await Notifications.destroy({ where: { id: fetchedNotifiction.id } });
         } else {
           notifications.push(fetchedNotifiction);

@@ -14,8 +14,8 @@ import {
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import routes from '@/routes';
 import axios from 'axios';
-import SortableItem from '../SortableItem';
-import { UserModel } from '../../../server/db/tables/Users';
+import SortableItem from '../../SortableItem';
+import { UserModel } from '../../../../server/db/tables/Users';
 
 const ModalMakeSchedule = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.makeSchedule' });

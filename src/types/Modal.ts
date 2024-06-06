@@ -6,9 +6,12 @@ export type ModalShowType = 'none'
   | 'inviteReplacement'
   | 'acceptInvite'
   | 'inviteNotification'
-  | 'notifications';
+  | 'notifications'
+  | 'carsControl'
+  | 'carsEdit';
 
 export type ModalShowObjectType = {
   show: ModalShowType;
-  modalSetState: (arg: unknown) => void;
+  modalSetState?: (arg: unknown) => void;
+  modalContext?: number;
 };

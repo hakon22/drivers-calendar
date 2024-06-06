@@ -21,6 +21,7 @@ export const initialState: { [K in keyof CrewInitialState]: CrewInitialState[K] 
   users: [],
   cars: [],
   schedule_schema: {},
+  activeCar: null,
 };
 
 const crewSlice = createSlice({
@@ -30,6 +31,11 @@ const crewSlice = createSlice({
     socketMakeSchedule: (state, { payload }: PayloadAction<{ code: number, scheduleSchema: ScheduleSchemaType }>) => {
       if (payload.code === 1) {
         state.schedule_schema = payload.scheduleSchema;
+      }
+    },
+    socketActiveCarsUpdate: (state, { payload }: PayloadAction<{ code: number, activeCar: number }>) => {
+      if (payload.code === 1) {
+        state.activeCar = payload.activeCar;
       }
     },
   },
@@ -56,7 +62,7 @@ const crewSlice = createSlice({
 });
 
 export const {
-  socketMakeSchedule,
+  socketMakeSchedule, socketActiveCarsUpdate,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

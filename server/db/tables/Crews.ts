@@ -11,6 +11,7 @@ import Notifications from './Notifications.js';
 export interface CrewModel extends Model<InferAttributes<CrewModel>, InferCreationAttributes<CrewModel>> {
   id: CreationOptional<number>;
   schedule: string;
+  activeCar: CreationOptional<number>,
   schedule_schema: CreationOptional<ScheduleSchemaType>,
   users?: CreationOptional<UserModel[]>,
   cars?: CreationOptional<CarModel[]>,
@@ -32,11 +33,15 @@ const Crews = db.define<CrewModel>(
     schedule_schema: {
       type: DataTypes.JSONB,
     },
+    activeCar: {
+      type: DataTypes.INTEGER,
+    },
   },
 );
 
 Crews.hasMany(Users, { as: 'users' });
 Crews.hasMany(Cars, { as: 'cars' });
+Crews.belongsTo(Cars, { foreignKey: 'activeCar' });
 Notifications.belongsTo(Crews, { foreignKey: 'crewId' });
 
 export default Crews;

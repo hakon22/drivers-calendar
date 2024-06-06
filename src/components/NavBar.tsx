@@ -17,6 +17,7 @@ const NavBar = () => {
 
   const scheduleHandler = () => modalOpen('makeSchedule');
   const inviteReplacementHandler = () => modalOpen('inviteReplacement');
+  const carsSettingsHandler = () => modalOpen('carsControl');
   const container = useRef(null);
 
   return (
@@ -40,7 +41,7 @@ const NavBar = () => {
           <Button className="w-100 button button-height" onClick={inviteReplacementHandler}>
             {t('buttons.inviteReplacement')}
           </Button>
-          <Button className="w-100 button button-height">
+          <Button className="w-100 button button-height" onClick={carsSettingsHandler}>
             {t('buttons.car.title')}
           </Button>
           <Button

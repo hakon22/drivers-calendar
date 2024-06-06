@@ -1,18 +1,33 @@
 import { useContext } from 'react';
 import { ModalContext } from '@/components/Context';
 import type { ModalShowType } from '@/types/Modal';
-import ModalSignup from './modals/ModalSignup';
-import ModalRecovery from './modals/ModalRecovery';
-import ModalMakeSchedule from './modals/ModalMakeSchedule';
-import ModalInviteReplacement from './modals/ModalInviteReplacement';
-import ModalAcceptInvite from './modals/ModalAcceptInvite';
-import ModalInviteNotifications from './modals/ModalInviteNotifications';
-import ModalConfirmPhone from './modals/ModalConfirmPhone';
-import ModalNotifications from './modals/ModalNotifications';
+import ModalSignup from './modals/user/ModalSignup';
+import ModalRecovery from './modals/user/ModalRecovery';
+import ModalMakeSchedule from './modals/crew/ModalMakeSchedule';
+import ModalInviteReplacement from './modals/user/ModalInviteReplacement';
+import ModalAcceptInvite from './modals/user/ModalAcceptInvite';
+import ModalInviteNotifications from './modals/notification/ModalInviteNotifications';
+import ModalConfirmPhone from './modals/user/ModalConfirmPhone';
+import ModalNotifications from './modals/notification/ModalNotifications';
+import ModalCarsControl from './modals/car/ModalCarsControl';
+import ModalCarsEdit from './modals/car/ModalCarsEdit';
 
 const Modals = () => {
   const { show } = useContext(ModalContext);
-  const setState = typeof show === 'object' ? show.modalSetState : undefined;
+
+  const getParams = () => {
+    if (typeof show === 'object') {
+      if (show?.modalSetState) {
+        return show.modalSetState;
+      }
+      if (show?.modalContext) {
+        return show.modalContext;
+      }
+    }
+    return undefined;
+  };
+
+  const params = getParams();
 
   const modals: { [K in ModalShowType]: JSX.Element | null } = {
     none: null,
@@ -23,7 +38,9 @@ const Modals = () => {
     acceptInvite: <ModalAcceptInvite />,
     inviteNotification: <ModalInviteNotifications />,
     notifications: <ModalNotifications />,
-    activation: setState ? <ModalConfirmPhone setState={setState} /> : null,
+    carsControl: <ModalCarsControl />,
+    carsEdit: params && typeof params === 'number' ? <ModalCarsEdit modalContext={params} /> : null,
+    activation: params && typeof params !== 'number' ? <ModalConfirmPhone setState={params} /> : null,
   };
 
   return typeof show === 'object' ? modals[show.show] : modals[show];

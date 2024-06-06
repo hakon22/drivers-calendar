@@ -164,6 +164,17 @@ export default {
         accept: 'Принять',
         decline: 'Отклонить',
       },
+      carsControl: {
+        title: 'Автомобили',
+        model: 'Авто',
+        call: 'Выз.',
+        inventory: 'Инв.',
+        emptyText: 'Автомобилей нет',
+        add: 'Добавить',
+      },
+      carsEdit: {
+        title: '{{ car }}',
+      },
     },
   },
 } as const;

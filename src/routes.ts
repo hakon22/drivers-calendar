@@ -23,6 +23,7 @@ export default {
   acceptInvitation: [apiPath, 'auth', 'acceptInvitation'].join('/'),
   // car
   fetchBrands: [serverHost, apiPath, 'car', 'fetchBrands'].join('/'),
+  fetchBrandsChange: [apiPath, 'car', 'fetchBrands'].join('/'),
   getModels: [apiPath, 'car', 'getModels'].join('/'),
   // sms
   confirmPhone: [apiPath, 'auth', 'confirmPhone'].join('/'),
@@ -30,6 +31,7 @@ export default {
   fetchCrew: [apiPath, 'crew', 'fetchCrew'].join('/'),
   makeSchedule: [apiPath, 'crew', 'makeSchedule'].join('/'),
   inviteReplacement: [apiPath, 'crew', 'inviteReplacement'].join('/'),
+  activeCarsUpdate: [apiPath, 'crew', 'activeCarsUpdate'].join('/'),
   // notification
   fetchNotifications: [apiPath, 'notification', 'fetchNotifications'].join('/'),
   notificationReadUpdate: [apiPath, 'notification', 'readUpdate'].join('/'),

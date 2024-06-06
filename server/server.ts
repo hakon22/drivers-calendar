@@ -39,9 +39,11 @@ app.prepare().then(() => {
   const io = new Server(socketServer);
 
   io.on('connection', (socket) => {
-    socket.on('userConnection', (userId) => socket.join(userId));
+    socket.on('userConnection', (userId) => socket.join(`USER:${userId}`));
+    socket.on('crewConnection', (crewId) => socket.join(`CREW:${crewId}`));
     socket.on('makeSchedule', (data) => io.emit('makeSchedule', data));
-    socket.on('sendNotification', (data) => (data.sendAll ? io.emit('sendNotification', data) : socket.to(data?.userId).emit('sendNotification', data)));
+    socket.on('sendNotification', (data) => (data.sendAll ? io.emit('sendNotification', data) : socket.to(`USER:${data?.userId}`).emit('sendNotification', data)));
+    socket.on('activeCarUpdate', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('activeCarUpdate', data));
     socket.on('disconnect', async () => socket.disconnect());
   });
 

@@ -88,6 +88,40 @@ class Crew {
     }
   }
 
+  async activeCarsUpdate(req: Request, res: Response) {
+    try {
+      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { activeCar } = req.body;
+
+      const crew = await Crews.findByPk(crewId, {
+        include: [
+          { model: Cars, as: 'cars' }],
+      });
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      const car = await Cars.findByPk(activeCar);
+      if (!car) {
+        throw new Error('Автомобиль не существует');
+      }
+
+      const crews = await Crews.findAll({ where: { activeCar } });
+      if (crews.length) {
+        return res.json({ code: 3 });
+      }
+      if (!crew.cars?.find(({ id }) => id !== activeCar)) {
+        return res.json({ code: 2 });
+      }
+
+      await Crews.update({ activeCar }, { where: { id: crew.id } });
+      return res.json({ code: 1, activeCar });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
   async inviteReplacement(req: Request, res: Response) {
     try {
       await phoneValidation.serverValidator(req.body);

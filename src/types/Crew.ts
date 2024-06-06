@@ -10,5 +10,6 @@ export type CrewInitialState = InitialState & {
   schedule_schema: ScheduleSchemaType;
   users: UserModel[];
   cars: CarModel[];
+  activeCar: number | null;
   [key: string]: string | number | null | undefined | UserModel[] | CarModel[] | ScheduleSchemaType;
 };
