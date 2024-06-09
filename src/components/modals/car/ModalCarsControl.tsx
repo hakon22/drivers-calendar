@@ -1,14 +1,9 @@
-import {
-  Modal, Button, Form, Table,
-} from 'antd';
-import { useContext, useState } from 'react';
+import { Modal, Button, Table } from 'antd';
+import { useContext } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
-import {
-  ApiContext, ModalContext, NavbarContext, SubmitContext,
-} from '@/components/Context';
+import { ApiContext, ModalContext, SubmitContext } from '@/components/Context';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
-import toast from '@/utilities/toast';
 import routes from '@/routes';
 import axios from 'axios';
 import { PencilFill, XLg } from 'react-bootstrap-icons';
@@ -24,11 +19,9 @@ type DataType = {
 const ModalCarsControl = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.carsControl' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
-  const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
 
   const { modalClose, modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
-  const { closeNavbar } = useContext(NavbarContext);
   const { activeCarUpdate } = useContext(ApiContext);
 
   const { token, crewId } = useAppSelector((state) => state.user);

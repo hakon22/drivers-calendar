@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import {
   Form, Button, Select, Input, InputNumber,
 } from 'antd';
@@ -7,6 +7,7 @@ import axios from 'axios';
 import { carValidation } from '@/validations/validations';
 import routes from '@/routes';
 import type { Brand } from '../../../server/types/Cars';
+import { SubmitContext } from '../Context';
 
 type FuelConsumptionType = {
   city?: number;
@@ -59,7 +60,8 @@ const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
   const { brand, model } = values;
 
   const [models, setModels] = useState<Brand[]>();
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { setIsSubmit } = useContext(SubmitContext);
 
   const onValuesChange = (changedValue: CarSignupType) => setValues((preValues: CarSignupType) => {
     const [key, value] = Object.entries(changedValue)[0];
@@ -79,12 +81,12 @@ const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
 
   useEffect(() => {
     if (brand) {
+      setIsSubmit(true);
       if (!model) {
         form.setFieldValue('model', undefined);
       }
-      setIsLoading(true);
       fetchModels(brand).then((result) => setModels(result));
-      setIsLoading(false);
+      setIsSubmit(false);
     }
   }, [brand]);
 
@@ -94,7 +96,7 @@ const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
         <Select size="large" placeholder={t('brand')} options={brands} showSearch filterOption={filterOption} />
       </Form.Item>
       <Form.Item<CarSignupType> name="model" rules={[carValidation]}>
-        <Select size="large" placeholder={t('model')} options={models} showSearch filterOption={filterOption} disabled={!brand} loading={isLoading} />
+        <Select size="large" placeholder={t('model')} options={models} showSearch filterOption={filterOption} disabled={!brand} />
       </Form.Item>
       <Form.Item<CarSignupType> name="call" rules={[carValidation]}>
         <Input size="large" className="w-100" placeholder={t('call')} min={1} />

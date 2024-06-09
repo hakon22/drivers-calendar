@@ -25,6 +25,8 @@ export default {
   fetchBrands: [serverHost, apiPath, 'car', 'fetchBrands'].join('/'),
   fetchBrandsChange: [apiPath, 'car', 'fetchBrands'].join('/'),
   getModels: [apiPath, 'car', 'getModels'].join('/'),
+  createCar: [apiPath, 'car', 'createCar'].join('/'),
+  updateCar: [apiPath, 'car', 'updateCar'].join('/'),
   // sms
   confirmPhone: [apiPath, 'auth', 'confirmPhone'].join('/'),
   // index

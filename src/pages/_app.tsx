@@ -16,7 +16,9 @@ import {
   ApiContext, AuthContext, ModalContext, ScrollContext, SubmitContext, NavbarContext,
 } from '@/components/Context';
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
-import { socketMakeSchedule, socketActiveCarsUpdate, fetchCrew } from '@/slices/crewSlice';
+import {
+  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew,
+} from '@/slices/crewSlice';
 import routes from '@/routes';
 import { fetchNotifications, socketSendNotification } from '@/slices/notificationSlice';
 import { removeToken } from '@/slices/userSlice';
@@ -93,6 +95,8 @@ const Init = (props: AppProps) => {
       socket.on('makeSchedule', (data) => dispatch(socketMakeSchedule(data)));
       socket.on('sendNotification', (data) => dispatch(socketSendNotification(data)));
       socket.on('activeCarUpdate', (data) => dispatch(socketActiveCarsUpdate(data)));
+      socket.on('carUpdate', (data) => dispatch(socketCarUpdate(data)));
+      socket.on('carAdd', (data) => dispatch(socketCarAdd(data)));
     }
   }, [loggedIn]);
 
@@ -104,6 +108,8 @@ const Init = (props: AppProps) => {
     makeSchedule: (data: unknown) => socketConnect('makeSchedule', data),
     sendNotification: (data: unknown) => socketConnect('sendNotification', data),
     activeCarUpdate: (data: unknown) => socketConnect('activeCarUpdate', data),
+    carUpdate: (data: unknown) => socketConnect('carUpdate', data),
+    carAdd: (data: unknown) => socketConnect('carAdd', data),
   }), [socketConnect]);
 
   const authServices = useMemo(() => ({ loggedIn, logIn, logOut }), [loggedIn]);

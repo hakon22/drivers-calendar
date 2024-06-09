@@ -4,6 +4,7 @@ import type { CrewInitialState } from '../types/Crew';
 import routes from '../routes';
 import { CrewModel } from '../../server/db/tables/Crews';
 import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
+import { CarModel } from '../../server/db/tables/Cars';
 
 export const fetchCrew = createAsyncThunk(
   'crew/fetchCrew',
@@ -38,6 +39,16 @@ const crewSlice = createSlice({
         state.activeCar = payload.activeCar;
       }
     },
+    socketCarUpdate: (state, { payload }: PayloadAction<{ code: number, car: CarModel }>) => {
+      if (payload.code === 1) {
+        state.cars = [...state.cars.filter((car) => car.id !== payload.car.id), payload.car];
+      }
+    },
+    socketCarAdd: (state, { payload }: PayloadAction<{ code: number, car: CarModel }>) => {
+      if (payload.code === 1) {
+        state.cars = [...state.cars, payload.car];
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -62,7 +73,7 @@ const crewSlice = createSlice({
 });
 
 export const {
-  socketMakeSchedule, socketActiveCarsUpdate,
+  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

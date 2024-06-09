@@ -108,6 +108,8 @@ export default {
       userInYouCrew: 'Пользователь уже в вашем экипаже!',
       invalidInvitation: 'Приглашение недействительно',
       alreadyOnCrew: 'Вы уже состоите в экипаже!',
+      carNotOnTheCrew: 'Автомобиль не числится в команде!',
+      carUpdateSuccess: 'Автомобиль успешно обновлён',
     },
     modals: {
       signup: {
@@ -174,6 +176,7 @@ export default {
       },
       carsEdit: {
         title: '{{ car }}',
+        update: 'Обновить',
       },
     },
   },

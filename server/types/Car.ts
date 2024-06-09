@@ -13,4 +13,5 @@ export type CarType = {
   remaining_fuel: number;
   fuel_consumption_summer: FuelConsumptionType;
   fuel_consumption_winter: FuelConsumptionType;
+  crewId: number;
 };
