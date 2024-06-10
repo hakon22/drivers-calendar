@@ -17,7 +17,7 @@ import {
 } from '@/components/Context';
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import {
-  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew,
+  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew, socketCarRemove,
 } from '@/slices/crewSlice';
 import routes from '@/routes';
 import { fetchNotifications, socketSendNotification } from '@/slices/notificationSlice';
@@ -61,7 +61,7 @@ const Init = (props: AppProps) => {
   }, [id]);
 
   const [show, setShow] = useState<ModalShowType | ModalShowObjectType>('none'); // modals
-  const modalOpen = (arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>, modalContext?: number) => {
+  const modalOpen = (arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>, modalContext?: number | string) => {
     if (modalSetState) {
       setShow({ show: arg, modalSetState });
     } else if (modalContext) {
@@ -96,6 +96,7 @@ const Init = (props: AppProps) => {
       socket.on('sendNotification', (data) => dispatch(socketSendNotification(data)));
       socket.on('activeCarUpdate', (data) => dispatch(socketActiveCarsUpdate(data)));
       socket.on('carUpdate', (data) => dispatch(socketCarUpdate(data)));
+      socket.on('carRemove', (data) => dispatch(socketCarRemove(data)));
       socket.on('carAdd', (data) => dispatch(socketCarAdd(data)));
     }
   }, [loggedIn]);
@@ -109,6 +110,7 @@ const Init = (props: AppProps) => {
     sendNotification: (data: unknown) => socketConnect('sendNotification', data),
     activeCarUpdate: (data: unknown) => socketConnect('activeCarUpdate', data),
     carUpdate: (data: unknown) => socketConnect('carUpdate', data),
+    carRemove: (data: unknown) => socketConnect('carRemove', data),
     carAdd: (data: unknown) => socketConnect('carAdd', data),
   }), [socketConnect]);
 

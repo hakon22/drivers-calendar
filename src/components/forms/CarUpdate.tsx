@@ -4,6 +4,7 @@ import {
   Form, Button, Select, Input, InputNumber,
 } from 'antd';
 import axios from 'axios';
+import { isEqual } from 'lodash';
 import { carValidation } from '@/validations/validations';
 import routes from '@/routes';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
@@ -67,6 +68,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
 
   const onFinish = async (finishValues: CarSignupType) => {
     try {
+      if (isEqual(car, { id: values.id, ...finishValues })) return;
       setIsSubmit(true);
       const { data: { code, car: updatedCar } } = await axios.patch(`${routes.updateCar}/${car.id}`, finishValues, {
         headers: { Authorization: `Bearer ${token}` },
@@ -81,7 +83,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
         toast(tToast('carNotOnTheCrew'), 'error');
       } else if (code === 1) {
         carUpdate({ car: updatedCar, code, crewId });
-        modalOpen('carsControl');
+        modalOpen('carsControl', undefined, 'none');
         toast(tToast('carUpdateSuccess'), 'success');
       }
       setIsSubmit(false);

@@ -13,5 +13,5 @@ export type ModalShowType = 'none'
 export type ModalShowObjectType = {
   show: ModalShowType;
   modalSetState?: (arg: unknown) => void;
-  modalContext?: number;
+  modalContext?: number | string;
 };

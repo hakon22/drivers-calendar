@@ -45,6 +45,7 @@ app.prepare().then(() => {
     socket.on('sendNotification', (data) => (data.sendAll ? io.emit('sendNotification', data) : socket.to(`USER:${data?.userId}`).emit('sendNotification', data)));
     socket.on('activeCarUpdate', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('activeCarUpdate', data));
     socket.on('carUpdate', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carUpdate', data));
+    socket.on('carRemove', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carRemove', data));
     socket.on('carAdd', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carAdd', data));
     socket.on('disconnect', async () => socket.disconnect());
   });

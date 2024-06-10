@@ -16,7 +16,9 @@ export interface CarModel extends Model<InferAttributes<CarModel>, InferCreation
   fuel_consumption_winter_city: number;
   fuel_consumption_summer_highway: number;
   fuel_consumption_winter_highway: number;
-  crewId: CreationOptional<number>;
+  crewId: CreationOptional<number | null>;
+  createdAt?: CreationOptional<Date>;
+  updatedAt?: CreationOptional<Date>;
 }
 
 const Cars = db.define<CarModel>(

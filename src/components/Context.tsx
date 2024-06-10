@@ -36,7 +36,7 @@ export const NavbarContext = createContext<{
 
 export const ModalContext = createContext<{
   show: ModalShowType | ModalShowObjectType,
-  modalOpen:(arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>, modalContext?: number) => void,
+  modalOpen:(arg: ModalShowType, modalSetState?: React.Dispatch<React.SetStateAction<any>>, modalContext?: number | string) => void,
   modalClose:() => void,
     }>({
       show: 'none',

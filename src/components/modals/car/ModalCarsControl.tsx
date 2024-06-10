@@ -1,4 +1,6 @@
-import { Modal, Button, Table } from 'antd';
+import {
+  Modal, Button, Table, Popconfirm,
+} from 'antd';
 import { useContext } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +10,7 @@ import routes from '@/routes';
 import axios from 'axios';
 import { PencilFill, XLg } from 'react-bootstrap-icons';
 import { ColumnsType } from 'antd/es/table';
+import toast from '@/utilities/toast';
 
 type DataType = {
   key: number;
@@ -16,13 +19,13 @@ type DataType = {
   inventory: string;
 };
 
-const ModalCarsControl = () => {
+const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.carsControl' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const { modalClose, modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
-  const { activeCarUpdate } = useContext(ApiContext);
+  const { carRemove, activeCarUpdate } = useContext(ApiContext);
 
   const { token, crewId } = useAppSelector((state) => state.user);
   const { cars, activeCar } = useAppSelector((state) => state.crew);
@@ -37,6 +40,24 @@ const ModalCarsControl = () => {
         activeCarUpdate({ ...data, crewId });
       }
       setIsSubmit(false);
+    } catch (e) {
+      axiosErrorHandler(e, tToast);
+    }
+  };
+
+  const handleOk = async (id: number) => {
+    try {
+      const { data } = await axios.delete(`${routes.removeCar}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }) as { data: { code: number } };
+      if (data.code === 1) {
+        carRemove({ ...data, crewId });
+        toast(tToast('carRemoveSuccess'), 'success');
+      } else if (data.code === 2) {
+        toast(tToast('carNotExistInCrew'), 'error');
+      } else if (data.code === 3) {
+        toast(tToast('carIsActive'), 'error');
+      }
     } catch (e) {
       axiosErrorHandler(e, tToast);
     }
@@ -70,7 +91,7 @@ const ModalCarsControl = () => {
       className: 'non-select',
       render: (text, record) => (
         <PencilFill
-          title={t('profile.addressForm.changing')}
+          title={t('edit')}
           className="non-select d-flex align-items-center text-warning"
           role="button"
           onClick={() => modalOpen('carsEdit', undefined, record.key)}
@@ -80,17 +101,21 @@ const ModalCarsControl = () => {
     {
       dataIndex: 'remove',
       className: 'non-select',
-      render: (text, record, index) => (
-        <XLg
-          title={t('profile.addressForm.removing')}
-          className="non-select d-flex align-items-center text-danger"
-          role="button"
-          onClick={async () => {
-            setIsSubmit(true);
-            // await dispatch(fetchRemoveAddress({ token, index }));
-            setIsSubmit(false);
-          }}
-        />
+      render: (text, record) => (
+        <Popconfirm
+          title={t('popconfirm.title')}
+          description={t('popconfirm.description')}
+          onConfirm={async () => handleOk(record.key)}
+          okButtonProps={{ danger: true }}
+          okText={t('popconfirm.ok')}
+          cancelText={t('popconfirm.cancel')}
+        >
+          <XLg
+            title={t('remove')}
+            className="non-select d-flex align-items-center text-danger"
+            role="button"
+          />
+        </Popconfirm>
       ),
     },
   ];
@@ -100,6 +125,7 @@ const ModalCarsControl = () => {
       centered
       open
       footer={null}
+      transitionName={modalContext}
       styles={{
         content: {
           paddingLeft: '0.5em', paddingRight: '0.5em', maxHeight: '90vh', overflow: 'auto',
@@ -124,7 +150,7 @@ const ModalCarsControl = () => {
           onRow={({ key }) => ({
             onClick: async ({ target }) => {
               const { classList, tagName } = target as HTMLElement;
-              if (!classList.contains('non-select') && tagName !== 'path' && (activeCar !== key)) {
+              if (!classList.contains('non-select') && tagName === 'TD' && (activeCar !== key)) {
                 await activeCarUpdateHandler(key);
               }
             },
@@ -146,6 +172,10 @@ const ModalCarsControl = () => {
       </div>
     </Modal>
   );
+};
+
+ModalCarsControl.defaultProps = {
+  modalContext: undefined,
 };
 
 export default ModalCarsControl;

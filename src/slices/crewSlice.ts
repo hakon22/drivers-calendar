@@ -49,6 +49,11 @@ const crewSlice = createSlice({
         state.cars = [...state.cars, payload.car];
       }
     },
+    socketCarRemove: (state, { payload }: PayloadAction<{ code: number, carId: number }>) => {
+      if (payload.code === 1) {
+        state.cars = state.cars.filter((car) => car.id !== +payload.carId);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -73,7 +78,7 @@ const crewSlice = createSlice({
 });
 
 export const {
-  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd,
+  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, socketCarRemove,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

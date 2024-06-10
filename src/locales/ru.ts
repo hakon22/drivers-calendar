@@ -110,6 +110,9 @@ export default {
       alreadyOnCrew: 'Вы уже состоите в экипаже!',
       carNotOnTheCrew: 'Автомобиль не числится в команде!',
       carUpdateSuccess: 'Автомобиль успешно обновлён',
+      carRemoveSuccess: 'Автомобиль успешно удалён',
+      carIsActive: 'Нельзя удалить активный автомобиль',
+      carNotExistInCrew: 'Автомобиль уже не в экипаже',
     },
     modals: {
       signup: {
@@ -173,6 +176,14 @@ export default {
         inventory: 'Инв.',
         emptyText: 'Автомобилей нет',
         add: 'Добавить',
+        remove: 'Удалить',
+        edit: 'Редактировать',
+        popconfirm: {
+          title: 'Удаление автомобиля',
+          description: 'Вы действительно хотите удалить автомобиль?',
+          cancel: 'Нет',
+          ok: 'Да',
+        },
       },
       carsEdit: {
         title: '{{ car }}',

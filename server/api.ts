@@ -25,6 +25,7 @@ router.get(`${apiPath}/car/fetchBrands`, Car.fetchBrands);
 router.get(`${apiPath}/car/getModels/:brand`, Car.getModels);
 router.post(`${apiPath}/car/createCar`, jwtToken, Car.createCar);
 router.patch(`${apiPath}/car/updateCar/:id`, jwtToken, Car.updateCar);
+router.delete(`${apiPath}/car/removeCar/:id`, jwtToken, Car.removeCar);
 
 // sms
 router.post(`${apiPath}/auth/confirmPhone`, Auth.confirmPhone);

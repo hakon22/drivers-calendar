@@ -10,6 +10,7 @@ import type { Brand, Models } from '../types/Cars';
 import { CarType } from '../types/Car';
 import Cars from '../db/tables/Cars';
 import { PassportRequest } from '../db/tables/Users';
+import Crews from '../db/tables/Crews';
 
 class Car {
   async fetchBrands(req: Request, res: Response) {
@@ -82,6 +83,36 @@ class Car {
         { where: { id }, returning: true },
       );
       res.json({ code: 1, car: affectedRows[0] });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async removeCar(req: Request, res: Response) {
+    try {
+      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { id } = req.params;
+
+      const [car, crew] = await Promise.all([
+        Cars.findByPk(id),
+        Crews.findByPk(crewId),
+      ]);
+
+      if (!car) {
+        throw new Error('Автомобиль не существует');
+      }
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+      if (crew.activeCar === +id) {
+        return res.json({ code: 3 });
+      }
+      if (crewId !== car.crewId) {
+        return res.json({ code: 2 });
+      }
+      await Cars.update({ crewId: null }, { where: { id } });
+      res.json({ code: 1, carId: id });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

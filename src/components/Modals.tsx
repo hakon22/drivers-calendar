@@ -38,9 +38,9 @@ const Modals = () => {
     acceptInvite: <ModalAcceptInvite />,
     inviteNotification: <ModalInviteNotifications />,
     notifications: <ModalNotifications />,
-    carsControl: <ModalCarsControl />,
+    carsControl: params && typeof params === 'string' ? <ModalCarsControl modalContext={params} /> : <ModalCarsControl />,
     carsEdit: params && typeof params === 'number' ? <ModalCarsEdit modalContext={params} /> : null,
-    activation: params && typeof params !== 'number' ? <ModalConfirmPhone setState={params} /> : null,
+    activation: params && typeof params !== 'number' && typeof params !== 'string' ? <ModalConfirmPhone setState={params} /> : null,
   };
 
   return typeof show === 'object' ? modals[show.show] : modals[show];

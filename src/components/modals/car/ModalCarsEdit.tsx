@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Modal } from 'antd';
 import { useContext } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
@@ -16,6 +17,9 @@ const ModalCarsEdit = ({ modalContext }: { modalContext: number }) => {
     fuel_consumption_summer_highway: fuelConsumptionSummerHighway,
     fuel_consumption_winter_city: fuelConsumptionWinterCity,
     fuel_consumption_winter_highway: fuelConsumptionWinterHighway,
+    crewId,
+    updatedAt,
+    createdAt,
     ...rest
   } = cars.find(({ id }) => id === modalContext) as CarModel;
 
@@ -35,7 +39,7 @@ const ModalCarsEdit = ({ modalContext }: { modalContext: number }) => {
           paddingLeft: '0.5em', paddingRight: '0.5em', maxHeight: '90vh', overflow: 'auto',
         },
       }}
-      onCancel={() => modalOpen('carsControl')}
+      onCancel={() => modalOpen('carsControl', undefined, 'none')}
     >
       <div className="col-12 my-4 d-flex flex-column align-items-center gap-3">
         <div className="h1">{t('title', { car: `${preparedCar?.brand} ${preparedCar?.model}` })}</div>
