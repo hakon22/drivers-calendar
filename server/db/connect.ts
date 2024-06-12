@@ -7,7 +7,7 @@ export const db = new Sequelize(DB === 'LOCAL' ? DB_LOCAL : DB_HOST, { schema: '
 export const connectToDb = async () => {
   try {
     await db.authenticate();
-    // await db.sync({ alter: true });
+    // await db.sync({ force: true });
     await db.sync();
     console.log('Соединение с БД было успешно установлено');
   } catch (e) {

@@ -40,12 +40,12 @@ const Cars = db.define<CarModel>(
     inventory: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
+      unique: 'inventory',
     },
     call: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: 'call',
     },
     mileage: {
       type: DataTypes.INTEGER,

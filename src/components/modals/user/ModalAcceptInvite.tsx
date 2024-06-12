@@ -7,7 +7,7 @@ import { useContext } from 'react';
 import { fetchInviteSignup } from '@/slices/userSlice';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
-import { SubmitContext } from '@/components/Context';
+import { ModalContext, SubmitContext } from '@/components/Context';
 import { userValidation } from '@/validations/validations';
 
 const ModalAcceptInvite = () => {
@@ -19,14 +19,16 @@ const ModalAcceptInvite = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.acceptInvite' });
   const dispatch = useAppDispatch();
   const { setIsSubmit } = useContext(SubmitContext);
+  const { modalClose } = useContext(ModalContext);
 
   const { users, cars, temporaryToken } = useAppSelector((state) => state.user);
 
-  const onFinish = async ({ username, color }: UserSignupType) => {
+  const onFinish = ({ username, color }: UserSignupType) => {
     if (temporaryToken && typeof temporaryToken === 'string') {
       setIsSubmit(true);
-      await dispatch(fetchInviteSignup({ username, color: typeof color !== 'string' ? color.toHexString() : color, temporaryToken }));
+      dispatch(fetchInviteSignup({ username, color: typeof color !== 'string' ? color.toHexString() : color, temporaryToken }));
       setIsSubmit(false);
+      modalClose();
     }
   };
 

@@ -3,7 +3,6 @@ import {
 } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { db } from '../connect.js';
-import Notifications from './Notifications.js';
 
 export interface UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>> {
   id: CreationOptional<number>;
@@ -41,7 +40,7 @@ const Users = db.define<UserModel>(
     phone: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: 'phone',
     },
     role: {
       type: DataTypes.ENUM('admin', 'member'),
@@ -67,8 +66,5 @@ const Users = db.define<UserModel>(
     },
   },
 );
-
-Users.hasMany(Notifications, { as: 'notifications' });
-Notifications.belongsTo(Users, { foreignKey: 'authorId' });
 
 export default Users;

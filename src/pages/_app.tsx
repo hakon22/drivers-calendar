@@ -87,10 +87,6 @@ const Init = (props: AppProps) => {
   useEffect(() => {
     if (loggedIn) {
       dispatch(fetchNotifications(token));
-      if (crewId) {
-        dispatch(fetchCrew(token));
-        socket.emit('crewConnection', crewId);
-      }
       socket.emit('userConnection', id);
       socket.on('makeSchedule', (data) => dispatch(socketMakeSchedule(data)));
       socket.on('sendNotification', (data) => dispatch(socketSendNotification(data)));
@@ -100,6 +96,13 @@ const Init = (props: AppProps) => {
       socket.on('carAdd', (data) => dispatch(socketCarAdd(data)));
     }
   }, [loggedIn]);
+
+  useEffect(() => {
+    if (crewId) {
+      dispatch(fetchCrew(token));
+      socket.emit('crewConnection', crewId);
+    }
+  }, [crewId]);
 
   const socketConnect = useCallback((param: string, arg: unknown) => {
     socket.emit(param, arg);

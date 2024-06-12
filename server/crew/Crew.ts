@@ -110,7 +110,7 @@ class Crew {
       if (crews.length) {
         return res.json({ code: 3 });
       }
-      if (!crew.cars?.find(({ id }) => id !== activeCar)) {
+      if (!crew.cars?.find(({ id }) => id === activeCar)) {
         return res.json({ code: 2 });
       }
 

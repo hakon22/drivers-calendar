@@ -22,6 +22,7 @@ router.post(`${apiPath}/auth/acceptInvitation`, jwtToken, Auth.acceptInvitation)
 
 // car
 router.get(`${apiPath}/car/fetchBrands`, Car.fetchBrands);
+router.get(`${apiPath}/car/fetchCarList`, jwtToken, Car.fetchCarList);
 router.get(`${apiPath}/car/getModels/:brand`, Car.getModels);
 router.post(`${apiPath}/car/createCar`, jwtToken, Car.createCar);
 router.patch(`${apiPath}/car/updateCar/:id`, jwtToken, Car.updateCar);

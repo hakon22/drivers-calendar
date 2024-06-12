@@ -24,6 +24,7 @@ export default {
   // car
   fetchBrands: [serverHost, apiPath, 'car', 'fetchBrands'].join('/'),
   fetchBrandsChange: [apiPath, 'car', 'fetchBrands'].join('/'),
+  fetchCarList: [apiPath, 'car', 'fetchCarList'].join('/'),
   getModels: [apiPath, 'car', 'getModels'].join('/'),
   createCar: [apiPath, 'car', 'createCar'].join('/'),
   removeCar: [apiPath, 'car', 'removeCar'].join('/'),

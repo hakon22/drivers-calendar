@@ -1,7 +1,7 @@
 import {
   Modal, Button, Table, Popconfirm,
 } from 'antd';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import { ApiContext, ModalContext, SubmitContext } from '@/components/Context';
@@ -11,6 +11,7 @@ import axios from 'axios';
 import { PencilFill, XLg } from 'react-bootstrap-icons';
 import { ColumnsType } from 'antd/es/table';
 import toast from '@/utilities/toast';
+import CarAdd from '@/components/forms/CarAdd';
 
 type DataType = {
   key: number;
@@ -30,6 +31,8 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
   const { token, crewId } = useAppSelector((state) => state.user);
   const { cars, activeCar } = useAppSelector((state) => state.crew);
 
+  const [add, setAdd] = useState(false);
+
   const activeCarUpdateHandler = async (id: number) => {
     try {
       setIsSubmit(true);
@@ -38,6 +41,10 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
       }) as { data: { code: number } };
       if (data.code === 1) {
         activeCarUpdate({ ...data, crewId });
+      } else if (data.code === 2) {
+        toast(tToast('carNotOnTheCrew'), 'error');
+      } else if (data.code === 3) {
+        toast(tToast('carIsActiveAnotherCrew'), 'error');
       }
       setIsSubmit(false);
     } catch (e) {
@@ -166,9 +173,11 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
             key: id, model: `${brand} ${model}`, call, inventory,
           }))}
         />
-        <Button className="col-10 mx-auto button-height button" onClick={() => {}}>
-          {t('add')}
-        </Button>
+        {add ? <CarAdd /> : (
+          <Button className="col-10 mx-auto button-height button" onClick={() => setAdd(true)}>
+            {t('add')}
+          </Button>
+        )}
       </div>
     </Modal>
   );

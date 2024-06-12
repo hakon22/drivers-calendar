@@ -14,6 +14,7 @@ import refreshTokenChecker from './authentication/refreshTokenChecker.js';
 import temporaryTokenChecker from './authentication/temporaryTokenChecker.js';
 import { connectToDb } from './db/connect.js';
 import router from './api.js';
+import createRelations from './db/relations.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -42,7 +43,7 @@ app.prepare().then(() => {
     socket.on('userConnection', (userId) => socket.join(`USER:${userId}`));
     socket.on('crewConnection', (crewId) => socket.join(`CREW:${crewId}`));
     socket.on('makeSchedule', (data) => io.emit('makeSchedule', data));
-    socket.on('sendNotification', (data) => (data.sendAll ? io.emit('sendNotification', data) : socket.to(`USER:${data?.userId}`).emit('sendNotification', data)));
+    socket.on('sendNotification', (data) => (data?.sendAll ? io.emit('sendNotification', data) : socket.to(`USER:${data?.userId}`).emit('sendNotification', data)));
     socket.on('activeCarUpdate', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('activeCarUpdate', data));
     socket.on('carUpdate', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carUpdate', data));
     socket.on('carRemove', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carRemove', data));
@@ -60,3 +61,4 @@ export const uploadFilesPath = NODE_ENV === 'development'
   : join(__dirname, '..', '.next', 'static', 'media');
 
 connectToDb();
+createRelations();

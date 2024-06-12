@@ -28,6 +28,20 @@ class Car {
     }
   }
 
+  async fetchCarList(req: Request, res: Response) {
+    try {
+      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const cars = await Cars.findAll({ where: { crewId: { [Op.not]: crewId } } });
+      const preparedCars = cars.map(({
+        id, brand, model, inventory, call,
+      }) => ({ label: `${brand} ${model} (${call}/${inventory})`, value: `${brand} ${model} (${call}/${inventory})`, id }));
+      res.json({ code: 1, cars: preparedCars });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
   async getModels(req: Request, res: Response) {
     try {
       const { brand } = req.params;
