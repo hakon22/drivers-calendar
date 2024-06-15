@@ -59,7 +59,7 @@ class Crew {
       const crew = await Crews.findByPk(crewId, {
         include: [
           { attributes: ['id', 'username', 'color', 'phone'], model: Users, as: 'users' },
-          { model: Cars, as: 'cars' }],
+          { model: Cars, as: 'cars', through: { attributes: [] } }],
       });
       if (!crew) {
         throw new Error('Экипаж не существует');

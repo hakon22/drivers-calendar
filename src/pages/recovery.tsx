@@ -35,7 +35,7 @@ const Recovery = () => {
       if (code === 1) {
         modalOpen('recovery');
       } else if (code === 2) {
-        form.setFields([{ name: 'phone', errors: [tValidation('userNotAlreadyExists')] }]);
+        form.setFields([{ name: 'phone', errors: [tValidation('userNotExists')] }]);
       }
       setIsSubmit(false);
     } catch (e) {

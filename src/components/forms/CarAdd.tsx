@@ -1,53 +1,29 @@
 import { useTranslation } from 'react-i18next';
-import { useContext, useEffect, useState } from 'react';
 import {
-  Form, Button, Select, Input, InputNumber,
-} from 'antd';
+  JSXElementConstructor, ReactElement, useContext, useEffect, useState,
+} from 'react';
+import { Form, Button, Select } from 'antd';
 import axios from 'axios';
-import { isEqual } from 'lodash';
 import { carValidation } from '@/validations/validations';
 import routes from '@/routes';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import { useAppSelector } from '@/utilities/hooks';
-import toast from '@/utilities/toast';
 import type { Brand } from '../../../server/types/Cars';
-import type { CarSignupType } from './CarSignup';
-import { ApiContext, ModalContext, SubmitContext } from '../Context';
-import { CarModel } from '../../../server/db/tables/Cars';
+import { ApiContext, SubmitContext, ModalContext } from '../Context';
 
 type CarAddType = {
   brand: '',
 };
 
-const FuelConsumption = ({ name, t }: { name: string, t: (str: string) => string }) => (
-  <div className="label-group d-flex flex-column">
-    <div className="mb-3 roboto-500">{t(name)}</div>
-    <ul>
-      <li className="d-flex">
-        <span className="col-4 mt-2 roboto-500">{t('city')}</span>
-        <Form.Item<CarSignupType> name={[name, 'city']} rules={[carValidation]}>
-          <InputNumber className="w-100" size="large" suffix={t('litrePerKm')} min={1} keyboard />
-        </Form.Item>
-      </li>
-      <li className="d-flex">
-        <span className="col-4 mt-2 roboto-500">{t('highway')}</span>
-        <Form.Item<CarSignupType> name={[name, 'highway']} rules={[carValidation]}>
-          <InputNumber className="w-100" size="large" suffix={t('litrePerKm')} min={1} keyboard />
-        </Form.Item>
-      </li>
-    </ul>
-  </div>
-);
-
 const CarAdd = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.carsEdit' });
-  const { t: tCarForm } = useTranslation('translation', { keyPrefix: 'signup.carForm' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const [form] = Form.useForm();
   const { token, crewId } = useAppSelector((state) => state.user);
+  const { cars: currentCars } = useAppSelector((state) => state.crew);
 
-  const [cars, setCars] = useState<Brand[]>();
+  const [cars, setCars] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(false);
 
   const { setIsSubmit } = useContext(SubmitContext);
@@ -70,22 +46,53 @@ const CarAdd = () => {
   };
 
   const onFinish = async ({ brand }: { brand: string }) => {
-    setIsSubmit(true);
-    const car = cars?.find((item) => item.label === brand);
-    console.log(car);
-    setIsSubmit(false);
+    try {
+      setIsSubmit(true);
+      const car = cars?.find((item) => item.label === brand);
+      if (car) {
+        const { data } = await axios.post(routes.addCar, car, {
+          headers: { Authorization: `Bearer ${token}` },
+        }) as { data: { code: number } };
+        if (data.code === 1) {
+          setCars(cars.filter(({ value }) => value !== car.value));
+          form.setFieldValue('brand', undefined);
+          carAdd({ ...data, crewId });
+        }
+      }
+      setIsSubmit(false);
+    } catch (e) {
+      axiosErrorHandler(e, tToast);
+    }
   };
+
+  const dropdownRender = (menu: ReactElement<unknown, string | JSXElementConstructor<unknown>>) => (
+    <>
+      <div className="mb-4">{menu}</div>
+      <Button type="text" className="my-2 mx-auto d-block button" onClick={() => modalOpen('carsAdd')}>
+        {t('addNewCar')}
+      </Button>
+    </>
+  );
 
   const filterOption = <T extends Brand>(input: string, option?: T) => (option?.label.toLowerCase() ?? '').includes(input.toLowerCase());
 
   useEffect(() => {
     fetchCarList();
-  }, []);
+  }, [currentCars.length]);
 
   return (
     <Form name="car-add" form={form} onFinish={onFinish} className="signup-form d-flex flex-column col-9">
       <Form.Item<CarAddType> name="brand" rules={[carValidation]}>
-        <Select size="large" placeholder={tCarForm('brand')} options={cars} showSearch filterOption={filterOption} loading={loading} />
+        <Select
+          size="large"
+          placeholder={t('selectCar')}
+          options={cars}
+          notFoundContent={<div className="text-center">{t('carsNotFound')}</div>}
+          showSearch
+          filterOption={filterOption}
+          loading={loading}
+          dropdownRender={dropdownRender}
+        />
       </Form.Item>
       <div className="mt-4 d-flex justify-content-center">
         <Button type="primary" className="col-10 button-height button" htmlType="submit">

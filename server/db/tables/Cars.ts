@@ -2,6 +2,7 @@ import {
   DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional,
 } from 'sequelize';
 import { db } from '../connect.js';
+import { CrewModel } from './Crews.js';
 
 export interface CarModel extends Model<InferAttributes<CarModel>, InferCreationAttributes<CarModel>> {
   id: CreationOptional<number>;
@@ -16,9 +17,9 @@ export interface CarModel extends Model<InferAttributes<CarModel>, InferCreation
   fuel_consumption_winter_city: number;
   fuel_consumption_summer_highway: number;
   fuel_consumption_winter_highway: number;
-  crewId: CreationOptional<number | null>;
   createdAt?: CreationOptional<Date>;
   updatedAt?: CreationOptional<Date>;
+  crews?: CreationOptional<CrewModel[]>;
 }
 
 const Cars = db.define<CarModel>(
@@ -74,9 +75,6 @@ const Cars = db.define<CarModel>(
     fuel_consumption_winter_highway: {
       type: DataTypes.DECIMAL,
       allowNull: false,
-    },
-    crewId: {
-      type: DataTypes.INTEGER,
     },
   },
 );

@@ -6,6 +6,7 @@ import {
 import axios from 'axios';
 import { carValidation } from '@/validations/validations';
 import routes from '@/routes';
+import { useAppSelector } from '@/utilities/hooks';
 import type { Brand } from '../../../server/types/Cars';
 import { SubmitContext } from '../Context';
 
@@ -62,6 +63,7 @@ const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
   const [models, setModels] = useState<Brand[]>();
 
   const { setIsSubmit } = useContext(SubmitContext);
+  const { crewId } = useAppSelector((state) => state.user);
 
   const onValuesChange = (changedValue: CarSignupType) => setValues((preValues: CarSignupType) => {
     const [key, value] = Object.entries(changedValue)[0];
@@ -117,7 +119,7 @@ const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
       <FuelConsumption name="fuel_consumption_winter" t={t} />
       <div className="mt-4 d-flex justify-content-center">
         <Button type="primary" className="col-10 button-height button" htmlType="submit">
-          {t('submitButton')}
+          {crewId ? t('submitButtonWithLogin') : t('submitButton')}
         </Button>
       </div>
     </Form>

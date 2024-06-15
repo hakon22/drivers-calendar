@@ -26,6 +26,7 @@ router.get(`${apiPath}/car/fetchCarList`, jwtToken, Car.fetchCarList);
 router.get(`${apiPath}/car/getModels/:brand`, Car.getModels);
 router.post(`${apiPath}/car/createCar`, jwtToken, Car.createCar);
 router.patch(`${apiPath}/car/updateCar/:id`, jwtToken, Car.updateCar);
+router.post(`${apiPath}/car/addCar`, jwtToken, Car.addCar);
 router.delete(`${apiPath}/car/removeCar/:id`, jwtToken, Car.removeCar);
 
 // sms

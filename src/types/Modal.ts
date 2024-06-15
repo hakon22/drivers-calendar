@@ -8,7 +8,8 @@ export type ModalShowType = 'none'
   | 'inviteNotification'
   | 'notifications'
   | 'carsControl'
-  | 'carsEdit';
+  | 'carsEdit'
+  | 'carsAdd';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

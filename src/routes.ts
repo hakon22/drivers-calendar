@@ -29,6 +29,7 @@ export default {
   createCar: [apiPath, 'car', 'createCar'].join('/'),
   removeCar: [apiPath, 'car', 'removeCar'].join('/'),
   updateCar: [apiPath, 'car', 'updateCar'].join('/'),
+  addCar: [apiPath, 'car', 'addCar'].join('/'),
   // sms
   confirmPhone: [apiPath, 'auth', 'confirmPhone'].join('/'),
   // index

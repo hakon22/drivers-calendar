@@ -101,6 +101,14 @@ h1 {
   border-color: $button-background-active;
 }
 
+.ant-popover.ant-popconfirm {
+  width: 90%;
+}
+
+.ant-popover-placement-topRight > .ant-popover-arrow {
+  right: 5% !important;
+}
+
 .ant-input-outlined,
 .ant-input-number,
 .ant-input-number-affix-wrapper {

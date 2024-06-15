@@ -112,6 +112,7 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
         <Popconfirm
           title={t('popconfirm.title')}
           description={t('popconfirm.description')}
+          placement="topLeft"
           onConfirm={async () => handleOk(record.key)}
           okButtonProps={{ danger: true }}
           okText={t('popconfirm.ok')}

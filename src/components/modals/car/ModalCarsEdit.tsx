@@ -17,7 +17,6 @@ const ModalCarsEdit = ({ modalContext }: { modalContext: number }) => {
     fuel_consumption_summer_highway: fuelConsumptionSummerHighway,
     fuel_consumption_winter_city: fuelConsumptionWinterCity,
     fuel_consumption_winter_highway: fuelConsumptionWinterHighway,
-    crewId,
     updatedAt,
     createdAt,
     ...rest

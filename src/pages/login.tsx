@@ -35,7 +35,7 @@ const Login = () => {
     if (code === 2) {
       form.setFields([{ name: 'password', errors: [tValidation('incorrectPassword')] }]);
     } else if (code === 3) {
-      form.setFields([{ name: 'phone', errors: [tValidation('userNotAlreadyExists')] }]);
+      form.setFields([{ name: 'phone', errors: [tValidation('userNotExists')] }]);
     } else if (code === 4) {
       modalOpen('acceptInvite');
     }

@@ -30,6 +30,7 @@ export default {
       carForm: {
         loading: 'Загрузка...',
         submitButton: 'Создать экипаж',
+        submitButtonWithLogin: 'Добавить',
         brand: 'Выберите марку',
         model: 'Выберите модель',
         inventory: 'Инвентарный',
@@ -87,7 +88,7 @@ export default {
       code: 'Введите 4 цифры',
       mastMatch: 'Пароли должны совпадать',
       userAlreadyExists: 'Такой пользователь уже существует',
-      userNotAlreadyExists: 'Такой пользователь не зарегистрирован',
+      userNotExists: 'Такой пользователь не зарегистрирован',
       incorrectPassword: 'Неверный пароль',
       incorrectCode: 'Неверный код',
       timeNotOver: 'Время повторной отправки СМС не подошло',
@@ -114,6 +115,7 @@ export default {
       carIsActive: 'Нельзя удалить активный автомобиль',
       carNotExistInCrew: 'Автомобиль уже не в экипаже',
       carIsActiveAnotherCrew: 'Автомобиль активен в другом экипаже',
+      carNotExists: 'Автомобиль не существует',
     },
     modals: {
       signup: {
@@ -190,6 +192,12 @@ export default {
         title: '{{ car }}',
         update: 'Обновить',
         add: 'Добавить из списка',
+        carsNotFound: 'Автомобили не найдены',
+        selectCar: 'Выберите автомобиль',
+        addNewCar: 'Добавить новый',
+      },
+      carsAdd: {
+        title: 'Добавление автомобиля',
       },
     },
   },
