@@ -72,10 +72,10 @@ export default {
         buttons: {
           makeSchedule: 'Составить график',
           inviteReplacement: 'Пригласить сменщика',
-          car: {
-            title: 'Автомобиль',
-            addCar: 'Добавить автомобиль',
-          },
+          swapShifts: 'Поменяться сменами',
+          takeSickLeave: 'Взять больничный',
+          takeVacation: 'Взять отпуск',
+          car: 'Автомобиль',
           exit: 'Выйти из экипажа',
         },
       },
@@ -116,6 +116,8 @@ export default {
       carNotExistInCrew: 'Автомобиль уже не в экипаже',
       carIsActiveAnotherCrew: 'Автомобиль активен в другом экипаже',
       carNotExists: 'Автомобиль не существует',
+      sentRequestSuccess: 'Запрос успешно отправлен',
+      notificationNotExist: 'Уведомления не существует',
     },
     modals: {
       signup: {
@@ -149,6 +151,7 @@ export default {
         phone: 'Введите номер телефона',
         submitButton: 'Выслать приглашение',
         title: 'Приглашение отправлено!',
+        title2: 'Пригласить сменщика',
         subTitle: 'Высланный пароль действует 24 часа',
         back: 'Вернуться в календарь',
       },
@@ -198,6 +201,17 @@ export default {
       },
       carsAdd: {
         title: 'Добавление автомобиля',
+      },
+      swapShifts: {
+        firstShift: 'Выберите свою смену',
+        secondShift: 'Выберите смену замены',
+        confirmScheduleChange: 'Подтвердите смену графика',
+        yourShift: 'Ваша смена: ',
+        changedShift: 'Смена сменщика: ',
+        submitButton: 'Поменяться сменами',
+        title: 'Сменщику был выслан запрос на изменение графика',
+        subTitle: 'Вы получите уведомление о принятом решении',
+        back: 'Вернуться в календарь',
       },
     },
   },

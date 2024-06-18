@@ -9,7 +9,10 @@ export type ModalShowType = 'none'
   | 'notifications'
   | 'carsControl'
   | 'carsEdit'
-  | 'carsAdd';
+  | 'carsAdd'
+  | 'swapShifts'
+  | 'takeSickLeave'
+  | 'takeVacation';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

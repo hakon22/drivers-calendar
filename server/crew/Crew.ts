@@ -12,7 +12,7 @@ import Users from '../db/tables/Users';
 import Cars from '../db/tables/Cars';
 import type { ScheduleSchemaType } from '../types/crew/ScheduleSchemaType';
 import Notification from '../notification/Notification';
-import UserNotificationEnum from '../types/notification/enum/NotificationEnum';
+import NotificationEnum from '../types/notification/enum/NotificationEnum';
 import phoneTransform from '../utilities/phoneTransform';
 import Sms from '../sms/Sms';
 import Auth from '../authentication/Auth';
@@ -122,6 +122,39 @@ class Crew {
     }
   }
 
+  async swapShift(req: Request, res: Response) {
+    try {
+      const { dataValues: { crewId } } = req.user as PassportRequest;
+      req.body.firstShift = dayjs(req.body.firstShift);
+      req.body.secondShift = dayjs(req.body.secondShift);
+      const { firstShift, secondShift } = req.body as { firstShift: Dayjs, secondShift: Dayjs };
+
+      const crew = await Crews.findByPk(crewId);
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      const firstUser = crew.schedule_schema[firstShift.format('DD-MM-YYYY')];
+      const secondUser = crew.schedule_schema[secondShift.format('DD-MM-YYYY')];
+
+      const preparedNotification = {
+        userId: secondUser.id,
+        authorId: firstUser.id,
+        title: `${firstUser.username} хочет поменяться с вами сменами!`,
+        description: `Он выйдет за вас ${secondShift?.locale('ru').format('D MMMM, dddd')}`,
+        description2: `Вы за него - ${firstShift?.locale('ru').format('D MMMM, dddd')}`,
+        type: NotificationEnum.SHIFT,
+        data: req.body,
+      };
+
+      const notification = await Notification.create(preparedNotification);
+      return res.json({ code: 1, notification });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
   async inviteReplacement(req: Request, res: Response) {
     try {
       await phoneValidation.serverValidator(req.body);
@@ -156,9 +189,9 @@ class Crew {
           title: `Вас приглашают в экипаж с графиком ${crew.schedule}`,
           description: `Водители: ${users}`,
           description2: `Автомобили: ${cars}`,
-          type: UserNotificationEnum.INVITE,
+          type: NotificationEnum.INVITE,
         };
-        const notification = await Notification.send(preparedNotification);
+        const notification = await Notification.create(preparedNotification);
         return res.json({ code: 1, notification });
       }
       const password = await Sms.sendPass(phone);

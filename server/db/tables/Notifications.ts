@@ -10,10 +10,11 @@ export interface NotificationsModel extends Model<InferAttributes<NotificationsM
   description: string;
   description2: string;
   type: NotificationEnum;
-  authorId: CreationOptional<number>;
+  authorId?: CreationOptional<number>;
   crewId: CreationOptional<number>;
   isRead: CreationOptional<boolean>;
   userId: CreationOptional<number>;
+  data: unknown;
   createdAt?: CreationOptional<Date>;
 }
 
@@ -51,6 +52,10 @@ const Notifications = db.define<NotificationsModel>(
     },
     userId: {
       type: DataTypes.INTEGER,
+    },
+    data: {
+      type: DataTypes.JSONB,
+      defaultValue: '{}',
     },
   },
 );

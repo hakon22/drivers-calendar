@@ -41,4 +41,7 @@ export default {
   fetchNotifications: [apiPath, 'notification', 'fetchNotifications'].join('/'),
   notificationReadUpdate: [apiPath, 'notification', 'readUpdate'].join('/'),
   notificationRemove: [apiPath, 'notification', 'remove'].join('/'),
+  acceptNotification: [apiPath, 'notification', 'acceptNotification'].join('/'),
+  // crew
+  swapShift: [apiPath, 'crew', 'swapShift'].join('/'),
 } as ApiUrl;

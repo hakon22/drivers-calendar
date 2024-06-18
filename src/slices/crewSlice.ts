@@ -34,6 +34,10 @@ const crewSlice = createSlice({
         state.schedule_schema = payload.scheduleSchema;
       }
     },
+    socketSwipShift: (state, { payload }: PayloadAction<{ firstShift: ScheduleSchemaType, secondShift: ScheduleSchemaType }>) => {
+      const { firstShift, secondShift } = payload;
+      state.schedule_schema = { ...state.schedule_schema, ...firstShift, ...secondShift };
+    },
     socketActiveCarsUpdate: (state, { payload }: PayloadAction<{ code: number, activeCar: number }>) => {
       if (payload.code === 1) {
         state.activeCar = payload.activeCar;
@@ -78,7 +82,7 @@ const crewSlice = createSlice({
 });
 
 export const {
-  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, socketCarRemove,
+  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, socketCarRemove, socketSwipShift,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

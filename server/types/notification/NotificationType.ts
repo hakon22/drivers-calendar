@@ -5,7 +5,7 @@ type NotificationType = {
   description: string;
   description2: string;
   type: NotificationEnum;
-  authorId: number;
+  authorId?: number;
   crewId?: number;
   userId?: number;
 };

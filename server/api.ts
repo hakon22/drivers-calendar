@@ -37,10 +37,12 @@ router.get(`${apiPath}/crew/fetchCrew`, jwtToken, Crew.fetchCrew);
 router.post(`${apiPath}/crew/makeSchedule`, jwtToken, Crew.makeSchedule);
 router.post(`${apiPath}/crew/inviteReplacement`, jwtToken, Crew.inviteReplacement);
 router.post(`${apiPath}/crew/activeCarsUpdate`, jwtToken, Crew.activeCarsUpdate);
+router.post(`${apiPath}/crew/swapShift`, jwtToken, Crew.swapShift);
 
 // notification
 router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.fetchNotifications);
 router.get(`${apiPath}/notification/readUpdate/:id`, jwtToken, Notification.readUpdate);
+router.get(`${apiPath}/notification/acceptNotification/:id`, jwtToken, Notification.acceptNotification);
 router.delete(`${apiPath}/notification/remove/:id`, jwtToken, Notification.remove);
 
 export default router;

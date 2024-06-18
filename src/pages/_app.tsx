@@ -17,7 +17,7 @@ import {
 } from '@/components/Context';
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import {
-  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew, socketCarRemove,
+  socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew, socketCarRemove, socketSwipShift,
 } from '@/slices/crewSlice';
 import routes from '@/routes';
 import { fetchNotifications, socketSendNotification } from '@/slices/notificationSlice';
@@ -94,6 +94,7 @@ const Init = (props: AppProps) => {
       socket.on('carUpdate', (data) => dispatch(socketCarUpdate(data)));
       socket.on('carRemove', (data) => dispatch(socketCarRemove(data)));
       socket.on('carAdd', (data) => dispatch(socketCarAdd(data)));
+      socket.on('swipShift', (data) => dispatch(socketSwipShift(data)));
     }
   }, [loggedIn]);
 
@@ -115,6 +116,7 @@ const Init = (props: AppProps) => {
     carUpdate: (data: unknown) => socketConnect('carUpdate', data),
     carRemove: (data: unknown) => socketConnect('carRemove', data),
     carAdd: (data: unknown) => socketConnect('carAdd', data),
+    swipShift: (data: unknown) => socketConnect('swipShift', data),
   }), [socketConnect]);
 
   const authServices = useMemo(() => ({ loggedIn, logIn, logOut }), [loggedIn]);

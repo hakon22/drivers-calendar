@@ -8,18 +8,28 @@ import cn from 'classnames';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { selectors, fetchNotificationReadUpdate, fetchNotificationRemove } from '@/slices/notificationSlice';
 import { useTranslation } from 'react-i18next';
-import { ModalContext } from '@/components/Context';
-import { fetchAcceptInvitation } from '@/slices/userSlice';
+import {
+  ApiContext, ModalContext, NavbarContext, SubmitContext,
+} from '@/components/Context';
 import type { Notification } from '@/types/Notification';
+import axiosErrorHandler from '@/utilities/axiosErrorHandler';
+import axios from 'axios';
+import routes from '@/routes';
+import toast from '@/utilities/toast';
 import NotificationEnum, { TranslateNotificationEnum } from '../../../../server/types/notification/enum/NotificationEnum';
+import { ScheduleSchemaType } from '../../../../server/types/crew/ScheduleSchemaType';
 
 const ModalNotifications = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.notifications' });
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
   const dispatch = useAppDispatch();
 
   const { modalClose } = useContext(ModalContext);
+  const { closeNavbar } = useContext(NavbarContext);
+  const { setIsSubmit } = useContext(SubmitContext);
+  const { sendNotification, swipShift } = useContext(ApiContext);
 
-  const { id: myId, token } = useAppSelector((state) => state.user);
+  const { id: myId, token, crewId } = useAppSelector((state) => state.user);
   const notifications = useAppSelector(selectors.selectAll)
     .filter(({ type }) => type !== NotificationEnum.CHAT && type !== NotificationEnum.EXILE && type !== NotificationEnum.INVITE);
 
@@ -36,6 +46,11 @@ const ModalNotifications = () => {
   };
 
   const [notificationsGroup, updateNotificationsGroup] = useState(startObject);
+
+  const back = () => {
+    modalClose();
+    closeNavbar();
+  };
 
   const isReadHandler = (key: string | string[]) => {
     if (key.length) {
@@ -57,19 +72,54 @@ const ModalNotifications = () => {
     }
   };
 
-  const accept = async (id: number) => {
-    const { payload: { code } } = await dispatch(fetchAcceptInvitation({
-      id,
-      authorId: notifications.find((notification) => notification.id === id)?.authorId,
-      token,
-    })) as { payload: { code: number } };
-    if (code === 1) {
-      modalClose();
-    }
-  };
   const decline = (id: number) => {
     dispatch(fetchNotificationRemove({ id, token }));
     updateNotificationsGroup(startObject);
+  };
+
+  const acceptSwapShift = async (id: number) => {
+    try {
+      const {
+        data: {
+          code, notifications: createdNotifications, firstShift, secondShift,
+        },
+      } = await axios.get(`${routes.acceptNotification}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }) as { data: { code: number, notifications: Notification[], firstShift: ScheduleSchemaType, secondShift: ScheduleSchemaType } };
+      if (code === 1) {
+        createdNotifications.forEach((notif) => sendNotification({ ...notif }));
+        swipShift({ crewId, firstShift, secondShift });
+        back();
+        decline(id);
+      } else if (code === 2) {
+        toast(tToast('notificationNotExist'), 'error');
+      }
+    } catch (e) {
+      axiosErrorHandler(e, tToast);
+    }
+  };
+
+  const processingRequest = async (type: NotificationEnum, id: number) => {
+    switch (type) {
+      case NotificationEnum.SHIFT:
+        await acceptSwapShift(id);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const accept = async (id: number) => {
+    try {
+      setIsSubmit(true);
+      const notificationType = notifications.find((notif) => notif.id === id)?.type;
+      if (notificationType) {
+        await processingRequest(notificationType, id);
+      }
+      setIsSubmit(false);
+    } catch (e) {
+      axiosErrorHandler(e, tToast);
+    }
   };
 
   const filteredNotifications: CollapseProps['items'] = Object.entries(notificationsGroup)

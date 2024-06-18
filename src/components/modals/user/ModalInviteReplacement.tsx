@@ -83,6 +83,7 @@ const ModalInviteReplacement = () => {
         />
       ) : (
         <div className="col-12 my-4 d-flex flex-column align-items-center gap-3">
+          <div className="h1">{t('title2')}</div>
           <Form name="inviteReplacement" className="col-10" onFinish={onFinish} form={form}>
             <Form.Item<{ phone: string }> name="phone" rules={[loginValidation]}>
               <MaskedInput mask="+7 (000) 000-00-00" className="button-height" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />

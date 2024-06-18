@@ -1,3 +1,10 @@
+export type ScheduleSchemaUserType = {
+  id: number;
+  phone: string;
+  color: string;
+  username: string;
+};
+
 export type ScheduleSchemaType = {
-  [key: string]: { color: string, username: string },
+  [key: string]: ScheduleSchemaUserType,
 };

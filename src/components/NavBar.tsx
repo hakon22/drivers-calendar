@@ -18,6 +18,8 @@ const NavBar = () => {
   const scheduleHandler = () => modalOpen('makeSchedule');
   const inviteReplacementHandler = () => modalOpen('inviteReplacement');
   const carsSettingsHandler = () => modalOpen('carsControl');
+  const takeSickLeaveHandler = () => modalOpen('swapShifts');
+
   const container = useRef(null);
 
   return (
@@ -42,7 +44,16 @@ const NavBar = () => {
             {t('buttons.inviteReplacement')}
           </Button>
           <Button className="w-100 button button-height" onClick={carsSettingsHandler}>
-            {t('buttons.car.title')}
+            {t('buttons.car')}
+          </Button>
+          <Button className="w-100 button button-height" onClick={takeSickLeaveHandler}>
+            {t('buttons.swapShifts')}
+          </Button>
+          <Button className="w-100 button button-height" onClick={carsSettingsHandler}>
+            {t('buttons.takeSickLeave')}
+          </Button>
+          <Button className="w-100 button button-height" onClick={carsSettingsHandler}>
+            {t('buttons.takeVacation')}
           </Button>
           <Button
             className="w-100 button button-height"
