@@ -98,18 +98,18 @@ h1 {
 }
 
 .ant-picker-calendar {
-  .ant-picker-cell-today {
+  .ant-picker-cell-today > button {
     color: red;
     font-weight: 700 !important;
   }
 
-  .ant-picker-cell.ant-picker-cell-selected > div:not(.disabled) {
-    border: 2px solid red;
-    border-radius: 10px;
+  .selected {
+    border: 2px solid red !important;
+    border-radius: 10px !important;
     margin-left: 1.5px !important;
     width: 98% !important;
     background-color: white !important;
-    margin: 0 auto;
+    margin: 0 auto !important;
   }
 }
 

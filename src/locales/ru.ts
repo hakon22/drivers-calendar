@@ -118,6 +118,7 @@ export default {
       carNotExists: 'Автомобиль не существует',
       sentRequestSuccess: 'Запрос успешно отправлен',
       notificationNotExist: 'Уведомления не существует',
+      shiftsNotAvailable: 'Ваших смен в заданном промежутке не найдено',
     },
     modals: {
       signup: {
@@ -211,6 +212,17 @@ export default {
         submitButton: 'Поменяться сменами',
         title: 'Сменщику был выслан запрос на изменение графика',
         subTitle: 'Вы получите уведомление о принятом решении',
+        back: 'Вернуться в календарь',
+      },
+      takeSickLeave: {
+        firstShift: 'Выберите начало больничного',
+        secondShift: 'Выберите конец больничного',
+        confirmScheduleChange: 'Подтвердите даты больничного',
+        yourShift: 'Начало: ',
+        changedShift: 'Конец: ',
+        submitButton: 'Взять больничный',
+        title: 'Больничный зарегистрирован!',
+        subTitle: 'Сменщикам придёт уведомление, что вы заболели',
         back: 'Вернуться в календарь',
       },
     },

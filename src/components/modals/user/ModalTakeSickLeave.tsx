@@ -8,11 +8,13 @@ import {
 } from '@/components/Context';
 import Calendar from '@/components/Calendar';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
+import toast from '@/utilities/toast';
 import routes from '@/routes';
 import axios from 'axios';
+import { ScheduleSchemaType } from '../../../../server/types/crew/ScheduleSchemaType';
 
-const ModalSwapShifts = () => {
-  const { t } = useTranslation('translation', { keyPrefix: 'modals.swapShifts' });
+const ModalTakeSickLeave = () => {
+  const { t } = useTranslation('translation', { keyPrefix: 'modals.takeSickLeave' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const [dateValues, setDateValues] = useState<CalendarProps['dateValues']>();
@@ -22,7 +24,7 @@ const ModalSwapShifts = () => {
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
-  const { sendNotification } = useContext(ApiContext);
+  const { sendNotification, makeSchedule } = useContext(ApiContext);
 
   const { token } = useAppSelector((state) => state.user);
 
@@ -37,12 +39,15 @@ const ModalSwapShifts = () => {
   const onFinish = async () => {
     try {
       setIsSubmit(true);
-      const { data: { code, notification } } = await axios.post(routes.swapShift, dateValues, {
+      const { data: { code, notifications, scheduleSchema } } = await axios.post(routes.takeSickLeave, dateValues, {
         headers: { Authorization: `Bearer ${token}` },
-      });
+      }) as { data: { code: number, notifications: Notification[], scheduleSchema: ScheduleSchemaType } };
       if (code === 1) {
-        sendNotification(notification);
+        notifications.forEach((notif) => sendNotification({ ...notif }));
+        makeSchedule({ code, scheduleSchema });
         setIsSuccess(true);
+      } else if (code === 2) {
+        toast(tToast('shiftsNotAvailable'), 'error');
       }
       setIsSubmit(false);
     } catch (e) {
@@ -102,7 +107,7 @@ const ModalSwapShifts = () => {
           ) : (
             <>
               <div className="h1">{t(dateValues?.firstShift ? 'secondShift' : 'firstShift')}</div>
-              <Calendar dateValues={dateValues} setDateValues={setDateValues} mode="shift" />
+              <Calendar dateValues={dateValues} setDateValues={setDateValues} mode="sickLeave" />
             </>
           )}
         </div>
@@ -111,4 +116,4 @@ const ModalSwapShifts = () => {
   );
 };
 
-export default ModalSwapShifts;
+export default ModalTakeSickLeave;

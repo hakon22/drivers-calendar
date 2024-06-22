@@ -6,7 +6,7 @@ import { Request, Response } from 'express';
 import dayjs, { type Dayjs } from 'dayjs';
 import bcrypt from 'bcryptjs';
 import { phoneValidation } from '@/validations/validations';
-import type { PassportRequest } from '../db/tables/Users';
+import type { PassportRequest, UserModel } from '../db/tables/Users';
 import Crews, { CrewModel } from '../db/tables/Crews';
 import Users from '../db/tables/Users';
 import Cars from '../db/tables/Cars';
@@ -15,12 +15,14 @@ import Notification from '../notification/Notification';
 import NotificationEnum from '../types/notification/enum/NotificationEnum';
 import phoneTransform from '../utilities/phoneTransform';
 import Sms from '../sms/Sms';
+import dateRange from '../utilities/dateRange';
 import Auth from '../authentication/Auth';
 import redis from '../db/redis';
+import NotificationType from '../types/notification/NotificationType';
 
-const generateScheduleSchema = (startDate: Dayjs, numDays: number, users: CrewModel['users']) => {
+const generateScheduleSchema = (startDate: Dayjs, users: CrewModel['users'], numDays: number = 500) => {
   const schedule: ScheduleSchemaType = {};
-  if (!users) return schedule;
+  if (!users || !users?.length) return schedule;
 
   const predicate = (i: number) => {
     let result;
@@ -79,8 +81,8 @@ class Crew {
       if (!crew) {
         throw new Error('Экипаж не существует');
       }
-      const scheduleSchema = generateScheduleSchema(dayjs(startDate), 500, users);
-      await Crews.update({ schedule_schema: scheduleSchema }, { where: { id: crew.id } });
+      const scheduleSchema = generateScheduleSchema(dayjs(startDate), users);
+      await Crews.update({ schedule_schema: scheduleSchema, shiftOrder: users.map((user: UserModel) => user.id) }, { where: { id: crew.id } });
       return res.json({ code: 1, scheduleSchema });
     } catch (e) {
       console.log(e);
@@ -145,10 +147,74 @@ class Crew {
         description2: `Вы за него - ${firstShift?.locale('ru').format('D MMMM, dddd')}`,
         type: NotificationEnum.SHIFT,
         data: req.body,
+        isDecision: true,
       };
 
       const notification = await Notification.create(preparedNotification);
       return res.json({ code: 1, notification });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async takeSickLeave(req: Request, res: Response) {
+    try {
+      const {
+        dataValues: {
+          id, crewId, color, username,
+        },
+      } = req.user as PassportRequest;
+      req.body.firstShift = dayjs(req.body.firstShift);
+      req.body.secondShift = dayjs(req.body.secondShift);
+      const { firstShift, secondShift } = req.body as { firstShift: Dayjs, secondShift: Dayjs };
+
+      const crew = await Crews.findByPk(crewId, { include: { model: Users, as: 'users' } });
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      const users = crew.shiftOrder.map((number) => {
+        if (number !== id) {
+          return crew.users?.find((usr) => usr.id === number);
+        }
+        return undefined;
+      }).filter(Boolean);
+
+      const range = dateRange(dayjs(firstShift), dayjs(secondShift));
+
+      const userFirstShiftIndex = range.findIndex((date) => crew.schedule_schema[date.format('DD-MM-YYYY')].id === id);
+      if (userFirstShiftIndex === -1) {
+        return res.json({ code: 2 });
+      }
+      const days = range.length - userFirstShiftIndex;
+      const tempSchedule = generateScheduleSchema(range[userFirstShiftIndex], users as UserModel[], days);
+
+      users.unshift({ id, color, username } as UserModel);
+      for (let i = userFirstShiftIndex; range.length > i; i += 1) {
+        crew.schedule_schema[range[i].format('DD-MM-YYYY')] = tempSchedule[range[i].format('DD-MM-YYYY')];
+      }
+      const schedule = generateScheduleSchema(range[range.length - 1].add(1, 'day'), users as UserModel[]);
+
+      const notifications: NotificationType[] = [];
+
+      crew.users?.forEach(async (user) => {
+        const preparedNotification = {
+          userId: user.id,
+          title: `${username} взял больничный!`,
+          description: `Начало: ${firstShift.locale('ru').format('D MMMM, dddd')}`,
+          description2: `Конец: ${secondShift.locale('ru').format('D MMMM, dddd')}`,
+          type: NotificationEnum.HOSPITAL,
+        };
+
+        const newNotification = await Notification.create(preparedNotification);
+        notifications.push(newNotification as NotificationType);
+      });
+
+      const scheduleSchema = { ...crew.schedule_schema, ...schedule };
+
+      await Crews.update({ schedule_schema: scheduleSchema }, { where: { id: crewId } });
+      return res.json({ code: 1, notifications, scheduleSchema });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -190,6 +256,7 @@ class Crew {
           description: `Водители: ${users}`,
           description2: `Автомобили: ${cars}`,
           type: NotificationEnum.INVITE,
+          isDecision: true,
         };
         const notification = await Notification.create(preparedNotification);
         return res.json({ code: 1, notification });

@@ -8,6 +8,7 @@ type NotificationType = {
   authorId?: number;
   crewId?: number;
   userId?: number;
+  isDecision?: boolean;
 };
 
 export default NotificationType;

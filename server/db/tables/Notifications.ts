@@ -14,6 +14,7 @@ export interface NotificationsModel extends Model<InferAttributes<NotificationsM
   crewId: CreationOptional<number>;
   isRead: CreationOptional<boolean>;
   userId: CreationOptional<number>;
+  isDecision: CreationOptional<boolean>;
   data: unknown;
   createdAt?: CreationOptional<Date>;
 }
@@ -56,6 +57,10 @@ const Notifications = db.define<NotificationsModel>(
     data: {
       type: DataTypes.JSONB,
       defaultValue: '{}',
+    },
+    isDecision: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
 );

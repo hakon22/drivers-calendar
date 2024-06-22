@@ -29,7 +29,7 @@ const ModalNotifications = () => {
   const { setIsSubmit } = useContext(SubmitContext);
   const { sendNotification, swipShift } = useContext(ApiContext);
 
-  const { id: myId, token, crewId } = useAppSelector((state) => state.user);
+  const { token, crewId } = useAppSelector((state) => state.user);
   const notifications = useAppSelector(selectors.selectAll)
     .filter(({ type }) => type !== NotificationEnum.CHAT && type !== NotificationEnum.EXILE && type !== NotificationEnum.INVITE);
 
@@ -73,8 +73,15 @@ const ModalNotifications = () => {
   };
 
   const decline = (id: number) => {
-    dispatch(fetchNotificationRemove({ id, token }));
-    updateNotificationsGroup(startObject);
+    const notification = notifications.find((notif) => notif.id === id);
+    if (notification) {
+      updateNotificationsGroup((state) => {
+        const group = state[notification.type];
+        const updatedItems = group.filter((notif) => notif.id !== id);
+        return { ...state, [notification.type]: updatedItems };
+      });
+      dispatch(fetchNotificationRemove({ id, token }));
+    }
   };
 
   const acceptSwapShift = async (id: number) => {
@@ -126,7 +133,7 @@ const ModalNotifications = () => {
     .filter(([type]) => type !== NotificationEnum.INVITE && type !== NotificationEnum.CHAT && type !== NotificationEnum.EXILE)
     .map(([label, items], key) => {
       const preparedItems = items.map(({
-        id, title, description, description2, isRead, userId,
+        id, title, description, description2, isRead, isDecision,
       }) => {
         const headerClass = cn('p-1 d-flex align-items-center', { 'fw-bold': !isRead });
         return {
@@ -141,7 +148,7 @@ const ModalNotifications = () => {
       <span>{description2}</span>
     </div>
     <div className="d-flex flex-column align-items-center gap-3">
-      {myId === userId ? (
+      {isDecision ? (
         <Button className="col-10 mx-auto button-height button" onClick={() => accept(id)}>
           {t('accept')}
         </Button>
@@ -151,7 +158,7 @@ const ModalNotifications = () => {
         style={{ backgroundColor: '#CDD5EC', border: 'none' }}
         onClick={() => decline(id)}
       >
-        {t(myId === userId ? 'decline' : 'delete')}
+        {t(isDecision ? 'decline' : 'delete')}
       </Button>
     </div>
   </>,

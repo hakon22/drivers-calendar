@@ -10,10 +10,11 @@ import type { CarModel } from './Cars.js';
 export interface CrewModel extends Model<InferAttributes<CrewModel>, InferCreationAttributes<CrewModel>> {
   id: CreationOptional<number>;
   schedule: string;
-  activeCar: CreationOptional<number>,
-  schedule_schema: CreationOptional<ScheduleSchemaType>,
-  users?: CreationOptional<UserModel[]>,
-  cars?: CreationOptional<CarModel[]>,
+  shiftOrder: number[];
+  activeCar: CreationOptional<number>;
+  schedule_schema: CreationOptional<ScheduleSchemaType>;
+  users?: CreationOptional<UserModel[]>;
+  cars?: CreationOptional<CarModel[]>;
 }
 
 const Crews = db.define<CrewModel>(
@@ -29,11 +30,15 @@ const Crews = db.define<CrewModel>(
       type: DataTypes.ENUM(...Object.keys(CrewScheduleEnum).filter((v) => Number.isNaN(Number(v)))),
       allowNull: false,
     },
-    schedule_schema: {
-      type: DataTypes.JSONB,
+    shiftOrder: {
+      type: DataTypes.ARRAY(DataTypes.INTEGER),
+      defaultValue: '{}',
     },
     activeCar: {
       type: DataTypes.INTEGER,
+    },
+    schedule_schema: {
+      type: DataTypes.JSONB,
     },
   },
 );
