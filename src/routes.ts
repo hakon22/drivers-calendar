@@ -44,5 +44,5 @@ export default {
   acceptNotification: [apiPath, 'notification', 'acceptNotification'].join('/'),
   // crew
   swapShift: [apiPath, 'crew', 'swapShift'].join('/'),
-  takeSickLeave: [apiPath, 'crew', 'takeSickLeave'].join('/'),
+  takeSickLeaveOrVacation: [apiPath, 'crew', 'takeSickLeaveOrVacation'].join('/'),
 } as ApiUrl;

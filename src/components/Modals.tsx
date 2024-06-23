@@ -13,7 +13,7 @@ import ModalCarsControl from './modals/car/ModalCarsControl';
 import ModalCarsEdit from './modals/car/ModalCarsEdit';
 import ModalCarsAdd from './modals/car/ModalCarsAdd';
 import ModalSwapShifts from './modals/crew/ModalSwapShifts';
-import ModalTakeSickLeave from './modals/user/ModalTakeSickLeave';
+import ModalTakeSickLeaveOrVacation from './modals/user/ModalTakeSickLeaveOrVacation';
 
 const Modals = () => {
   const { show } = useContext(ModalContext);
@@ -43,8 +43,8 @@ const Modals = () => {
     notifications: <ModalNotifications />,
     carsAdd: <ModalCarsAdd />,
     swapShifts: <ModalSwapShifts />,
-    takeSickLeave: <ModalTakeSickLeave />,
-    takeVacation: null,
+    takeSickLeave: <ModalTakeSickLeaveOrVacation type="takeSickLeave" />,
+    takeVacation: <ModalTakeSickLeaveOrVacation type="takeVacation" />,
     carsControl: params && typeof params === 'string' ? <ModalCarsControl modalContext={params} /> : <ModalCarsControl />,
     carsEdit: params && typeof params === 'number' ? <ModalCarsEdit modalContext={params} /> : null,
     activation: params && typeof params !== 'number' && typeof params !== 'string' ? <ModalConfirmPhone setState={params} /> : null,

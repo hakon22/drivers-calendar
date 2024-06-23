@@ -47,7 +47,7 @@ const isDisabled: IsDisabledType = (mode, id, scheduleSchema, currentDay, select
 
 const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'index' });
-  const { schedule_schema: scheduleSchema } = useAppSelector((state) => state.crew);
+  const { schedule_schema: scheduleSchema, users } = useAppSelector((state) => state.crew);
   const { id } = useAppSelector((state) => state.user);
 
   const [selectedDate, setSelectedDate] = useState<Dayjs>();
@@ -103,12 +103,17 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
   };
 
   return (
-    <CalendarAntd
-      onSelect={onSelect}
-      fullscreen={false}
-      fullCellRender={dateFullCellRender}
-      locale={locale}
-    />
+    <>
+      <CalendarAntd
+        onSelect={onSelect}
+        fullscreen={false}
+        fullCellRender={dateFullCellRender}
+        locale={locale}
+      />
+      <div className="user-legend w-100 gap-2">
+        {users.map((user) => <span key={user.id} className="py-1 px-2 text-center w-100" style={{ backgroundColor: user.color, color: '#f8f9fb', borderRadius: '7px' }}>{user.username}</span>)}
+      </div>
+    </>
   );
 };
 

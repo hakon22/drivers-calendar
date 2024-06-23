@@ -299,6 +299,11 @@ h1 {
   }
 }
 
+.user-legend {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
 @keyframes progress {
 	0% { width: 100%;	}
 	100% { width: 0%;	}

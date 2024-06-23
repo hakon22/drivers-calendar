@@ -75,11 +75,6 @@ const ModalNotifications = () => {
   const decline = (id: number) => {
     const notification = notifications.find((notif) => notif.id === id);
     if (notification) {
-      updateNotificationsGroup((state) => {
-        const group = state[notification.type];
-        const updatedItems = group.filter((notif) => notif.id !== id);
-        return { ...state, [notification.type]: updatedItems };
-      });
       dispatch(fetchNotificationRemove({ id, token }));
     }
   };

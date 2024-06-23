@@ -158,7 +158,7 @@ class Crew {
     }
   }
 
-  async takeSickLeave(req: Request, res: Response) {
+  async takeSickLeaveOrVacation(req: Request, res: Response) {
     try {
       const {
         dataValues: {
@@ -167,7 +167,7 @@ class Crew {
       } = req.user as PassportRequest;
       req.body.firstShift = dayjs(req.body.firstShift);
       req.body.secondShift = dayjs(req.body.secondShift);
-      const { firstShift, secondShift } = req.body as { firstShift: Dayjs, secondShift: Dayjs };
+      const { firstShift, secondShift, type } = req.body as { firstShift: Dayjs, secondShift: Dayjs, type: 'takeSickLeave' | 'takeVacation' };
 
       const crew = await Crews.findByPk(crewId, { include: { model: Users, as: 'users' } });
       if (!crew) {
@@ -201,10 +201,10 @@ class Crew {
       crew.users?.forEach(async (user) => {
         const preparedNotification = {
           userId: user.id,
-          title: `${username} взял больничный!`,
+          title: `${username} взял ${type === 'takeSickLeave' ? 'больничный' : 'отпуск'}!`,
           description: `Начало: ${firstShift.locale('ru').format('D MMMM, dddd')}`,
           description2: `Конец: ${secondShift.locale('ru').format('D MMMM, dddd')}`,
-          type: NotificationEnum.HOSPITAL,
+          type: type === 'takeSickLeave' ? NotificationEnum.HOSPITAL : NotificationEnum.VACATION,
         };
 
         const newNotification = await Notification.create(preparedNotification);

@@ -13,8 +13,8 @@ import routes from '@/routes';
 import axios from 'axios';
 import { ScheduleSchemaType } from '../../../../server/types/crew/ScheduleSchemaType';
 
-const ModalTakeSickLeave = () => {
-  const { t } = useTranslation('translation', { keyPrefix: 'modals.takeSickLeave' });
+const ModalTakeSickLeaveOrVacation = ({ type }: { type: 'takeSickLeave' | 'takeVacation' }) => {
+  const { t } = useTranslation('translation', { keyPrefix: `modals.${type}` });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const [dateValues, setDateValues] = useState<CalendarProps['dateValues']>();
@@ -39,7 +39,7 @@ const ModalTakeSickLeave = () => {
   const onFinish = async () => {
     try {
       setIsSubmit(true);
-      const { data: { code, notifications, scheduleSchema } } = await axios.post(routes.takeSickLeave, dateValues, {
+      const { data: { code, notifications, scheduleSchema } } = await axios.post(routes.takeSickLeaveOrVacation, { ...dateValues, type }, {
         headers: { Authorization: `Bearer ${token}` },
       }) as { data: { code: number, notifications: Notification[], scheduleSchema: ScheduleSchemaType } };
       if (code === 1) {
@@ -116,4 +116,4 @@ const ModalTakeSickLeave = () => {
   );
 };
 
-export default ModalTakeSickLeave;
+export default ModalTakeSickLeaveOrVacation;

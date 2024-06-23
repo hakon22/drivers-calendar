@@ -20,6 +20,7 @@ const NavBar = () => {
   const carsSettingsHandler = () => modalOpen('carsControl');
   const swapShiftsHandler = () => modalOpen('swapShifts');
   const takeSickLeaveHandler = () => modalOpen('takeSickLeave');
+  const takeVacationHandler = () => modalOpen('takeVacation');
 
   const container = useRef(null);
 
@@ -53,7 +54,7 @@ const NavBar = () => {
           <Button className="w-100 button button-height" onClick={takeSickLeaveHandler}>
             {t('buttons.takeSickLeave')}
           </Button>
-          <Button className="w-100 button button-height" onClick={carsSettingsHandler}>
+          <Button className="w-100 button button-height" onClick={takeVacationHandler}>
             {t('buttons.takeVacation')}
           </Button>
           <Button
