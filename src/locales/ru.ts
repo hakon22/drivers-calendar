@@ -100,7 +100,7 @@ export default {
       sendSmsSuccess: 'СМС успешно отправлено',
       sendSmsError: 'Не удалось отправить СМС',
       timeNotOverForSms: 'Вы можете отправлять СМС только раз в минуту',
-      unknownError: 'Неизвестная ошибка',
+      unknownError: 'Ошибка: {{ error }}',
       networkError: 'Ошибка соединения',
       authError: 'Ошибка аутентификации',
       userAlreadyExists: 'Данный номер телефона уже зарегистрирован',

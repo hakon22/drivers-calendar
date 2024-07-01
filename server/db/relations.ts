@@ -4,6 +4,7 @@ import Notifications from './tables/Notifications.js';
 import Cars from './tables/Cars.js';
 import Crews from './tables/Crews.js';
 import CrewsCars from './tables/CrewsCars.js';
+import ReservedDays from './tables/ReservedDays.js';
 
 const createRelations = async () => {
   try {
@@ -11,14 +12,13 @@ const createRelations = async () => {
     await Users.sequelize?.query(`
       SELECT id FROM "driver"."users"
     `);
-    // Cars.belongsTo(Crews, { foreignKey: 'crewId' });
     Users.belongsTo(Crews, { foreignKey: 'crewId' });
     Crews.hasMany(Users, { as: 'users' });
-    // Crews.hasMany(Cars, { as: 'cars' });
     Crews.belongsTo(Cars, { foreignKey: 'activeCar' });
     Notifications.belongsTo(Users, { foreignKey: 'authorId' });
     Notifications.belongsTo(Users, { foreignKey: 'userId' });
     Notifications.belongsTo(Crews, { foreignKey: 'crewId' });
+    ReservedDays.belongsTo(Users, { foreignKey: 'userId' });
     Crews.belongsToMany(Cars, { through: CrewsCars, as: 'cars' });
     Cars.belongsToMany(Crews, { through: CrewsCars, as: 'crews' });
   } catch (e) {
