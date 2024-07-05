@@ -27,9 +27,9 @@ const ModalMakeSchedule = () => {
   const { makeSchedule } = useContext(ApiContext);
 
   const { token } = useAppSelector((state) => state.user);
-  const { users } = useAppSelector((state) => state.crew);
+  const { users, shiftOrder } = useAppSelector((state) => state.crew);
 
-  const [sortableUsers, setSortableUsers] = useState(users);
+  const [sortableUsers, setSortableUsers] = useState(shiftOrder.length ? shiftOrder.map((orderId) => users.find((usr) => usr.id === orderId) as UserModel) : users);
   const [activeId, setActiveId] = useState(0);
   const [page, setPage] = useState(0);
 

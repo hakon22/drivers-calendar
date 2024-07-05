@@ -7,9 +7,10 @@ import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
 export type CrewInitialState = InitialState & {
   id?: number;
   schedule?: CrewScheduleEnum;
+  shiftOrder: number[];
   schedule_schema: ScheduleSchemaType;
   users: UserModel[];
   cars: CarModel[];
   activeCar: number | null;
-  [key: string]: string | number | null | undefined | UserModel[] | CarModel[] | ScheduleSchemaType;
+  [key: string]: string | number | number[] | null | undefined | UserModel[] | CarModel[] | ScheduleSchemaType;
 };

@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable consistent-return */
@@ -8,6 +9,8 @@ import bcrypt from 'bcryptjs';
 import { phoneValidation } from '@/validations/validations';
 import { Op } from 'sequelize';
 import minMax from 'dayjs/plugin/minMax';
+import isBetween from 'dayjs/plugin/isBetween';
+import _ from 'lodash';
 import type { PassportRequest, UserModel } from '../db/tables/Users';
 import Crews from '../db/tables/Crews';
 import Users from '../db/tables/Users';
@@ -24,14 +27,70 @@ import NotificationType from '../types/notification/NotificationType';
 import ReservedDays from '../db/tables/ReservedDays';
 
 dayjs.extend(minMax);
+dayjs.extend(isBetween);
 
-const generateScheduleSchema = async (startDate: Dayjs, users: ScheduleSchemaUserType[], numDays: number = 500) => {
+const generateScheduleSchema = async (startDate: Dayjs, users: ScheduleSchemaUserType[], shiftOrder: number[], numDays: number = 500) => {
   const schedule: ScheduleSchemaType = {};
   if (!users || !users?.length) return schedule;
 
+  const reservedDays = (await ReservedDays.findAll({ where: { userId: { [Op.in]: users.map((user) => user.id) } } })) ?? [];
+
+  let iteration = 0;
+
+  let newUsersList: ScheduleSchemaUserType[] = [];
+  let lastDaysUser: { lastDay: string, userId: number }[] = [];
+
+  const getLastUsers = (currDay: Dayjs, usersList?: ScheduleSchemaUserType[]) => {
+    newUsersList = [];
+    for (let i = 1; i <= users.length; i += 1) {
+      const candidate = schedule[currDay.subtract(i, 'day').format('DD-MM-YYYY')];
+      if (usersList && !usersList.find((user) => user.id === candidate?.id)) {
+        continue;
+      }
+      if (candidate && !newUsersList.find((user) => user.id === candidate.id) && !lastDaysUser.find((usr) => usr.userId === candidate.id)) {
+        newUsersList.unshift(candidate);
+      } else if (!candidate) {
+        const lastDaysUserCopy = [...lastDaysUser];
+        const missingUsers = users
+          .filter(({ id }) => !lastDaysUserCopy.find((usr) => usr.userId === id))
+          .map(({
+            id, username, phone, color,
+          }) => ({
+            id, username, phone, color,
+          }));
+        const sortMissingUsers = shiftOrder.map((order) => missingUsers.find((user) => user.id === order) as ScheduleSchemaUserType).filter(Boolean);
+        newUsersList = [...sortMissingUsers];
+        getLastUsers(currDay, newUsersList);
+      }
+    }
+
+    if (usersList && newUsersList.length !== usersList.length) {
+      const nextDays: string[] = [];
+
+      for (let i = 1; i <= users.length; i += 1) {
+        nextDays.push(currDay.add(i, 'day').format('DD-MM-YYYY'));
+      }
+
+      const missingUsers = users.filter((user) => (
+        !reservedDays.find(({ userId }) => userId === user.id)?.reserved_days.find((day, index) => {
+          if (nextDays.includes(day)) {
+            return index > nextDays.length;
+          }
+          return false;
+        })
+        && !newUsersList.find((usr) => usr.id === user.id)
+        && !lastDaysUser.find((usr) => usr.userId === user.id)
+      ));
+      const sortMissingUsers = shiftOrder.map((order) => missingUsers.find((user) => user.id === order) as ScheduleSchemaUserType).filter(Boolean);
+      newUsersList = [...sortMissingUsers, ...newUsersList];
+    }
+  };
+
+  let currDay = dayjs(startDate);
+
   const predicate = (i: number) => {
     let result;
-    switch (users.length) {
+    switch (newUsersList.length) {
       case 2:
         result = i % 4 < 2 ? 0 : 1; // 2/2
         break;
@@ -42,17 +101,60 @@ const generateScheduleSchema = async (startDate: Dayjs, users: ScheduleSchemaUse
         result = i % 4; // 1/3
         break;
       default:
-        result = 0;
+        result = currDay.day() === 0 || currDay.day() === 6 ? -1 : 0; // 5/2
         break;
     }
     return result;
   };
 
-  let currDay = dayjs(startDate);
+  getLastUsers(currDay); // получаем последних работающих пользователей
 
-  for (let i = 0; i < numDays; i += 1) {
-    const personIndex = predicate(i);
-    schedule[currDay.format('DD-MM-YYYY')] = users[personIndex];
+  const fillingSchedule = (): ScheduleSchemaUserType => {
+    const personIndex = predicate(iteration);
+    const lastReservedDays = reservedDays.filter(({ reserved_days }) => currDay.isBetween(dayjs(reserved_days[0], 'DD-MM-YYYY'), dayjs(reserved_days.at(-1), 'DD-MM-YYYY'), 'day', '[]')
+    || dayjs(reserved_days.at(-1), 'DD-MM-YYYY').add(1, 'day').isSame(currDay));
+
+    const hasReservedDays = lastReservedDays.filter((last) => lastDaysUser.find(({ userId }) => userId === last.userId));
+    const hasLastDaysUser = lastReservedDays.map((last) => lastDaysUser.find(({ userId }) => userId === last.userId));
+
+    if (lastReservedDays.length && !_.isEqual(hasReservedDays.map((obj) => _.pick(obj, 'userId')), lastReservedDays.map((obj) => _.pick(obj, 'userId')))) {
+      lastReservedDays.forEach((last) => {
+        const lastDayUser = lastDaysUser.find(({ userId }) => userId === last.userId);
+        if (!lastDayUser) {
+          lastDaysUser.push({ lastDay: last.reserved_days.at(-1) as string, userId: last.userId });
+          newUsersList = newUsersList.filter((user) => user.id !== last.userId);
+        }
+      });
+      getLastUsers(currDay, newUsersList);
+      iteration = 0;
+      return fillingSchedule();
+    } if (
+      hasReservedDays.length
+      && hasLastDaysUser.find((lastDayUser) => dayjs(lastDayUser?.lastDay, 'DD-MM-YYYY').add(1, 'day').isSame(currDay))?.userId
+    ) {
+      const returnedUserId = hasLastDaysUser.find((lastDayUser) => dayjs(lastDayUser?.lastDay, 'DD-MM-YYYY').add(1, 'day').isSame(currDay))?.userId;
+      lastDaysUser = lastDaysUser.filter(({ userId }) => userId !== hasLastDaysUser
+        .find((lastDayUser) => dayjs(lastDayUser?.lastDay, 'DD-MM-YYYY').add(1, 'day').isSame(currDay))?.userId);
+      iteration = 0;
+      getLastUsers(currDay);
+      const {
+        id, username, phone, color,
+      } = users.find((user) => user.id === returnedUserId) as ScheduleSchemaUserType;
+
+      newUsersList = newUsersList.filter((user) => user.id !== id);
+      newUsersList.unshift({
+        id, username, phone, color,
+      });
+
+      return {
+        id, username, phone, color,
+      };
+    }
+    return newUsersList[personIndex];
+  };
+
+  for (; iteration < numDays; iteration += 1) {
+    schedule[currDay.format('DD-MM-YYYY')] = fillingSchedule();
     currDay = currDay.add(1, 'day');
   }
 
@@ -82,15 +184,15 @@ class Crew {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
       const { startDate, users } = req.body as { startDate: Dayjs, users: UserModel[] };
-      const crew = await Crews.findByPk(crewId);
+      const crew = await Crews.findByPk(crewId, { include: { model: Users, as: 'users' } });
       if (!crew) {
         throw new Error('Экипаж не существует');
       }
 
-      let scheduleSchema = await generateScheduleSchema(startDate, users);
-      let shiftOrder: number[] = users.map((user: UserModel) => user.id);
+      const shiftOrder: number[] = users.map((user: UserModel) => user.id);
+      const scheduleSchema = await generateScheduleSchema(startDate, users as UserModel[], shiftOrder, 30);
 
-      const reservedDays = (await ReservedDays.findAll({ where: { userId: { [Op.in]: users.map((user) => user.id) } } })) ?? [];
+      /* const reservedDays = (await ReservedDays.findAll({ where: { userId: { [Op.in]: users.map((user) => user.id) } } })) ?? [];
       await Promise.all(reservedDays.map(async ({ reserved_days, userId }) => {
         const reservedDaysDayJs = reserved_days.map((date) => dayjs(date, 'DD-MM-YYYY'));
         const firstShift = dayjs.min(reservedDaysDayJs) as Dayjs;
@@ -127,7 +229,7 @@ class Crew {
           });
         }
 
-        const tempSchedule = await generateScheduleSchema(startDay, lastWorkUsers, range.length);
+        const tempSchedule = await generateScheduleSchema(startDay, crew.users as UserModel[], range.length);
 
         const {
           id, color, username, phone,
@@ -157,15 +259,15 @@ class Crew {
           id, color, username, phone,
         } as UserModel);
 
-        const schedule = await generateScheduleSchema(lastShift.add(1, 'day'), newLastWorkUsers as UserModel[]);
+        const schedule = await generateScheduleSchema(lastShift.add(1, 'day'), crew.users as UserModel[]);
 
         shiftOrder = newLastWorkUsers.map((user) => user.id);
 
         scheduleSchema = { ...scheduleSchema, ...schedule };
-      }));
+      })); */
 
       await Crews.update({ schedule_schema: scheduleSchema, shiftOrder }, { where: { id: crew.id } });
-      return res.json({ code: 1, scheduleSchema });
+      return res.json({ code: 1, scheduleSchema, shiftOrder });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -270,14 +372,14 @@ class Crew {
       if (userFirstShiftIndex === -1) {
         return res.json({ code: 2 });
       }
-      const tempSchedule = await generateScheduleSchema(range[0], users as UserModel[], range.length);
+      const tempSchedule = await generateScheduleSchema(range[0], crew.users as UserModel[], crew.shiftOrder, range.length);
 
       users.unshift({ id, color, username } as UserModel);
 
       for (let i = 0; range.length > i; i += 1) {
         crew.schedule_schema[range[i].format('DD-MM-YYYY')] = tempSchedule[range[i].format('DD-MM-YYYY')];
       }
-      const schedule = await generateScheduleSchema(range[range.length - 1].add(1, 'day'), users as UserModel[]);
+      const schedule = await generateScheduleSchema(range[range.length - 1].add(1, 'day'), crew.users as UserModel[], crew.shiftOrder);
 
       const notifications: NotificationType[] = [];
 
