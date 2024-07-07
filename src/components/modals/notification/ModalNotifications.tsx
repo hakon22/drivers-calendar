@@ -75,6 +75,8 @@ const ModalNotifications = () => {
   const decline = (id: number) => {
     const notification = notifications.find((notif) => notif.id === id);
     if (notification) {
+      const notifGroup = notificationsGroup[notification.type].filter((notif) => notif.id !== notification.id);
+      updateNotificationsGroup((state) => ({ ...state, [notification.type]: notifGroup }));
       dispatch(fetchNotificationRemove({ id, token }));
     }
   };
@@ -183,7 +185,7 @@ const ModalNotifications = () => {
 
   useEffect(() => {
     notifications.forEach((notification) => {
-      if (!notificationsGroup[notification.type].includes(notification)) {
+      if (!notificationsGroup[notification.type].find((notif) => notif.id === notification.id)) {
         updateNotificationsGroup((state) => ({ ...state, [notification.type]: [...state[notification.type], notification] }));
       }
     });

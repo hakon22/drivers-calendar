@@ -172,7 +172,7 @@ export default {
       notifications: {
         title: 'Уведомления',
         noNotifications: 'Уведомлений нет',
-        delete: 'Прочитать',
+        delete: 'Удалить',
         accept: 'Принять',
         decline: 'Отклонить',
       },
