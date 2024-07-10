@@ -5,6 +5,7 @@ import routes from '../routes';
 import { CrewModel } from '../../server/db/tables/Crews';
 import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
 import { CarModel } from '../../server/db/tables/Cars';
+import { ReservedDaysModel } from '../../server/db/tables/ReservedDays';
 
 export const fetchCrew = createAsyncThunk(
   'crew/fetchCrew',
@@ -23,6 +24,7 @@ export const initialState: { [K in keyof CrewInitialState]: CrewInitialState[K] 
   cars: [],
   schedule_schema: {},
   shiftOrder: [],
+  reservedDays: [],
   activeCar: null,
 };
 
@@ -30,11 +32,14 @@ const crewSlice = createSlice({
   name: 'crew',
   initialState,
   reducers: {
-    socketMakeSchedule: (state, { payload }: PayloadAction<{ code: number, scheduleSchema: ScheduleSchemaType, shiftOrder?: number[] }>) => {
+    socketMakeSchedule: (state, { payload }: PayloadAction<{ code: number, scheduleSchema: ScheduleSchemaType, shiftOrder?: number[], reservedDays: ReservedDaysModel[] }>) => {
       if (payload.code === 1) {
         state.schedule_schema = payload.scheduleSchema;
         if (payload?.shiftOrder) {
           state.shiftOrder = payload.shiftOrder;
+        }
+        if (payload?.reservedDays) {
+          state.reservedDays = payload.reservedDays;
         }
       }
     },

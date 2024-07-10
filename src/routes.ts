@@ -45,4 +45,5 @@ export default {
   // crew
   swapShift: [apiPath, 'crew', 'swapShift'].join('/'),
   takeSickLeaveOrVacation: [apiPath, 'crew', 'takeSickLeaveOrVacation'].join('/'),
+  cancelSickLeaveOrVacation: [apiPath, 'crew', 'cancelSickLeaveOrVacation'].join('/'),
 } as ApiUrl;

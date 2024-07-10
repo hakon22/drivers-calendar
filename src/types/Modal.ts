@@ -12,7 +12,9 @@ export type ModalShowType = 'none'
   | 'carsAdd'
   | 'swapShifts'
   | 'takeSickLeave'
-  | 'takeVacation';
+  | 'takeVacation'
+  | 'cancelSickLeave'
+  | 'cancelVacation';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

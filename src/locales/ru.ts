@@ -74,7 +74,9 @@ export default {
           inviteReplacement: 'Пригласить сменщика',
           swapShifts: 'Поменяться сменами',
           takeSickLeave: 'Взять больничный',
+          cancelSickLeave: 'Отменить больничный',
           takeVacation: 'Взять отпуск',
+          cancelVacation: 'Отменить отпуск',
           car: 'Автомобиль',
           exit: 'Выйти из экипажа',
         },
@@ -119,6 +121,9 @@ export default {
       sentRequestSuccess: 'Запрос успешно отправлен',
       notificationNotExist: 'Уведомления не существует',
       shiftsNotAvailable: 'Ваших смен в заданном промежутке не найдено',
+      reservedDaysNotAvailable: 'Данные не существуют',
+      cancelVacation: 'Отпуск отменён',
+      cancelSickLeave: 'Больничный отменён',
     },
     modals: {
       signup: {
@@ -235,6 +240,18 @@ export default {
         title: 'Отпуск зарегистрирован!',
         subTitle: 'Сменщикам придёт уведомление, что вы запланировали отпуск',
         back: 'Вернуться в календарь',
+      },
+      cancelSickLeave: {
+        currentReservedDays: 'Текущий больничный',
+        yourShift: 'Начало: ',
+        changedShift: 'Конец: ',
+        submitButton: 'Отменить больничный',
+      },
+      cancelVacation: {
+        currentReservedDays: 'Текущий отпуск',
+        yourShift: 'Начало: ',
+        changedShift: 'Конец: ',
+        submitButton: 'Отменить отпуск',
       },
     },
   },

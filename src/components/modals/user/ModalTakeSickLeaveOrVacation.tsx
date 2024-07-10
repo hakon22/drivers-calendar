@@ -39,14 +39,15 @@ const ModalTakeSickLeaveOrVacation = ({ type }: { type: 'takeSickLeave' | 'takeV
   const onFinish = async () => {
     try {
       setIsSubmit(true);
-      const { data: { code, notifications, scheduleSchema } } = await axios.post(routes.takeSickLeaveOrVacation, { ...dateValues, type }, {
+      const { data } = await axios.post(routes.takeSickLeaveOrVacation, { ...dateValues, type }, {
         headers: { Authorization: `Bearer ${token}` },
-      }) as { data: { code: number, notifications: Notification[], scheduleSchema: ScheduleSchemaType } };
-      if (code === 1) {
+      }) as { data: { code: number, notifications: Notification[], scheduleSchema: ScheduleSchemaType, shiftOrder?: number[] } };
+      if (data.code === 1) {
+        const { notifications, ...rest } = data;
         notifications.forEach((notif) => sendNotification({ ...notif }));
-        makeSchedule({ code, scheduleSchema });
+        makeSchedule(rest);
         setIsSuccess(true);
-      } else if (code === 2) {
+      } else if (data.code === 2) {
         toast(tToast('shiftsNotAvailable'), 'error');
       }
       setIsSubmit(false);

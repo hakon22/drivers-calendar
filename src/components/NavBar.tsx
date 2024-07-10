@@ -2,10 +2,15 @@ import { useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cn from 'classnames';
 import { Drawer, Button } from 'antd';
+import { useAppSelector } from '@/utilities/hooks';
 import { AuthContext, ModalContext, NavbarContext } from './Context';
+import ReservedDaysTypeEnum from '../../server/types/user/enum/ReservedDaysTypeEnum';
 
 const NavBar = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'index.navbar' });
+
+  const { id } = useAppSelector((state) => state.user);
+  const { reservedDays } = useAppSelector((state) => state.crew);
 
   const { logOut } = useContext(AuthContext);
   const { modalOpen } = useContext(ModalContext);
@@ -21,8 +26,12 @@ const NavBar = () => {
   const swapShiftsHandler = () => modalOpen('swapShifts');
   const takeSickLeaveHandler = () => modalOpen('takeSickLeave');
   const takeVacationHandler = () => modalOpen('takeVacation');
+  const cancelSickLeaveHandler = () => modalOpen('cancelSickLeave');
+  const cancelVacationHandler = () => modalOpen('cancelVacation');
 
   const container = useRef(null);
+
+  const userReservedDays = reservedDays.find((reservedDay) => reservedDay.userId === id);
 
   return (
     <div ref={container}>
@@ -51,11 +60,11 @@ const NavBar = () => {
           <Button className="w-100 button button-height" onClick={swapShiftsHandler}>
             {t('buttons.swapShifts')}
           </Button>
-          <Button className="w-100 button button-height" onClick={takeSickLeaveHandler}>
-            {t('buttons.takeSickLeave')}
+          <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.VACATION} onClick={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? cancelSickLeaveHandler : takeSickLeaveHandler}>
+            {userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? t('buttons.cancelSickLeave') : t('buttons.takeSickLeave')}
           </Button>
-          <Button className="w-100 button button-height" onClick={takeVacationHandler}>
-            {t('buttons.takeVacation')}
+          <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL} onClick={userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? cancelVacationHandler : takeVacationHandler}>
+            {userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? t('buttons.cancelVacation') : t('buttons.takeVacation')}
           </Button>
           <Button
             className="w-100 button button-height"

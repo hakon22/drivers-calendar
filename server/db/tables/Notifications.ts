@@ -8,7 +8,7 @@ export interface NotificationsModel extends Model<InferAttributes<NotificationsM
   id: CreationOptional<number>;
   title: string;
   description: string;
-  description2: string;
+  description2?: string;
   type: NotificationEnum;
   authorId?: CreationOptional<number>;
   crewId: CreationOptional<number>;

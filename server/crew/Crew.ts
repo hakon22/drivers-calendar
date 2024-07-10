@@ -25,13 +25,14 @@ import Auth from '../authentication/Auth';
 import redis from '../db/redis';
 import NotificationType from '../types/notification/NotificationType';
 import ReservedDays from '../db/tables/ReservedDays';
+import ReservedDaysTypeEnum from '../types/user/enum/ReservedDaysTypeEnum';
 
 dayjs.extend(minMax);
 dayjs.extend(isBetween);
 
 const defaultScheduleDays = 500;
 
-const generateScheduleSchema = async (startDate: Dayjs, originalUsers: ScheduleSchemaUserType[], shiftOrder: number[], numDays: number = defaultScheduleDays, oldSchedule: ScheduleSchemaType = {}) => {
+const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: ScheduleSchemaUserType[], shiftOrder: number[], numDays: number = defaultScheduleDays, oldSchedule: ScheduleSchemaType = {}) => {
   const schedule: ScheduleSchemaType = oldSchedule;
   const users = originalUsers.map(({
     id, username, phone, color,
@@ -166,6 +167,9 @@ class Crew {
       if (!crew) {
         throw new Error('Экипаж не существует');
       }
+      const reservedDays = (await ReservedDays.findAll({ where: { userId: { [Op.in]: crew.shiftOrder } } })) ?? [];
+      crew.dataValues.reservedDays = reservedDays;
+
       return res.json({ code: 1, crew });
     } catch (e) {
       console.log(e);
@@ -266,12 +270,14 @@ class Crew {
       const { dataValues: { id, crewId, username } } = req.user as PassportRequest;
       req.body.firstShift = dayjs(req.body.firstShift);
       req.body.secondShift = dayjs(req.body.secondShift);
-      const { firstShift, secondShift, type } = req.body as { firstShift: Dayjs, secondShift: Dayjs, type: 'takeSickLeave' | 'takeVacation' };
+      const { firstShift, secondShift } = req.body as { firstShift: Dayjs, secondShift: Dayjs, type: 'takeSickLeave' | 'takeVacation' };
 
       const crew = await Crews.findByPk(crewId, { include: { model: Users, as: 'users' } });
       if (!crew || !crew.users?.length) {
         throw new Error('Экипаж не существует');
       }
+
+      const type = req.body.type === 'takeSickLeave' ? ReservedDaysTypeEnum.HOSPITAL : ReservedDaysTypeEnum.VACATION;
 
       const range = dateRange(dayjs(firstShift), dayjs(secondShift));
       const rangeDateFormat = range.map((date) => date.format('DD-MM-YYYY'));
@@ -283,9 +289,9 @@ class Crew {
 
       const reservedDays = await ReservedDays.findByPk(id);
       if (reservedDays) {
-        await ReservedDays.update({ reserved_days: rangeDateFormat }, { where: { userId: id } });
+        await ReservedDays.update({ reserved_days: rangeDateFormat, type }, { where: { userId: id } });
       } else {
-        await ReservedDays.create({ userId: id, reserved_days: rangeDateFormat });
+        await ReservedDays.create({ userId: id, reserved_days: rangeDateFormat, type });
       }
 
       const length = defaultScheduleDays - Object.keys(crew.schedule_schema).findIndex((key) => rangeDateFormat.includes(key));
@@ -297,10 +303,10 @@ class Crew {
       crew.users?.forEach(async (user) => {
         const preparedNotification = {
           userId: user.id,
-          title: `${username} взял ${type === 'takeSickLeave' ? 'больничный' : 'отпуск'}!`,
+          title: `${username} взял ${req.body.type === 'takeSickLeave' ? 'больничный' : 'отпуск'}!`,
           description: `Начало: ${firstShift.locale('ru').format('D MMMM, dddd')}`,
           description2: `Конец: ${secondShift.locale('ru').format('D MMMM, dddd')}`,
-          type: type === 'takeSickLeave' ? NotificationEnum.HOSPITAL : NotificationEnum.VACATION,
+          type: req.body.type === 'takeSickLeave' ? NotificationEnum.HOSPITAL : NotificationEnum.VACATION,
         };
 
         const newNotification = await Notification.create(preparedNotification);
@@ -311,7 +317,59 @@ class Crew {
 
       await Crews.update({ schedule_schema: scheduleSchema }, { where: { id: crewId } });
 
-      return res.json({ code: 1, notifications, scheduleSchema });
+      const newReservedDays = await ReservedDays.findAll();
+
+      return res.json({
+        code: 1, notifications, scheduleSchema, reservedDays: newReservedDays,
+      });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async cancelSickLeaveOrVacation(req: Request, res: Response) {
+    try {
+      const { dataValues: { id, crewId, username } } = req.user as PassportRequest;
+      const { type } = req.body as { type: 'cancelSickLeave' | 'cancelVacation' };
+
+      const crew = await Crews.findByPk(crewId, { include: { model: Users, as: 'users' } });
+      if (!crew || !crew.users?.length) {
+        throw new Error('Экипаж не существует');
+      }
+
+      const reservedDays = await ReservedDays.findAll();
+      const userReservedDays = reservedDays.find(({ userId }) => userId === id);
+      if (!userReservedDays) {
+        return res.json({ code: 2 });
+      }
+
+      await ReservedDays.destroy({ where: { userId: id } });
+
+      const length = defaultScheduleDays - Object.keys(crew.schedule_schema).findIndex((key) => userReservedDays.reserved_days.includes(key));
+      const schedule = await generateScheduleSchema(dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day'), crew.users as UserModel[], crew.shiftOrder, length, crew.schedule_schema);
+
+      const scheduleSchema = { ...crew.schedule_schema, ...schedule };
+
+      const notifications: NotificationType[] = [];
+
+      crew.users?.forEach(async (user) => {
+        const preparedNotification = {
+          userId: user.id,
+          title: `${username} отменил ${type === 'cancelSickLeave' ? 'больничный' : 'отпуск'}!`,
+          description: `График переделан с ${dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').locale('ru').format('D MMMM, dddd')}`,
+          type: type === 'cancelSickLeave' ? NotificationEnum.HOSPITAL : NotificationEnum.VACATION,
+        };
+
+        const newNotification = await Notification.create(preparedNotification);
+        notifications.push(newNotification as NotificationType);
+      });
+
+      await Crews.update({ schedule_schema: scheduleSchema }, { where: { id: crewId } });
+
+      return res.json({
+        code: 1, scheduleSchema, notifications, reservedDays: reservedDays.filter(({ userId }) => userId !== id),
+      });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
