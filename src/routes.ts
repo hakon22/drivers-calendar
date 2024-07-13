@@ -46,4 +46,7 @@ export default {
   swapShift: [apiPath, 'crew', 'swapShift'].join('/'),
   takeSickLeaveOrVacation: [apiPath, 'crew', 'takeSickLeaveOrVacation'].join('/'),
   cancelSickLeaveOrVacation: [apiPath, 'crew', 'cancelSickLeaveOrVacation'].join('/'),
+  sendMessageToChat: [apiPath, 'crew', 'sendMessageToChat'].join('/'),
+  readChatMessages: [apiPath, 'crew', 'readChatMessages'].join('/'),
+  fetchChatMessages: [apiPath, 'crew', 'fetchChatMessages'].join('/'),
 } as ApiUrl;

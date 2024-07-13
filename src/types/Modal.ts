@@ -14,7 +14,8 @@ export type ModalShowType = 'none'
   | 'takeSickLeave'
   | 'takeVacation'
   | 'cancelSickLeave'
-  | 'cancelVacation';
+  | 'cancelVacation'
+  | 'chat';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

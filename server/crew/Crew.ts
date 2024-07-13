@@ -26,11 +26,13 @@ import redis from '../db/redis';
 import NotificationType from '../types/notification/NotificationType';
 import ReservedDays from '../db/tables/ReservedDays';
 import ReservedDaysTypeEnum from '../types/user/enum/ReservedDaysTypeEnum';
+import ChatMessages from '../db/tables/ChatMessages';
 
 dayjs.extend(minMax);
 dayjs.extend(isBetween);
 
 const defaultScheduleDays = 500;
+const paginationChatLimit = 100;
 
 const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: ScheduleSchemaUserType[], shiftOrder: number[], numDays: number = defaultScheduleDays, oldSchedule: ScheduleSchemaType = {}) => {
   const schedule: ScheduleSchemaType = oldSchedule;
@@ -103,7 +105,8 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
         result = i % 4; // 1/3
         break;
       default:
-        result = currDay.day() === 0 || currDay.day() === 6 ? -1 : 0; // 5/2
+        // result = currDay.day() === 0 || currDay.day() === 6 ? -1 : 0; // 5/2
+        result = -1;
         break;
     }
     return result;
@@ -156,13 +159,40 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
 };
 
 class Crew {
+  async fetchChatMessages(req: Request, res: Response) {
+    try {
+      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const limit = paginationChatLimit;
+      const offset = req?.query?.offset ? +req.query.offset : 0;
+
+      const { count: total, rows } = await ChatMessages.findAndCountAll({
+        where: { crewId },
+        attributes: ['id', 'message', 'createdAt', 'readBy'],
+        order: [['id', 'DESC']],
+        offset,
+        limit,
+        include: { attributes: ['id', 'username'], model: Users, as: 'author' },
+      });
+
+      return res.json({
+        code: 1, rows, offset, limit, count: rows.length, total,
+      });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
   async fetchCrew(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
       const crew = await Crews.findByPk(crewId, {
         include: [
           { attributes: ['id', 'username', 'color', 'phone'], model: Users, as: 'users' },
-          { model: Cars, as: 'cars', through: { attributes: [] } }],
+          { model: Cars, as: 'cars', through: { attributes: [] } },
+          {
+            attributes: ['id', 'message', 'createdAt', 'readBy'], limit: paginationChatLimit, order: [['id', 'DESC']], model: ChatMessages, as: 'chat', include: [{ attributes: ['id', 'username'], model: Users, as: 'author' }],
+          }],
       });
       if (!crew) {
         throw new Error('Экипаж не существует');
@@ -370,6 +400,56 @@ class Crew {
       return res.json({
         code: 1, scheduleSchema, notifications, reservedDays: reservedDays.filter(({ userId }) => userId !== id),
       });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async sendMessageToChat(req: Request, res: Response) {
+    try {
+      const { dataValues: { id, crewId } } = req.user as PassportRequest;
+
+      const crew = await Crews.findByPk(crewId);
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      const created = await ChatMessages.create({ ...req.body, readBy: [id] });
+      const message = await ChatMessages.findByPk(created.id, {
+        attributes: ['id', 'message', 'crewId', 'createdAt', 'readBy'],
+        include: { attributes: ['id', 'username'], model: Users, as: 'author' },
+      });
+
+      return res.json({ code: 1, message });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async readChatMessages(req: Request, res: Response) {
+    try {
+      const { dataValues: { id, crewId } } = req.user as PassportRequest;
+
+      const crew = await Crews.findByPk(crewId);
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      const messages = await ChatMessages.findAll({ where: { crewId } });
+
+      const updatedMessage = messages.map((message) => {
+        if (!message.readBy.includes(id)) {
+          message.readBy.push(id);
+          return message;
+        }
+        return message;
+      });
+
+      await Promise.all(updatedMessage.map(async (message) => ChatMessages.update({ readBy: message.readBy }, { where: { id: message.id } })));
+
+      return res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

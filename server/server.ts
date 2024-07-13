@@ -49,6 +49,7 @@ app.prepare().then(() => {
     socket.on('carRemove', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carRemove', data));
     socket.on('carAdd', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carAdd', data));
     socket.on('swipShift', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('swipShift', data));
+    socket.on('sendMessageToChat', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('sendMessageToChat', data));
     socket.on('disconnect', async () => socket.disconnect());
   });
 

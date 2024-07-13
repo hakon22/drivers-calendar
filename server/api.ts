@@ -40,6 +40,9 @@ router.post(`${apiPath}/crew/activeCarsUpdate`, jwtToken, Crew.activeCarsUpdate)
 router.post(`${apiPath}/crew/swapShift`, jwtToken, Crew.swapShift);
 router.post(`${apiPath}/crew/takeSickLeaveOrVacation`, jwtToken, Crew.takeSickLeaveOrVacation);
 router.post(`${apiPath}/crew/cancelSickLeaveOrVacation`, jwtToken, Crew.cancelSickLeaveOrVacation);
+router.post(`${apiPath}/crew/sendMessageToChat`, jwtToken, Crew.sendMessageToChat);
+router.get(`${apiPath}/crew/readChatMessages`, jwtToken, Crew.readChatMessages);
+router.get(`${apiPath}/crew/fetchChatMessages`, jwtToken, Crew.fetchChatMessages);
 
 // notification
 router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.fetchNotifications);

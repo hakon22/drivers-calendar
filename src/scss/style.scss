@@ -304,6 +304,14 @@ h1 {
   grid-template-columns: repeat(2, 1fr);
 }
 
+.chat-message {
+  background-color: $chat-message;
+  padding: 0.5em 0.9em;
+  border-radius: 10px;
+  display: inline-block;
+  margin-right: 4px;
+}
+
 @keyframes progress {
 	0% { width: 100%;	}
 	100% { width: 0%;	}

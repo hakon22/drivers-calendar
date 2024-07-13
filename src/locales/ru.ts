@@ -253,6 +253,10 @@ export default {
         changedShift: 'Конец: ',
         submitButton: 'Отменить отпуск',
       },
+      chat: {
+        title: 'Чат экипажа',
+        placeholder: 'Введите сообщение...',
+      },
     },
   },
 } as const;

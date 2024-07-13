@@ -4,6 +4,7 @@ import type { ModalShowType } from '@/types/Modal';
 import ModalSignup from './modals/user/ModalSignup';
 import ModalRecovery from './modals/user/ModalRecovery';
 import ModalMakeSchedule from './modals/crew/ModalMakeSchedule';
+import ModalCrewChat from './modals/crew/ModalCrewChat';
 import ModalInviteReplacement from './modals/user/ModalInviteReplacement';
 import ModalAcceptInvite from './modals/user/ModalAcceptInvite';
 import ModalInviteNotifications from './modals/notification/ModalInviteNotifications';
@@ -44,6 +45,7 @@ const Modals = () => {
     notifications: <ModalNotifications />,
     carsAdd: <ModalCarsAdd />,
     swapShifts: <ModalSwapShifts />,
+    chat: <ModalCrewChat />,
     takeSickLeave: <ModalTakeSickLeaveOrVacation type="takeSickLeave" />,
     takeVacation: <ModalTakeSickLeaveOrVacation type="takeVacation" />,
     cancelSickLeave: <ModalCancelSickLeaveOrVacation type="cancelSickLeave" />,
