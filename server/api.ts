@@ -43,6 +43,7 @@ router.post(`${apiPath}/crew/cancelSickLeaveOrVacation`, jwtToken, Crew.cancelSi
 router.post(`${apiPath}/crew/sendMessageToChat`, jwtToken, Crew.sendMessageToChat);
 router.get(`${apiPath}/crew/readChatMessages`, jwtToken, Crew.readChatMessages);
 router.get(`${apiPath}/crew/fetchChatMessages`, jwtToken, Crew.fetchChatMessages);
+router.post(`${apiPath}/crew/endWorkShift`, jwtToken, Crew.endWorkShift);
 
 // notification
 router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.fetchNotifications);

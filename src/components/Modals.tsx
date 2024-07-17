@@ -16,6 +16,7 @@ import ModalCarsAdd from './modals/car/ModalCarsAdd';
 import ModalSwapShifts from './modals/crew/ModalSwapShifts';
 import ModalTakeSickLeaveOrVacation from './modals/user/ModalTakeSickLeaveOrVacation';
 import ModalCancelSickLeaveOrVacation from './modals/user/ModalCancelSickLeaveOrVacation';
+import ModalEndWorkShift from './modals/user/ModalEndWorkShift';
 
 const Modals = () => {
   const { show } = useContext(ModalContext);
@@ -50,6 +51,7 @@ const Modals = () => {
     takeVacation: <ModalTakeSickLeaveOrVacation type="takeVacation" />,
     cancelSickLeave: <ModalCancelSickLeaveOrVacation type="cancelSickLeave" />,
     cancelVacation: <ModalCancelSickLeaveOrVacation type="cancelVacation" />,
+    endWorkShift: <ModalEndWorkShift />,
     carsControl: params && typeof params === 'string' ? <ModalCarsControl modalContext={params} /> : <ModalCarsControl />,
     carsEdit: params && typeof params === 'number' ? <ModalCarsEdit modalContext={params} /> : null,
     activation: params && typeof params !== 'number' && typeof params !== 'string' ? <ModalConfirmPhone setState={params} /> : null,

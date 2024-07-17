@@ -1,9 +1,8 @@
 import { useAppSelector } from '@/utilities/hooks';
-import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import locale from '@/locales/pickers.locale.RU';
 import cn from 'classnames';
-import type { Dayjs } from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { CellRenderInfo } from 'rc-picker/lib/interface';
 import { Calendar as CalendarAntd } from 'antd';
 import { SelectInfo } from 'antd/lib/calendar/generateCalendar';
@@ -46,11 +45,15 @@ const isDisabled: IsDisabledType = (mode, id, scheduleSchema, currentDay, select
 };
 
 const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProps) => {
-  const { t } = useTranslation('translation', { keyPrefix: 'index' });
   const { schedule_schema: scheduleSchema, users, shiftOrder } = useAppSelector((state) => state.crew);
   const { id } = useAppSelector((state) => state.user);
 
   const [selectedDate, setSelectedDate] = useState<Dayjs>();
+
+  const today = dayjs().format('DD-MM-YYYY');
+  const isMyShift = scheduleSchema[today]?.id === id;
+
+  const userLegendClassName = cn('user-legend w-100 gap-2', { 'mt-3-5': isMyShift });
 
   const getListData = (value: Dayjs) => {
     if (scheduleSchema && scheduleSchema[value.format('DD-MM-YYYY')]) {
@@ -110,7 +113,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
         fullCellRender={dateFullCellRender}
         locale={locale}
       />
-      <div className="user-legend w-100 gap-2">
+      <div className={userLegendClassName}>
         {shiftOrder.map((orderId) => {
           const user = users.find((usr) => usr.id === orderId);
           if (user) {

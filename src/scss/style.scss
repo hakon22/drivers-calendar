@@ -164,6 +164,10 @@ h1 {
   margin-bottom: 2.2em !important;
 }
 
+.mt-3-5 {
+  margin-top: 2em !important;
+}
+
 .fs-7 {
   font-size: 0.9em;
 }
@@ -297,11 +301,26 @@ h1 {
   &.invitation-btn {
     left: 1em;
   }
+
+  &.end-work-shift-btn {
+    position: absolute;
+    bottom: 7.7em;
+    width: 70%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    -webkit-animation: pulsing 2s infinite;
+    animation: pulsing 2s infinite;
+  }
 }
 
 .user-legend {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+}
+
+.mt-result-extra-0 .ant-result-extra {
+  margin: 0;
 }
 
 .chat-message {
@@ -320,6 +339,36 @@ h1 {
 @keyframes show {
   0% { opacity: 0; }
   100% { opacity: 1; }
+}
+
+@-webkit-keyframes pulsing {
+  0% {
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1)
+  }
+  50% {
+    -webkit-transform: scale(1.2, 1.2);
+    transform: scale(1.2, 1.2);
+  }
+  100% {
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
+}
+
+@keyframes pulsing {
+  0% {
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1)
+  }
+  50% {
+    -webkit-transform: scale(1.2, 1.2);
+    transform: scale(1.2, 1.2);
+  }
+  100% {
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+  }
 }
 
 @media (min-width: 768px) {

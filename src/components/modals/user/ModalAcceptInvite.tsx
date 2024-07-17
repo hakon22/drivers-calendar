@@ -10,12 +10,12 @@ import { useTranslation } from 'react-i18next';
 import { ModalContext, SubmitContext } from '@/components/Context';
 import { userValidation } from '@/validations/validations';
 
-const ModalAcceptInvite = () => {
-  type UserSignupType = {
-    username: string;
-    color: string | Color;
-  };
+type UserSignupType = {
+  username: string;
+  color: string | Color;
+};
 
+const ModalAcceptInvite = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.acceptInvite' });
   const dispatch = useAppDispatch();
   const { setIsSubmit } = useContext(SubmitContext);

@@ -16,6 +16,7 @@ import Crews from '../db/tables/Crews';
 import Users from '../db/tables/Users';
 import Cars from '../db/tables/Cars';
 import type { ScheduleSchemaType, ScheduleSchemaUserType } from '../types/crew/ScheduleSchemaType';
+import type EndWorkShiftFormType from '@/types/EndWorkShiftForm'; 
 import Notification from '../notification/Notification';
 import NotificationEnum from '../types/notification/enum/NotificationEnum';
 import phoneTransform from '../utilities/phoneTransform';
@@ -27,6 +28,8 @@ import NotificationType from '../types/notification/NotificationType';
 import ReservedDays from '../db/tables/ReservedDays';
 import ReservedDaysTypeEnum from '../types/user/enum/ReservedDaysTypeEnum';
 import ChatMessages from '../db/tables/ChatMessages';
+import SeasonEnum from '../types/crew/enum/SeasonEnum';
+import { Result } from '@/components/modals/user/ModalEndWorkShift';
 
 dayjs.extend(minMax);
 dayjs.extend(isBetween);
@@ -400,6 +403,108 @@ class Crew {
       return res.json({
         code: 1, scheduleSchema, notifications, reservedDays: reservedDays.filter(({ userId }) => userId !== id),
       });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async endWorkShift(req: Request, res: Response) {
+    try {
+      const { dataValues: { id, username, crewId } } = req.user as PassportRequest;
+      const { mileageCity = 0, mileageHighway = 0, refueling = 0, downtime = 0 } = req.body as EndWorkShiftFormType;
+
+      const crew = await Crews.findByPk(crewId, {
+        include: [
+          { model: Users, as: 'users' },
+          { model: Cars, as: 'cars' },
+        ],
+      });
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      const { cars, season, isRoundFuelConsumption } = crew;
+
+      const activeCar = cars?.find((car) => crew.activeCar === car.id);
+      if (!activeCar) {
+        throw new Error('Нет активного автомобиля');
+      }
+
+      const {
+        mileage,
+        mileage_after_maintenance,
+        remaining_fuel,
+        fuel_consumption_summer_city,
+        fuel_consumption_summer_highway,
+        fuel_consumption_winter_city,
+        fuel_consumption_winter_highway,
+      } = activeCar;
+
+      const fuelConsumptionCity = season === SeasonEnum.SUMMER ? fuel_consumption_summer_city : fuel_consumption_winter_city;
+      const fuelConsumptionHighway = season === SeasonEnum.SUMMER ? fuel_consumption_summer_highway : fuel_consumption_winter_highway;
+
+      const newMileage = mileage + mileageCity + mileageHighway;
+      const newMileageAfterMaintenance = mileage_after_maintenance + mileageCity + mileageHighway;
+
+      const newFuelConsumptionCity = isRoundFuelConsumption
+        ? Math.ceil(mileageCity * fuelConsumptionCity / 100)
+        : Number((mileageCity * fuelConsumptionCity / 100).toFixed(2));
+
+      const newFuelConsumptionHighway = isRoundFuelConsumption
+        ? Math.ceil(mileageHighway * fuelConsumptionHighway / 100)
+        : Number((mileageHighway * fuelConsumptionHighway / 100).toFixed(2));
+
+      const fuelResult = remaining_fuel - (newFuelConsumptionCity + newFuelConsumptionHighway + downtime) + refueling;
+
+      const newRemainingFuel = isRoundFuelConsumption ? Math.ceil(fuelResult) : Number(fuelResult.toFixed(2));
+      const totalFuelConsumption = (isRoundFuelConsumption ? Math.ceil(newFuelConsumptionCity + newFuelConsumptionHighway) : Number((newFuelConsumptionCity + newFuelConsumptionHighway).toFixed(2))) + downtime;
+
+      const result: Omit<Result, 'code'> = {
+        mileage: newMileage,
+        mileageAfterMaintenance: newMileageAfterMaintenance,
+        remainingFuel: newRemainingFuel,
+        fuelConsumptionCity: newFuelConsumptionCity,
+      };
+
+      if (mileageHighway) {
+        result.fuelConsumptionHighway = newFuelConsumptionHighway;
+      }
+      if (downtime) {
+        result.downtime = downtime;
+      }
+      if (mileageHighway || downtime) {
+        result.totalFuelConsumption = totalFuelConsumption;
+      }
+      if (refueling) {
+        result.resultRefueling = refueling;
+      }
+
+      const notifications: NotificationType[] = [];
+
+      crew.users?.forEach(async (user) => {
+        const preparedNotification = {
+          userId: user.id,
+          title: `${username} закрыл смену ${dayjs().format('DD-MM-YYYY')}`,
+          description: `Пробег за смену: ${mileageCity + mileageHighway} км`,
+          description2: `Потрачено топлива: ${result.totalFuelConsumption || result.fuelConsumptionCity} л`,
+          type: NotificationEnum.CREW,
+        };
+
+        const newNotification = await Notification.create(preparedNotification);
+        notifications.push(newNotification as NotificationType);
+      });
+
+      const [, affectedRows] = await Cars.update(
+        {
+          mileage: newMileage,
+          mileage_after_maintenance: newMileageAfterMaintenance,
+          remaining_fuel: newRemainingFuel,
+        },
+        { where: { id: crewId }, returning: true },
+      );
+
+      return res.json({ code: 1, notifications, car: affectedRows[0], ...result });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

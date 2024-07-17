@@ -32,21 +32,21 @@ export default {
   addCar: [apiPath, 'car', 'addCar'].join('/'),
   // sms
   confirmPhone: [apiPath, 'auth', 'confirmPhone'].join('/'),
-  // index
-  fetchCrew: [apiPath, 'crew', 'fetchCrew'].join('/'),
-  makeSchedule: [apiPath, 'crew', 'makeSchedule'].join('/'),
-  inviteReplacement: [apiPath, 'crew', 'inviteReplacement'].join('/'),
-  activeCarsUpdate: [apiPath, 'crew', 'activeCarsUpdate'].join('/'),
   // notification
   fetchNotifications: [apiPath, 'notification', 'fetchNotifications'].join('/'),
   notificationReadUpdate: [apiPath, 'notification', 'readUpdate'].join('/'),
   notificationRemove: [apiPath, 'notification', 'remove'].join('/'),
   acceptNotification: [apiPath, 'notification', 'acceptNotification'].join('/'),
   // crew
+  fetchCrew: [apiPath, 'crew', 'fetchCrew'].join('/'),
+  makeSchedule: [apiPath, 'crew', 'makeSchedule'].join('/'),
+  inviteReplacement: [apiPath, 'crew', 'inviteReplacement'].join('/'),
+  activeCarsUpdate: [apiPath, 'crew', 'activeCarsUpdate'].join('/'),
   swapShift: [apiPath, 'crew', 'swapShift'].join('/'),
   takeSickLeaveOrVacation: [apiPath, 'crew', 'takeSickLeaveOrVacation'].join('/'),
   cancelSickLeaveOrVacation: [apiPath, 'crew', 'cancelSickLeaveOrVacation'].join('/'),
   sendMessageToChat: [apiPath, 'crew', 'sendMessageToChat'].join('/'),
   readChatMessages: [apiPath, 'crew', 'readChatMessages'].join('/'),
   fetchChatMessages: [apiPath, 'crew', 'fetchChatMessages'].join('/'),
+  endWorkShift: [apiPath, 'crew', 'endWorkShift'].join('/'),
 } as ApiUrl;

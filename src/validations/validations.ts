@@ -101,9 +101,17 @@ const carSchema = yup.object().shape({
   fuel_consumption_winter: fuelConsumptionSchema,
 });
 
+const endWorkShift = yup.object().shape({
+  mileageCity: yup.number().min(0).required(),
+  mileageHighway: numberSchema,
+  refueling: numberSchema,
+  downtime: numberSchema,
+});
+
 export const confirmCodeValidation = validate(confirmCodeSchema);
 export const phoneValidation = validate(confirmPhoneSchema);
 export const loginValidation = validate(loginSchema);
 export const userValidation = validate(userSchema);
 export const userInviteValidation = validate(userInviteSchema);
 export const carValidation = validate(carSchema);
+export const endWorkShiftValidation = validate(endWorkShift);
