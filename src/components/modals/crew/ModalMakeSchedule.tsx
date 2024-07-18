@@ -8,9 +8,7 @@ import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers';
 import locale from '@/locales/pickers.locale.RU';
-import {
-  ApiContext, ModalContext, NavbarContext, SubmitContext,
-} from '@/components/Context';
+import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import routes from '@/routes';
 import axios from 'axios';
@@ -24,7 +22,6 @@ const ModalMakeSchedule = () => {
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
-  const { makeSchedule } = useContext(ApiContext);
 
   const { token } = useAppSelector((state) => state.user);
   const { users, shiftOrder } = useAppSelector((state) => state.crew);
@@ -59,7 +56,6 @@ const ModalMakeSchedule = () => {
           headers: { Authorization: `Bearer ${token}` },
         }) as { data: { code: number } };
         if (data.code === 1) {
-          makeSchedule(data);
           modalClose();
           closeNavbar();
         }

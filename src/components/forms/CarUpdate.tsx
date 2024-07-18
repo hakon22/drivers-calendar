@@ -12,7 +12,7 @@ import { useAppSelector } from '@/utilities/hooks';
 import toast from '@/utilities/toast';
 import type { Brand } from '../../../server/types/Cars';
 import type { CarSignupType } from './CarSignup';
-import { ApiContext, ModalContext, SubmitContext } from '../Context';
+import { ModalContext, SubmitContext } from '../Context';
 
 type CarUpdateProps = {
   car: CarSignupType,
@@ -52,7 +52,6 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
   const [brands, setBrands] = useState<Brand[]>();
 
   const { setIsSubmit } = useContext(SubmitContext);
-  const { carUpdate } = useContext(ApiContext);
   const { modalOpen } = useContext(ModalContext);
 
   const { brand, model } = values;
@@ -82,7 +81,6 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
       } else if (code === 2) {
         toast(tToast('carNotOnTheCrew'), 'error');
       } else if (code === 1) {
-        carUpdate({ car: updatedCar, code, crewId });
         modalOpen('carsControl', undefined, 'none');
         toast(tToast('carUpdateSuccess'), 'success');
       }

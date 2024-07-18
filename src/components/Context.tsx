@@ -2,10 +2,6 @@
 import { createContext } from 'react';
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 
-export const ApiContext = createContext<{
-  [key: string]:(data: unknown) => void,
-    }>({});
-
 export const AuthContext = createContext<{
   loggedIn: boolean,
   logIn:() => void,

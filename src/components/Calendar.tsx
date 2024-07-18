@@ -25,7 +25,7 @@ type IsDisabledType = (
 ) => boolean;
 
 const isDisabled: IsDisabledType = (mode, id, scheduleSchema, currentDay, selectedDay, firstShift, secondShift) => {
-  if (!scheduleSchema[currentDay.format('DD-MM-YYYY')]) return true;
+  if (!scheduleSchema?.[currentDay.format('DD-MM-YYYY')]) return true;
   if (mode === 'shift') {
     if (!firstShift) {
       return scheduleSchema[currentDay.format('DD-MM-YYYY')].id !== id;
@@ -51,7 +51,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
   const [selectedDate, setSelectedDate] = useState<Dayjs>();
 
   const today = dayjs().format('DD-MM-YYYY');
-  const isMyShift = scheduleSchema[today]?.id === id;
+  const isMyShift = scheduleSchema?.[today]?.id === id;
 
   const userLegendClassName = cn('user-legend w-100 gap-2', { 'mt-3-5': isMyShift });
 
@@ -81,7 +81,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
         type="button"
         disabled={disabled}
         style={{
-          backgroundColor: listData.user.color, height: '3.6em', width: '3.6em',
+          backgroundColor: listData.user.color, height: '13.5vw', width: '13.5vw',
         }}
       >
         {listData.content}
@@ -114,7 +114,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
         locale={locale}
       />
       <div className={userLegendClassName}>
-        {shiftOrder.map((orderId) => {
+        {shiftOrder?.map((orderId) => {
           const user = users.find((usr) => usr.id === orderId);
           if (user) {
             return <span key={user.id} className="py-1 px-2 text-center w-100" style={{ backgroundColor: user.color, color: '#f8f9fb', borderRadius: '7px' }}>{user.username}</span>;

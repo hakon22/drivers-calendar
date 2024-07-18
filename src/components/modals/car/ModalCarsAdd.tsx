@@ -2,7 +2,7 @@ import { Form, Modal } from 'antd';
 import { useContext, useEffect, useState } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
-import { ApiContext, ModalContext, SubmitContext } from '@/components/Context';
+import { ModalContext, SubmitContext } from '@/components/Context';
 import CarSignup, { CarSignupType } from '@/components/forms/CarSignup';
 import axios from 'axios';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
@@ -16,7 +16,6 @@ const ModalCarsAdd = () => {
 
   const { modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
-  const { carAdd } = useContext(ApiContext);
 
   const { crewId, token } = useAppSelector((state) => state.user);
 
@@ -71,7 +70,6 @@ const ModalCarsAdd = () => {
                 headers: { Authorization: `Bearer ${token}` },
               });
               if (data.code === 1) {
-                carAdd({ ...data, crewId });
                 modalOpen('carsControl');
               } else if (data.code === 2) {
                 toast(tToast('carAlreadyExists'), 'error');

@@ -3,9 +3,7 @@ import { useContext, useState } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import type { CalendarProps } from '@/components/Calendar';
-import {
-  ApiContext, ModalContext, NavbarContext, SubmitContext,
-} from '@/components/Context';
+import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
 import Calendar from '@/components/Calendar';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import routes from '@/routes';
@@ -22,7 +20,6 @@ const ModalSwapShifts = () => {
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
-  const { sendNotification } = useContext(ApiContext);
 
   const { token } = useAppSelector((state) => state.user);
 
@@ -41,7 +38,6 @@ const ModalSwapShifts = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (code === 1) {
-        sendNotification(notification);
         setIsSuccess(true);
       }
       setIsSubmit(false);

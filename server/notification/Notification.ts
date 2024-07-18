@@ -12,6 +12,7 @@ import Users, { PassportRequest } from '../db/tables/Users.js';
 import type NotificationType from '../types/notification/NotificationType.js';
 import NotificationEnum from '../types/notification/enum/NotificationEnum.js';
 import Crews from '../db/tables/Crews.js';
+import { socketEventsService } from '../server.js';
 
 class Notification {
   public async create(notification: NotificationType) {
@@ -21,6 +22,7 @@ class Notification {
       }
       const result = await Notifications.create(notification);
       console.log(`[Notification]: создано уведомление для пользователя с userId: ${notification?.userId}`);
+
       return result;
     } catch (e) {
       console.log(e);
@@ -71,9 +73,9 @@ class Notification {
         });
 
         await Crews.update({ schedule_schema: crew.schedule_schema }, { where: { id: crewId } });
-        return res.json({
-          code: 1,
-          notifications,
+
+        socketEventsService.socketSwipShift({
+          crewId,
           firstShift: {
             [firstShift.format('DD-MM-YYYY')]: crew.schedule_schema[firstShift.format('DD-MM-YYYY')],
           },
@@ -81,6 +83,9 @@ class Notification {
             [secondShift.format('DD-MM-YYYY')]: crew.schedule_schema[secondShift.format('DD-MM-YYYY')],
           },
         });
+        notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
+
+        return res.json({ code: 1 });
       }
     } catch (e) {
       console.log(e);

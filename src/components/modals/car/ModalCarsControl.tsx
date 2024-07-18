@@ -4,7 +4,7 @@ import {
 import { useContext, useState } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
-import { ApiContext, ModalContext, SubmitContext } from '@/components/Context';
+import { ModalContext, SubmitContext } from '@/components/Context';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import routes from '@/routes';
 import axios from 'axios';
@@ -26,7 +26,6 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
 
   const { modalClose, modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
-  const { carRemove, activeCarUpdate } = useContext(ApiContext);
 
   const { token, crewId } = useAppSelector((state) => state.user);
   const { cars, activeCar } = useAppSelector((state) => state.crew);
@@ -40,7 +39,6 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
         headers: { Authorization: `Bearer ${token}` },
       }) as { data: { code: number } };
       if (data.code === 1) {
-        activeCarUpdate({ ...data, crewId });
       } else if (data.code === 2) {
         toast(tToast('carNotOnTheCrew'), 'error');
       } else if (data.code === 3) {
@@ -58,7 +56,6 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
         headers: { Authorization: `Bearer ${token}` },
       }) as { data: { code: number } };
       if (data.code === 1) {
-        carRemove({ ...data, crewId });
         toast(tToast('carRemoveSuccess'), 'success');
       } else if (data.code === 2) {
         toast(tToast('carNotExistInCrew'), 'error');

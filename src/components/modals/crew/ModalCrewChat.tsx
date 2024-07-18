@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { useAppSelector, useAppDispatch } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
-import { ApiContext, ModalContext, SubmitContext } from '@/components/Context';
+import { ModalContext, SubmitContext } from '@/components/Context';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import routes from '@/routes';
 import axios from 'axios';
@@ -58,7 +58,6 @@ const ModalCrewChat = () => {
 
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
-  const { sendMessageToChat } = useContext(ApiContext);
 
   const groupedChat = Object.entries(groupObjectsByDate(chat)).sort();
 
@@ -82,12 +81,9 @@ const ModalCrewChat = () => {
   const onFinish = async () => {
     try {
       setIsSubmit(true);
-      const { data } = await axios.post(routes.sendMessageToChat, { crewId, authorId, message }, {
+      await axios.post(routes.sendMessageToChat, { crewId, authorId, message }, {
         headers: { Authorization: `Bearer ${token}` },
-      }) as { data: { code: number, message: ChatMessagesModel } };
-      if (data.code === 1) {
-        sendMessageToChat({ ...data, crewId });
-      }
+      })
       setMessage('');
       setIsSubmit(false);
     } catch (e) {

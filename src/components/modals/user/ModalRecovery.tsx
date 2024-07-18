@@ -26,7 +26,7 @@ const ModalRecovery = () => {
         title={t('title')}
         subTitle={t('subTitle')}
         extra={(
-          <div className="col-9 d-flex mx-auto">
+          <div className="col-9 d-flex justify-content-center mx-auto">
             <LoginButton title={t('loginButton')} className="button button-height w-100" onClick={modalClose} />
           </div>
         )}

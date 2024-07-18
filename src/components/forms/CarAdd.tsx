@@ -9,7 +9,7 @@ import routes from '@/routes';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import { useAppSelector } from '@/utilities/hooks';
 import type { Brand } from '../../../server/types/Cars';
-import { ApiContext, SubmitContext, ModalContext } from '../Context';
+import { SubmitContext, ModalContext } from '../Context';
 
 type CarAddType = {
   brand: '',
@@ -27,7 +27,6 @@ const CarAdd = () => {
   const [loading, setLoading] = useState(false);
 
   const { setIsSubmit } = useContext(SubmitContext);
-  const { carAdd } = useContext(ApiContext);
   const { modalOpen } = useContext(ModalContext);
 
   const fetchCarList = async () => {
@@ -56,7 +55,6 @@ const CarAdd = () => {
         if (data.code === 1) {
           setCars(cars.filter(({ value }) => value !== car.value));
           form.setFieldValue('brand', undefined);
-          carAdd({ ...data, crewId });
         }
       }
       setIsSubmit(false);

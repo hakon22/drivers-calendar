@@ -9,6 +9,8 @@ import { CarModel } from '../../server/db/tables/Cars';
 import { ReservedDaysModel } from '../../server/db/tables/ReservedDays';
 import { ChatMessagesModel } from '../../server/db/tables/ChatMessages';
 
+type KeysCrewInitialState = keyof CrewInitialState;
+
 export const fetchCrew = createAsyncThunk(
   'crew/fetchCrew',
   async (token?: string) => {
@@ -53,15 +55,22 @@ const crewSlice = createSlice({
   name: 'crew',
   initialState,
   reducers: {
+    removeToken: (state) => {
+      const entries = Object.keys(state) as KeysCrewInitialState[];
+      entries.forEach((key) => {
+        if (key !== 'loadingStatus' && key !== 'error') {
+          delete state[key];
+          state[key] = initialState[key];
+        }
+      });
+    },
     socketMakeSchedule: (state, { payload }: PayloadAction<{ code: number, scheduleSchema: ScheduleSchemaType, shiftOrder?: number[], reservedDays: ReservedDaysModel[] }>) => {
-      if (payload.code === 1) {
-        state.schedule_schema = payload.scheduleSchema;
-        if (payload?.shiftOrder) {
-          state.shiftOrder = payload.shiftOrder;
-        }
-        if (payload?.reservedDays) {
-          state.reservedDays = payload.reservedDays;
-        }
+      state.schedule_schema = payload.scheduleSchema;
+      if (payload?.shiftOrder) {
+        state.shiftOrder = payload.shiftOrder;
+      }
+      if (payload?.reservedDays) {
+        state.reservedDays = payload.reservedDays;
       }
     },
     socketSwipShift: (state, { payload }: PayloadAction<{ firstShift: ScheduleSchemaType, secondShift: ScheduleSchemaType }>) => {
@@ -69,29 +78,19 @@ const crewSlice = createSlice({
       state.schedule_schema = { ...state.schedule_schema, ...firstShift, ...secondShift };
     },
     socketActiveCarsUpdate: (state, { payload }: PayloadAction<{ code: number, activeCar: number }>) => {
-      if (payload.code === 1) {
-        state.activeCar = payload.activeCar;
-      }
+      state.activeCar = payload.activeCar;
     },
     socketCarUpdate: (state, { payload }: PayloadAction<{ code: number, car: CarModel }>) => {
-      if (payload.code === 1) {
-        state.cars = [...state.cars.filter((car) => car.id !== payload.car.id), payload.car];
-      }
+      state.cars = [...state.cars.filter((car) => car.id !== payload.car.id), payload.car];
     },
     socketCarAdd: (state, { payload }: PayloadAction<{ code: number, car: CarModel }>) => {
-      if (payload.code === 1) {
-        state.cars = [...state.cars, payload.car];
-      }
+      state.cars = [...state.cars, payload.car];
     },
     socketCarRemove: (state, { payload }: PayloadAction<{ code: number, carId: number }>) => {
-      if (payload.code === 1) {
-        state.cars = state.cars.filter((car) => car.id !== +payload.carId);
-      }
+      state.cars = state.cars.filter((car) => car.id !== +payload.carId);
     },
     socketSendMessageToChat: (state, { payload }: PayloadAction<{ code: number, message: ChatMessagesModel }>) => {
-      if (payload.code === 1) {
-        state.chat = [...state.chat, payload.message];
-      }
+      state.chat = [...state.chat, payload.message];
     },
     readChatMessages: (state, { payload }: PayloadAction<{ userId: number }>) => {
       state.chat = state.chat.map((message) => {
@@ -154,7 +153,7 @@ const crewSlice = createSlice({
 
 export const {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, socketCarRemove, socketSwipShift, socketSendMessageToChat,
-  readChatMessages,
+  readChatMessages, removeToken,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

@@ -31,7 +31,7 @@ const NavBar = () => {
 
   const container = useRef(null);
 
-  const userReservedDays = reservedDays.find((reservedDay) => reservedDay.userId === id);
+  const userReservedDays = reservedDays?.find((reservedDay) => reservedDay.userId === id);
 
   return (
     <div ref={container}>

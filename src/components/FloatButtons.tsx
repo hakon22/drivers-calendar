@@ -20,7 +20,7 @@ const FloatButtons = () => {
   } = useAppSelector((state) => state.crew);
 
   const today = dayjs().format('DD-MM-YYYY');
-  const isMyShift = scheduleSchema[today]?.id === id;
+  const isMyShift = scheduleSchema?.[today]?.id === id;
 
   const notifications = useAppSelector(selectors.selectAll);
   const unreadChatMessages = chat.filter((message) => !message.readBy.includes(id as number));

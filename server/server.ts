@@ -15,6 +15,9 @@ import temporaryTokenChecker from './authentication/temporaryTokenChecker.js';
 import { connectToDb } from './db/connect.js';
 import router from './api.js';
 import createRelations from './db/relations.js';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events.js';
+import SocketEventEnum from './types/notification/enum/SocketEventEnum.js';
+import SocketEvents from './socket/SocketEvents.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -25,8 +28,13 @@ const dev = NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
+const server = express();
+const socketServer = createServer(server);
+const io = new Server(socketServer);
+
+export const socketEventsService = new SocketEvents(io);
+
 app.prepare().then(() => {
-  const server = express();
   tokenChecker(passport);
   refreshTokenChecker(passport);
   temporaryTokenChecker(passport);
@@ -36,21 +44,10 @@ app.prepare().then(() => {
   server.use(passport.initialize());
   server.use(router);
 
-  const socketServer = createServer(server);
-  const io = new Server(socketServer);
-
   io.on('connection', (socket) => {
-    socket.on('userConnection', (userId) => socket.join(`USER:${userId}`));
-    socket.on('crewConnection', (crewId) => socket.join(`CREW:${crewId}`));
-    socket.on('makeSchedule', (data) => io.emit('makeSchedule', data));
-    socket.on('sendNotification', (data) => (data?.sendAll ? io.emit('sendNotification', data) : io.sockets.in(`USER:${data?.userId}`).emit('sendNotification', data)));
-    socket.on('activeCarUpdate', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('activeCarUpdate', data));
-    socket.on('carUpdate', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carUpdate', data));
-    socket.on('carRemove', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carRemove', data));
-    socket.on('carAdd', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('carAdd', data));
-    socket.on('swipShift', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('swipShift', data));
-    socket.on('sendMessageToChat', ({ crewId, ...data }) => io.sockets.in(`CREW:${crewId}`).emit('sendMessageToChat', data));
-    socket.on('disconnect', async () => socket.disconnect());
+    socket.on(SocketEventEnum.USER_CONNECTION, (userId) => socket.join(`USER:${userId}`));
+    socket.on(SocketEventEnum.CREW_CONNECTION, (crewId) => socket.join(`CREW:${crewId}`));
+    socket.on(SocketEventEnum.DISCONNECT, () => socket.disconnect());
   });
 
   server.all('*', (req, res) => handle(req, res));

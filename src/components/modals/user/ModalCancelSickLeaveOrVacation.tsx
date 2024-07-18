@@ -3,9 +3,7 @@ import { useContext } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import {
-  ApiContext, ModalContext, NavbarContext, SubmitContext,
-} from '@/components/Context';
+import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import toast from '@/utilities/toast';
 import routes from '@/routes';
@@ -24,7 +22,6 @@ const ModalCancelSickLeaveOrVacation = ({ type }: { type: 'cancelSickLeave' | 'c
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
-  const { sendNotification, makeSchedule } = useContext(ApiContext);
 
   const { token } = useAppSelector((state) => state.user);
 
@@ -38,11 +35,8 @@ const ModalCancelSickLeaveOrVacation = ({ type }: { type: 'cancelSickLeave' | 'c
       setIsSubmit(true);
       const { data } = await axios.post(routes.cancelSickLeaveOrVacation, { type }, {
         headers: { Authorization: `Bearer ${token}` },
-      }) as { data: { code: number, notifications: Notification[], scheduleSchema: ScheduleSchemaType, shiftOrder?: number[] } };
+      }) as { data: { code: number } };
       if (data.code === 1) {
-        const { notifications, ...rest } = data;
-        notifications.forEach((notif) => sendNotification({ ...notif }));
-        makeSchedule(rest);
         toast(tToast(type), 'success');
       } else if (data.code === 2) {
         toast(tToast('reservedDaysNotAvailable'), 'error');

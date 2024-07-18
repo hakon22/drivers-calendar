@@ -21,6 +21,7 @@ import Crews from '../db/tables/Crews.js';
 import { generateAccessToken, generateRefreshToken, generateTemporaryToken } from './tokensGen.js';
 import { upperCase } from '../utilities/textTransform.js';
 import Notifications from '../db/tables/Notifications.js';
+import SeasonEnum from '../types/crew/enum/SeasonEnum.js';
 
 const adminPhone = ['79999999999'];
 
@@ -60,6 +61,9 @@ class Auth {
 
       await Crews.create({
         schedule,
+        shiftOrder: [],
+        season: SeasonEnum.SUMMER,
+        isRoundFuelConsumption: false,
         users: [{
           ...userValues,
           color: typeof color !== 'string' ? color.toHexString() : color,

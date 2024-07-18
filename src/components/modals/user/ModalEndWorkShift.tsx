@@ -7,7 +7,7 @@ import type EndWorkShiftFormType from '@/types/EndWorkShiftForm';
 import { useContext, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
-import { ApiContext, ModalContext, SubmitContext } from '@/components/Context';
+import { ModalContext, SubmitContext } from '@/components/Context';
 import { endWorkShiftValidation } from '@/validations/validations';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import axios from 'axios';
@@ -35,7 +35,6 @@ const ModalEndWorkShift = () => {
   const dispatch = useAppDispatch();
   const { setIsSubmit } = useContext(SubmitContext);
   const { modalClose } = useContext(ModalContext);
-  const { sendNotification, carUpdate } = useContext(ApiContext);
 
   const { token } = useAppSelector((state) => state.user);
   const { id: crewId, activeCar, cars } = useAppSelector((state) => state.crew);
@@ -54,12 +53,10 @@ const ModalEndWorkShift = () => {
       setIsSubmit(true);
       const { data } = await axios.post(routes.endWorkShift, values, {
         headers: { Authorization: `Bearer ${token}` },
-      }) as { data: Result & { notifications: NotificationType[], car: CarModel } };
-      const { code, notifications, car, ...rest } = data;
+      }) as { data: Result };
+      const { code, ...rest } = data;
       if (code === 1) {
         setResult(rest);
-        notifications.forEach((notif) => sendNotification({ ...notif }));
-        carUpdate({ car, code, crewId });
         toast(tToast('endShiftSuccess'), 'success');
       }
       setIsSubmit(false);

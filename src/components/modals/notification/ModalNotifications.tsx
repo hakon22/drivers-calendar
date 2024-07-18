@@ -8,9 +8,7 @@ import cn from 'classnames';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { selectors, fetchNotificationReadUpdate, fetchNotificationRemove } from '@/slices/notificationSlice';
 import { useTranslation } from 'react-i18next';
-import {
-  ApiContext, ModalContext, NavbarContext, SubmitContext,
-} from '@/components/Context';
+import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
 import type { Notification } from '@/types/Notification';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import axios from 'axios';
@@ -27,7 +25,6 @@ const ModalNotifications = () => {
   const { modalClose } = useContext(ModalContext);
   const { closeNavbar } = useContext(NavbarContext);
   const { setIsSubmit } = useContext(SubmitContext);
-  const { sendNotification, swipShift } = useContext(ApiContext);
 
   const { token, crewId } = useAppSelector((state) => state.user);
   const notifications = useAppSelector(selectors.selectAll)
@@ -83,16 +80,10 @@ const ModalNotifications = () => {
 
   const acceptSwapShift = async (id: number) => {
     try {
-      const {
-        data: {
-          code, notifications: createdNotifications, firstShift, secondShift,
-        },
-      } = await axios.get(`${routes.acceptNotification}/${id}`, {
+      const { data: { code } } = await axios.get(`${routes.acceptNotification}/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       }) as { data: { code: number, notifications: Notification[], firstShift: ScheduleSchemaType, secondShift: ScheduleSchemaType } };
       if (code === 1) {
-        createdNotifications.forEach((notif) => sendNotification({ ...notif }));
-        swipShift({ crewId, firstShift, secondShift });
         back();
         decline(id);
       } else if (code === 2) {

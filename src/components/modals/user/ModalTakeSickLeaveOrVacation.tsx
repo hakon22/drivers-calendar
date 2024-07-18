@@ -3,9 +3,7 @@ import { useContext, useState } from 'react';
 import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import type { CalendarProps } from '@/components/Calendar';
-import {
-  ApiContext, ModalContext, NavbarContext, SubmitContext,
-} from '@/components/Context';
+import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
 import Calendar from '@/components/Calendar';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import toast from '@/utilities/toast';
@@ -24,7 +22,6 @@ const ModalTakeSickLeaveOrVacation = ({ type }: { type: 'takeSickLeave' | 'takeV
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
-  const { sendNotification, makeSchedule } = useContext(ApiContext);
 
   const { token } = useAppSelector((state) => state.user);
 
@@ -41,11 +38,8 @@ const ModalTakeSickLeaveOrVacation = ({ type }: { type: 'takeSickLeave' | 'takeV
       setIsSubmit(true);
       const { data } = await axios.post(routes.takeSickLeaveOrVacation, { ...dateValues, type }, {
         headers: { Authorization: `Bearer ${token}` },
-      }) as { data: { code: number, notifications: Notification[], scheduleSchema: ScheduleSchemaType, shiftOrder?: number[] } };
+      }) as { data: { code: number } };
       if (data.code === 1) {
-        const { notifications, ...rest } = data;
-        notifications.forEach((notif) => sendNotification({ ...notif }));
-        makeSchedule(rest);
         setIsSuccess(true);
       } else if (data.code === 2) {
         toast(tToast('shiftsNotAvailable'), 'error');

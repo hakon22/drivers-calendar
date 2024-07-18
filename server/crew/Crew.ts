@@ -30,6 +30,7 @@ import ReservedDaysTypeEnum from '../types/user/enum/ReservedDaysTypeEnum';
 import ChatMessages from '../db/tables/ChatMessages';
 import SeasonEnum from '../types/crew/enum/SeasonEnum';
 import { Result } from '@/components/modals/user/ModalEndWorkShift';
+import { socketEventsService } from '../server';
 
 dayjs.extend(minMax);
 dayjs.extend(isBetween);
@@ -223,7 +224,10 @@ class Crew {
       const scheduleSchema = await generateScheduleSchema(startDate, users as UserModel[], shiftOrder);
 
       await Crews.update({ schedule_schema: scheduleSchema, shiftOrder }, { where: { id: crew.id } });
-      return res.json({ code: 1, scheduleSchema, shiftOrder });
+
+      socketEventsService.socketMakeSchedule({ crewId, scheduleSchema, shiftOrder });
+
+      return res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -257,6 +261,8 @@ class Crew {
       }
 
       await Crews.update({ activeCar }, { where: { id: crew.id } });
+      socketEventsService.socketActiveCarUpdate({ crewId, activeCar });
+
       return res.json({ code: 1, activeCar });
     } catch (e) {
       console.log(e);
@@ -291,7 +297,9 @@ class Crew {
       };
 
       const notification = await Notification.create(preparedNotification);
-      return res.json({ code: 1, notification });
+      socketEventsService.socketSendNotification(notification);
+
+      return res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -352,9 +360,10 @@ class Crew {
 
       const newReservedDays = await ReservedDays.findAll();
 
-      return res.json({
-        code: 1, notifications, scheduleSchema, reservedDays: newReservedDays,
-      });
+      notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
+      socketEventsService.socketMakeSchedule({ crewId, scheduleSchema, reservedDays: newReservedDays });
+
+      return res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -400,9 +409,10 @@ class Crew {
 
       await Crews.update({ schedule_schema: scheduleSchema }, { where: { id: crewId } });
 
-      return res.json({
-        code: 1, scheduleSchema, notifications, reservedDays: reservedDays.filter(({ userId }) => userId !== id),
-      });
+      socketEventsService.socketMakeSchedule({ crewId, scheduleSchema, reservedDays: reservedDays.filter(({ userId }) => userId !== id) });
+      notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
+
+      return res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -411,7 +421,7 @@ class Crew {
 
   async endWorkShift(req: Request, res: Response) {
     try {
-      const { dataValues: { id, username, crewId } } = req.user as PassportRequest;
+      const { dataValues: { username, crewId } } = req.user as PassportRequest;
       const { mileageCity = 0, mileageHighway = 0, refueling = 0, downtime = 0 } = req.body as EndWorkShiftFormType;
 
       const crew = await Crews.findByPk(crewId, {
@@ -501,10 +511,13 @@ class Crew {
           mileage_after_maintenance: newMileageAfterMaintenance,
           remaining_fuel: newRemainingFuel,
         },
-        { where: { id: crewId }, returning: true },
+        { where: { id: activeCar.id }, returning: true },
       );
 
-      return res.json({ code: 1, notifications, car: affectedRows[0], ...result });
+      socketEventsService.socketCarUpdate({ crewId, car: affectedRows[0] });
+      notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
+
+      return res.json({ code: 1, ...result });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -526,7 +539,9 @@ class Crew {
         include: { attributes: ['id', 'username'], model: Users, as: 'author' },
       });
 
-      return res.json({ code: 1, message });
+      socketEventsService.socketSendMessageToChat({ crewId, message });
+
+      return res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -599,7 +614,9 @@ class Crew {
           isDecision: true,
         };
         const notification = await Notification.create(preparedNotification);
-        return res.json({ code: 1, notification });
+        socketEventsService.socketSendNotification(notification);
+
+        return res.json({ code: 1 });
       }
       const password = await Sms.sendPass(phone);
       const role = Auth.adminPhone.includes(phone) ? 'admin' : 'member';

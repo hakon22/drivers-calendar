@@ -12,6 +12,7 @@ import Cars, { CarModel } from '../db/tables/Cars';
 import { PassportRequest } from '../db/tables/Users';
 import Crews from '../db/tables/Crews';
 import CrewsCars from '../db/tables/CrewsCars';
+import { socketEventsService } from '../server';
 
 class Car {
   async fetchBrands(req: Request, res: Response) {
@@ -107,7 +108,9 @@ class Car {
         },
         { where: { id }, returning: true },
       );
-      res.json({ code: 1, car: affectedRows[0] });
+      socketEventsService.socketCarUpdate({ crewId, car: affectedRows[0] });
+
+      res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -137,7 +140,9 @@ class Car {
         return res.json({ code: 2 });
       }
       await CrewsCars.destroy({ where: { carId: id, crewId } });
-      res.json({ code: 1, carId: id });
+      socketEventsService.socketCarRemove({ crewId, carId: id });
+
+      res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -171,7 +176,9 @@ class Car {
       });
 
       await CrewsCars.create({ carId: car.id, crewId });
-      res.json({ code: 1, car });
+      socketEventsService.socketCarAdd({ crewId, car });
+
+      res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -196,8 +203,9 @@ class Car {
       }
 
       await CrewsCars.create({ crewId, carId: car.id });
+      socketEventsService.socketCarAdd({ crewId, car });
 
-      res.json({ code: 1, car });
+      res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
