@@ -95,6 +95,9 @@ const Init = (props: AppProps) => {
 
   useEffect(() => {
     if (loggedIn) {
+      if (socket.disconnected) {
+        socket.connect();
+      }
       dispatch(fetchNotifications(token));
       socket.emit(SocketEventEnum.USER_CONNECTION, id);
       socket.on(SocketEventEnum.MAKE_SCHEDULE, (data) => dispatch(socketMakeSchedule(data)));
@@ -110,9 +113,6 @@ const Init = (props: AppProps) => {
 
   useEffect(() => {
     if (crewId) {
-      if (socket.disconnected) {
-        socket.connect();
-      }
       dispatch(fetchCrew(token));
       socket.emit(SocketEventEnum.CREW_CONNECTION, crewId);
     }
