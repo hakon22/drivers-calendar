@@ -18,9 +18,6 @@ jobs:
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.AM_PROJECTS_SSH_PRIVATE_KEY }}
-        remote-user: root
-        server-ip: am-projects.ru
-        port: 22
 
     - name: Deploy to VPS
       run: |
