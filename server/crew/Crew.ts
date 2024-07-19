@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 /* eslint-disable no-continue */
 /* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable class-methods-use-this */
@@ -11,12 +12,13 @@ import { Op } from 'sequelize';
 import minMax from 'dayjs/plugin/minMax';
 import isBetween from 'dayjs/plugin/isBetween';
 import _ from 'lodash';
+import type EndWorkShiftFormType from '@/types/EndWorkShiftForm';
+import { Result } from '@/components/modals/user/ModalEndWorkShift';
 import type { PassportRequest, UserModel } from '../db/tables/Users';
 import Crews from '../db/tables/Crews';
 import Users from '../db/tables/Users';
 import Cars from '../db/tables/Cars';
 import type { ScheduleSchemaType, ScheduleSchemaUserType } from '../types/crew/ScheduleSchemaType';
-import type EndWorkShiftFormType from '@/types/EndWorkShiftForm'; 
 import Notification from '../notification/Notification';
 import NotificationEnum from '../types/notification/enum/NotificationEnum';
 import phoneTransform from '../utilities/phoneTransform';
@@ -29,7 +31,6 @@ import ReservedDays from '../db/tables/ReservedDays';
 import ReservedDaysTypeEnum from '../types/user/enum/ReservedDaysTypeEnum';
 import ChatMessages from '../db/tables/ChatMessages';
 import SeasonEnum from '../types/crew/enum/SeasonEnum';
-import { Result } from '@/components/modals/user/ModalEndWorkShift';
 import { socketEventsService } from '../server';
 
 dayjs.extend(minMax);
@@ -422,7 +423,9 @@ class Crew {
   async endWorkShift(req: Request, res: Response) {
     try {
       const { dataValues: { username, crewId } } = req.user as PassportRequest;
-      const { mileageCity = 0, mileageHighway = 0, refueling = 0, downtime = 0 } = req.body as EndWorkShiftFormType;
+      const {
+        mileageCity = 0, mileageHighway = 0, refueling = 0, downtime = 0,
+      } = req.body as EndWorkShiftFormType;
 
       const crew = await Crews.findByPk(crewId, {
         include: [
@@ -458,12 +461,12 @@ class Crew {
       const newMileageAfterMaintenance = mileage_after_maintenance + mileageCity + mileageHighway;
 
       const newFuelConsumptionCity = isRoundFuelConsumption
-        ? Math.ceil(mileageCity * fuelConsumptionCity / 100)
-        : Number((mileageCity * fuelConsumptionCity / 100).toFixed(2));
+        ? Math.ceil((mileageCity * fuelConsumptionCity) / 100)
+        : Number(((mileageCity * fuelConsumptionCity) / 100).toFixed(2));
 
       const newFuelConsumptionHighway = isRoundFuelConsumption
-        ? Math.ceil(mileageHighway * fuelConsumptionHighway / 100)
-        : Number((mileageHighway * fuelConsumptionHighway / 100).toFixed(2));
+        ? Math.ceil((mileageHighway * fuelConsumptionHighway) / 100)
+        : Number(((mileageHighway * fuelConsumptionHighway) / 100).toFixed(2));
 
       const fuelResult = remaining_fuel - (newFuelConsumptionCity + newFuelConsumptionHighway + downtime) + refueling;
 
@@ -623,6 +626,46 @@ class Crew {
       await redis.setEx(phone, 86400, JSON.stringify({
         phone, password: bcrypt.hashSync(password, 10), role, crewId,
       }));
+
+      return res.json({ code: 1 });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async changeIsRoundFuel(req: Request, res: Response) {
+    try {
+      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { isRoundFuelConsumption }: { isRoundFuelConsumption: boolean } = req.body;
+      const crew = await Crews.findByPk(crewId);
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      await Crews.update({ isRoundFuelConsumption }, { where: { id: crewId } });
+
+      socketEventsService.socketChangeIsRoundFuel({ crewId, isRoundFuelConsumption });
+
+      return res.json({ code: 1 });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async changeFuelSeason(req: Request, res: Response) {
+    try {
+      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { season }: { season: SeasonEnum } = req.body;
+      const crew = await Crews.findByPk(crewId);
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      await Crews.update({ season }, { where: { id: crewId } });
+
+      socketEventsService.socketChangeFuelSeason({ crewId, season });
 
       return res.json({ code: 1 });
     } catch (e) {

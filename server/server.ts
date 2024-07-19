@@ -15,7 +15,6 @@ import temporaryTokenChecker from './authentication/temporaryTokenChecker.js';
 import { connectToDb } from './db/connect.js';
 import router from './api.js';
 import createRelations from './db/relations.js';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events.js';
 import SocketEventEnum from './types/notification/enum/SocketEventEnum.js';
 import SocketEvents from './socket/SocketEvents.js';
 
@@ -59,5 +58,5 @@ export const uploadFilesPath = NODE_ENV === 'development'
   ? join(__dirname, '..', 'src', 'images')
   : join(__dirname, '..', '.next', 'static', 'media');
 
-connectToDb();
-createRelations();
+await connectToDb();
+await createRelations();

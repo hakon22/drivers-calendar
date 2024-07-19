@@ -8,6 +8,7 @@ import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
 import { CarModel } from '../../server/db/tables/Cars';
 import { ReservedDaysModel } from '../../server/db/tables/ReservedDays';
 import { ChatMessagesModel } from '../../server/db/tables/ChatMessages';
+import SeasonEnum from '../../server/types/crew/enum/SeasonEnum';
 
 type KeysCrewInitialState = keyof CrewInitialState;
 
@@ -92,6 +93,12 @@ const crewSlice = createSlice({
     socketSendMessageToChat: (state, { payload }: PayloadAction<{ code: number, message: ChatMessagesModel }>) => {
       state.chat = [...state.chat, payload.message];
     },
+    socketChangeIsRoundFuel: (state, { payload }: PayloadAction<{ code: number, isRoundFuelConsumption: boolean }>) => {
+      state.isRoundFuelConsumption = payload.isRoundFuelConsumption;
+    },
+    socketChangeFuelSeason: (state, { payload }: PayloadAction<{ code: number, season: SeasonEnum }>) => {
+      state.season = payload.season;
+    },
     readChatMessages: (state, { payload }: PayloadAction<{ userId: number }>) => {
       state.chat = state.chat.map((message) => {
         if (!message.readBy.includes(payload.userId)) {
@@ -153,7 +160,7 @@ const crewSlice = createSlice({
 
 export const {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, socketCarRemove, socketSwipShift, socketSendMessageToChat,
-  readChatMessages, removeToken,
+  readChatMessages, removeToken, socketChangeFuelSeason, socketChangeIsRoundFuel,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

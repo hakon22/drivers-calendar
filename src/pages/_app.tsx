@@ -18,7 +18,7 @@ import {
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew, socketCarRemove, socketSwipShift, socketSendMessageToChat,
-  removeToken as crewRemoveToken,
+  removeToken as crewRemoveToken, socketChangeFuelSeason, socketChangeIsRoundFuel,
 } from '@/slices/crewSlice';
 import routes from '@/routes';
 import { fetchNotifications, socketSendNotification, removeToken as notifRemoveToken } from '@/slices/notificationSlice';
@@ -105,6 +105,8 @@ const Init = (props: AppProps) => {
       socket.on(SocketEventEnum.CAR_ADD, (data) => dispatch(socketCarAdd(data)));
       socket.on(SocketEventEnum.SWIP_SHIFT, (data) => dispatch(socketSwipShift(data)));
       socket.on(SocketEventEnum.SEND_MESSAGE_TO_CHAT, (data) => dispatch(socketSendMessageToChat(data)));
+      socket.on(SocketEventEnum.CHANGE_IS_ROUND_FUEL, (data) => dispatch(socketChangeIsRoundFuel(data)));
+      socket.on(SocketEventEnum.CHANGE_FUEL_SEASON, (data) => dispatch(socketChangeFuelSeason(data)));
     }
   }, [loggedIn]);
 

@@ -6,11 +6,14 @@ import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
 import { ReservedDaysModel } from '../../server/db/tables/ReservedDays';
 import { ChatMessagesModel } from '../../server/db/tables/ChatMessages';
 import PaginationInterface from './PaginationInterface';
+import SeasonEnum from '../../server/types/crew/enum/SeasonEnum';
 
 export type CrewInitialState = InitialState & {
   id?: number;
   schedule?: CrewScheduleEnum;
   shiftOrder: number[];
+  season?: SeasonEnum;
+  isRoundFuelConsumption?: boolean;
   schedule_schema: ScheduleSchemaType;
   users: UserModel[];
   cars: CarModel[];
@@ -22,6 +25,7 @@ export type CrewInitialState = InitialState & {
     | number
     | number[]
     | null
+    | boolean
     | undefined
     | UserModel[]
     | CarModel[]
