@@ -57,7 +57,7 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
 
   const getLastUsers = (currDay: Dayjs, usersList?: ScheduleSchemaUserType[]) => {
     newUsersList = [];
-    for (let i = 1; i <= users.length; i += 1) {
+    for (let i = 1; i <= 6; i += 1) {
       const candidate = schedule[currDay.subtract(i, 'day').format('DD-MM-YYYY')];
       if (usersList && !usersList.find((user) => user.id === candidate?.id)) {
         continue;
@@ -111,7 +111,7 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
         break;
       default:
         // result = currDay.day() === 0 || currDay.day() === 6 ? -1 : 0; // 5/2
-        result = -1;
+        result = i % 4 < 2 ? -1 : 0; // оставляем 2/2
         break;
     }
     return result;
@@ -390,7 +390,7 @@ class Crew {
       await ReservedDays.destroy({ where: { userId: id } });
 
       const length = defaultScheduleDays - Object.keys(crew.schedule_schema).findIndex((key) => userReservedDays.reserved_days.includes(key));
-      const schedule = await generateScheduleSchema(dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day'), crew.users as UserModel[], crew.shiftOrder, length, crew.schedule_schema);
+      const schedule = await generateScheduleSchema(dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY'), crew.users as UserModel[], crew.shiftOrder, length, crew.schedule_schema);
 
       const scheduleSchema = { ...crew.schedule_schema, ...schedule };
 
