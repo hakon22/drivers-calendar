@@ -26,7 +26,7 @@ const ModalNotifications = () => {
   const { closeNavbar } = useContext(NavbarContext);
   const { setIsSubmit } = useContext(SubmitContext);
 
-  const { token, crewId } = useAppSelector((state) => state.user);
+  const { token } = useAppSelector((state) => state.user);
   const notifications = useAppSelector(selectors.selectAll)
     .filter(({ type }) => type !== NotificationEnum.CHAT && type !== NotificationEnum.EXILE && type !== NotificationEnum.INVITE);
 

@@ -18,12 +18,11 @@ import {
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew, socketCarRemove, socketSwipShift, socketSendMessageToChat,
+  removeToken as crewRemoveToken,
 } from '@/slices/crewSlice';
 import routes from '@/routes';
-import { fetchNotifications, socketSendNotification } from '@/slices/notificationSlice';
+import { fetchNotifications, socketSendNotification, removeToken as notifRemoveToken } from '@/slices/notificationSlice';
 import { removeToken } from '@/slices/userSlice';
-import { removeToken as crewRemoveToken } from '@/slices/crewSlice';
-import { removeToken as notifRemoveToken } from '@/slices/notificationSlice';
 import favicon from '../images/favicon.ico';
 import store from '../slices/index';
 import App from '../components/App';
@@ -46,7 +45,6 @@ const Init = (props: AppProps) => {
   const [isSubmit, setIsSubmit] = useState(false); // submit spinner
   const [isActive, setIsActive] = useState(false); // navbar
   const [loggedIn, setLoggedIn] = useState(false); // auth service
-  const [reconnect, setReconnect] = useState(0); // socket disconnect status (user id)
 
   const closeNavbar = () => setIsActive(false);
 
@@ -63,7 +61,6 @@ const Init = (props: AppProps) => {
     socket.disconnect();
     socket.removeAllListeners();
     setLoggedIn(false);
-    setReconnect(id as number);
     dispatch(removeToken());
     dispatch(crewRemoveToken());
     dispatch(notifRemoveToken());
@@ -126,25 +123,25 @@ const Init = (props: AppProps) => {
 
   return (
     <I18nextProvider i18n={i18n}>
-        <AuthContext.Provider value={authServices}>
-          <ModalContext.Provider value={modalServices}>
-            <ScrollContext.Provider value={scrollServices}>
-              <SubmitContext.Provider value={submitServices}>
-                <NavbarContext.Provider value={navbarServices}>
-                  <Provider store={store}>
-                    <Head>
-                      <link rel="shortcut icon" href={favicon.src} />
-                    </Head>
-                    <ToastContainer />
-                    <App>
-                      <Component {...pageProps} />
-                    </App>
-                  </Provider>
-                </NavbarContext.Provider>
-              </SubmitContext.Provider>
-            </ScrollContext.Provider>
-          </ModalContext.Provider>
-        </AuthContext.Provider>
+      <AuthContext.Provider value={authServices}>
+        <ModalContext.Provider value={modalServices}>
+          <ScrollContext.Provider value={scrollServices}>
+            <SubmitContext.Provider value={submitServices}>
+              <NavbarContext.Provider value={navbarServices}>
+                <Provider store={store}>
+                  <Head>
+                    <link rel="shortcut icon" href={favicon.src} />
+                  </Head>
+                  <ToastContainer />
+                  <App>
+                    <Component {...pageProps} />
+                  </App>
+                </Provider>
+              </NavbarContext.Provider>
+            </SubmitContext.Provider>
+          </ScrollContext.Provider>
+        </ModalContext.Provider>
+      </AuthContext.Provider>
     </I18nextProvider>
   );
 };

@@ -17,7 +17,7 @@ const ModalCarsAdd = () => {
   const { modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
 
-  const { crewId, token } = useAppSelector((state) => state.user);
+  const { token } = useAppSelector((state) => state.user);
 
   const initialCarValues = {
     brand: undefined,

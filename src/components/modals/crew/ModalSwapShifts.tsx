@@ -34,7 +34,7 @@ const ModalSwapShifts = () => {
   const onFinish = async () => {
     try {
       setIsSubmit(true);
-      const { data: { code, notification } } = await axios.post(routes.swapShift, dateValues, {
+      const { data: { code } } = await axios.post(routes.swapShift, dateValues, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (code === 1) {

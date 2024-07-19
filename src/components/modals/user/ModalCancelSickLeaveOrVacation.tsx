@@ -8,7 +8,6 @@ import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import toast from '@/utilities/toast';
 import routes from '@/routes';
 import axios from 'axios';
-import { ScheduleSchemaType } from '../../../../server/types/crew/ScheduleSchemaType';
 
 const ModalCancelSickLeaveOrVacation = ({ type }: { type: 'cancelSickLeave' | 'cancelVacation' }) => {
   const { t } = useTranslation('translation', { keyPrefix: `modals.${type}` });

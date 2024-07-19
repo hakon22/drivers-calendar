@@ -1,11 +1,9 @@
 import {
-  Modal, Result, Button, Form, Input, ColorPicker,
-  Checkbox,
-  InputNumber,
+  Modal, Result, Button, Form, Checkbox, InputNumber,
 } from 'antd';
-import type EndWorkShiftFormType from '@/types/EndWorkShiftForm'; 
+import type EndWorkShiftFormType from '@/types/EndWorkShiftForm';
 import { useContext, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
+import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import { ModalContext, SubmitContext } from '@/components/Context';
 import { endWorkShiftValidation } from '@/validations/validations';
@@ -13,8 +11,6 @@ import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import axios from 'axios';
 import routes from '@/routes';
 import toast from '@/utilities/toast';
-import NotificationType from '../../../../server/types/notification/NotificationType';
-import { CarModel } from '../../../../server/db/tables/Cars';
 
 export type Result = {
   code: number;
@@ -32,12 +28,11 @@ const ModalEndWorkShift = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.endWorkShift' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
-  const dispatch = useAppDispatch();
   const { setIsSubmit } = useContext(SubmitContext);
   const { modalClose } = useContext(ModalContext);
 
   const { token } = useAppSelector((state) => state.user);
-  const { id: crewId, activeCar, cars } = useAppSelector((state) => state.crew);
+  const { activeCar, cars } = useAppSelector((state) => state.crew);
 
   const [isRefueling, setIsRefueling] = useState(false);
   const [isHighway, setIsHighway] = useState(false);

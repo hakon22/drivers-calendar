@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useContext } from 'react';
-import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { AuthContext } from '@/components/Context';
 import routes from '@/routes';
 import FloatButtons from '@/components/FloatButtons';
@@ -12,10 +10,8 @@ import Calendar from '@/components/Calendar';
 
 const Index = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'index' });
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const { loggedIn } = useContext(AuthContext);
-  const { token, crewId } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     if (!loggedIn) {

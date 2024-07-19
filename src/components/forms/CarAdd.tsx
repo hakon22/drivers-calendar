@@ -20,7 +20,7 @@ const CarAdd = () => {
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const [form] = Form.useForm();
-  const { token, crewId } = useAppSelector((state) => state.user);
+  const { token } = useAppSelector((state) => state.user);
   const { cars: currentCars } = useAppSelector((state) => state.crew);
 
   const [cars, setCars] = useState<Brand[]>([]);

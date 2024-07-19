@@ -83,7 +83,7 @@ const ModalCrewChat = () => {
       setIsSubmit(true);
       await axios.post(routes.sendMessageToChat, { crewId, authorId, message }, {
         headers: { Authorization: `Bearer ${token}` },
-      })
+      });
       setMessage('');
       setIsSubmit(false);
     } catch (e) {
