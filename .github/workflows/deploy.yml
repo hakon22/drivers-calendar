@@ -18,9 +18,6 @@ jobs:
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.AM_PROJECTS_SSH_PRIVATE_KEY }}
-        remote-user: root
-        server-ip: am-projects.ru
-        port: 22
 
     - name: Deploy to VPS
       run: |
@@ -28,8 +25,7 @@ jobs:
           cd /var/www/drivers.am-projects.ru
           git pull origin production
           make install
-          export NODE_OPTIONS=--max-old-space-size=8192
           rm -r -f .next
-          make build
+          NODE_OPTIONS=--max-old-space-size=8192 make build
           make start
         EOF
