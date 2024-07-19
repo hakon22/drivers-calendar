@@ -11,18 +11,24 @@ class Sms {
   async sendCode(phone: string): Promise<{ request_id: string, code: string }> {
     try {
       const code = codeGen();
-      const object = { to: phone, txt: `Ваш код подтверждения: ${code}` };
 
-      /* const { data } = await axios.post('https://api3.greensms.ru/sms/send', object, {
-        headers: { Authorization: `Bearer ${process.env.SMS_API_KEY}` },
-      }); */
-      const data = { request_id: Date.now().toString(), error: 'null' };
-      console.log(code);
+      if (process.env.NODE_ENV === 'production') {
+        const object = { to: phone, txt: `Ваш код подтверждения: ${code}` };
 
-      if (data.request_id) {
+        const { data } = await axios.post('https://api3.greensms.ru/sms/send', object, {
+          headers: { Authorization: `Bearer ${process.env.SMS_API_KEY}` },
+        });
+
+        if (data.request_id) {
+          return { ...data, code };
+        }
+
+        throw Error(data.error);
+      } else {
+        const data = { request_id: Date.now().toString(), error: 'null' };
+        console.log(code);
         return { ...data, code };
       }
-      throw Error(data.error);
     } catch (e) {
       console.error(e);
       throw Error('Произошла ошибка при отправке SMS');
@@ -43,10 +49,12 @@ class Sms {
         phone,
         sender_name: 'AM-PROJECTS',
       };
-      console.log(password);
-      return password;
-      const { data } = await axios.post('https://ssl.bs00.ru', qs.stringify(object));
-      console.log(JSON.stringify(data));
+
+      if (process.env.NODE_ENV === 'production') {
+        await axios.post('https://ssl.bs00.ru', qs.stringify(object));
+      } else {
+        console.log(password);
+      }
       return password;
     } catch (e) {
       console.error(e);
