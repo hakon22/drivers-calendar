@@ -2,7 +2,7 @@ install:
 	npm ci
 
 start:
-	pm2 start "npm run start" -n next-ts-server
+	pm2 start "npm run start" -n drivers
 
 start-local:
 	npm run dev

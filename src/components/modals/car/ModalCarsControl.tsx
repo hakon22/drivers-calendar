@@ -27,7 +27,7 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
   const { modalClose, modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
 
-  const { token, crewId } = useAppSelector((state) => state.user);
+  const { token } = useAppSelector((state) => state.user);
   const { cars, activeCar } = useAppSelector((state) => state.crew);
 
   const [add, setAdd] = useState(false);
@@ -38,8 +38,7 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
       const { data } = await axios.post(routes.activeCarsUpdate, { activeCar: id }, {
         headers: { Authorization: `Bearer ${token}` },
       }) as { data: { code: number } };
-      if (data.code === 1) {
-      } else if (data.code === 2) {
+      if (data.code === 2) {
         toast(tToast('carNotOnTheCrew'), 'error');
       } else if (data.code === 3) {
         toast(tToast('carIsActiveAnotherCrew'), 'error');

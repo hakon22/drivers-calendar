@@ -11,7 +11,7 @@ import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
 export type CalendarProps = {
   dateValues?: { firstShift?: Dayjs, secondShift?: Dayjs },
   setDateValues?: React.Dispatch<React.SetStateAction<CalendarProps['dateValues']>>,
-  mode: 'calendar' | 'shift' | 'sickLeave' | 'vacation',
+  mode?: 'calendar' | 'shift' | 'sickLeave' | 'vacation',
 };
 
 type IsDisabledType = (
@@ -129,6 +129,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
 Calendar.defaultProps = {
   dateValues: undefined,
   setDateValues: undefined,
+  mode: 'calendar',
 };
 
 export default Calendar;

@@ -44,7 +44,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const [form] = Form.useForm();
-  const { token, crewId } = useAppSelector((state) => state.user);
+  const { token } = useAppSelector((state) => state.user);
 
   const [values, setValues] = useState(car);
 
@@ -69,7 +69,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
     try {
       if (isEqual(car, { id: values.id, ...finishValues })) return;
       setIsSubmit(true);
-      const { data: { code, car: updatedCar } } = await axios.patch(`${routes.updateCar}/${car.id}`, finishValues, {
+      const { data: { code } } = await axios.patch(`${routes.updateCar}/${car.id}`, finishValues, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (code === 3) {
