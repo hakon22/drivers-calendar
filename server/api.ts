@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import express from 'express';
 import passport from 'passport';
 import Auth from './authentication/Auth.js';
@@ -44,6 +45,8 @@ router.post(`${apiPath}/crew/sendMessageToChat`, jwtToken, Crew.sendMessageToCha
 router.get(`${apiPath}/crew/readChatMessages`, jwtToken, Crew.readChatMessages);
 router.get(`${apiPath}/crew/fetchChatMessages`, jwtToken, Crew.fetchChatMessages);
 router.post(`${apiPath}/crew/endWorkShift`, jwtToken, Crew.endWorkShift);
+router.patch(`${apiPath}/crew/changeIsRoundFuel`, jwtToken, Crew.changeIsRoundFuel);
+router.patch(`${apiPath}/crew/changeFuelSeason`, jwtToken, Crew.changeFuelSeason);
 
 // notification
 router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.fetchNotifications);

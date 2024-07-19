@@ -27,6 +27,7 @@ const NavBar = () => {
   const takeSickLeaveHandler = () => modalOpen('takeSickLeave');
   const takeVacationHandler = () => modalOpen('takeVacation');
   const cancelSickLeaveHandler = () => modalOpen('cancelSickLeave');
+  const crewSettingsHandler = () => modalOpen('crewSettings');
   const cancelVacationHandler = () => modalOpen('cancelVacation');
 
   const container = useRef(null);
@@ -65,6 +66,9 @@ const NavBar = () => {
           </Button>
           <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL} onClick={userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? cancelVacationHandler : takeVacationHandler}>
             {userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? t('buttons.cancelVacation') : t('buttons.takeVacation')}
+          </Button>
+          <Button className="w-100 button button-height" onClick={crewSettingsHandler}>
+            {t('buttons.crewSettings')}
           </Button>
           <Button
             className="w-100 button button-height"

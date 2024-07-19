@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 /* eslint-disable consistent-return */
 /* eslint-disable camelcase */
 /* eslint-disable import/no-anonymous-default-export */

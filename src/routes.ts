@@ -49,4 +49,6 @@ export default {
   readChatMessages: [apiPath, 'crew', 'readChatMessages'].join('/'),
   fetchChatMessages: [apiPath, 'crew', 'fetchChatMessages'].join('/'),
   endWorkShift: [apiPath, 'crew', 'endWorkShift'].join('/'),
+  changeIsRoundFuel: [apiPath, 'crew', 'changeIsRoundFuel'].join('/'),
+  changeFuelSeason: [apiPath, 'crew', 'changeFuelSeason'].join('/'),
 } as ApiUrl;
