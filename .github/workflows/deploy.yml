@@ -25,7 +25,6 @@ jobs:
           cd /var/www/drivers.am-projects.ru
           git pull origin production
           make install
-          rm -r -f .next
-          NODE_OPTIONS=--max-old-space-size=8192 make build
+          make build
           make start
         EOF

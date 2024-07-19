@@ -11,4 +11,4 @@ start-local-prod:
 	npm run dev-prod
 
 build:
-	npm run build
+	pm2 delete drivers && rm -rf .next && NODE_OPTIONS=--max-old-space-size=8192 npm run build
