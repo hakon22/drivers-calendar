@@ -36,7 +36,7 @@ const ChatMessages = db.define<ChatMessagesModel>(
     },
     readBy: {
       type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: '{}',
+      defaultValue: [],
     },
   },
 );
