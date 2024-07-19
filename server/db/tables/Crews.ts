@@ -39,7 +39,7 @@ const Crews = db.define<CrewModel>(
     },
     shiftOrder: {
       type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: '{}',
+      defaultValue: [],
     },
     activeCar: {
       type: DataTypes.INTEGER,
