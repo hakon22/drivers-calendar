@@ -23,7 +23,10 @@ import {
 import routes from '@/routes';
 import { fetchNotifications, socketSendNotification, removeToken as notifRemoveToken } from '@/slices/notificationSlice';
 import { removeToken } from '@/slices/userSlice';
-import favicon from '../images/favicon.ico';
+import favicon16 from '../images/favicon16x16.png';
+import favicon32 from '../images/favicon32x32.png';
+import favicon57 from '../images/favicon57x57.png';
+import favicon180 from '../images/favicon180x180.png';
 import store from '../slices/index';
 import App from '../components/App';
 import i18n from '../locales';
@@ -132,7 +135,10 @@ const Init = (props: AppProps) => {
               <NavbarContext.Provider value={navbarServices}>
                 <Provider store={store}>
                   <Head>
-                    <link rel="shortcut icon" href={favicon.src} />
+                    <link rel="icon" type="image/png" sizes="16x16" href={favicon16.src} />
+                    <link rel="icon" type="image/png" sizes="32x32" href={favicon32.src} />
+                    <link rel="apple-touch-icon" sizes="57x57" href={favicon57.src} />
+                    <link rel="apple-touch-icon" sizes="180x180" href={favicon180.src} />
                   </Head>
                   <ToastContainer />
                   <App>

@@ -10,7 +10,7 @@ const NavBar = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'index.navbar' });
 
   const { id } = useAppSelector((state) => state.user);
-  const { reservedDays } = useAppSelector((state) => state.crew);
+  const { id: crewId, reservedDays } = useAppSelector((state) => state.crew);
 
   const { logOut } = useContext(AuthContext);
   const { modalOpen } = useContext(ModalContext);
@@ -49,27 +49,31 @@ const NavBar = () => {
         open={isActive}
       >
         <div className="d-flex flex-column gap-3">
-          <Button className="w-100 button button-height" onClick={scheduleHandler}>
-            {t('buttons.makeSchedule')}
-          </Button>
-          <Button className="w-100 button button-height" onClick={inviteReplacementHandler}>
-            {t('buttons.inviteReplacement')}
-          </Button>
-          <Button className="w-100 button button-height" onClick={carsSettingsHandler}>
-            {t('buttons.car')}
-          </Button>
-          <Button className="w-100 button button-height" onClick={swapShiftsHandler}>
-            {t('buttons.swapShifts')}
-          </Button>
-          <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.VACATION} onClick={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? cancelSickLeaveHandler : takeSickLeaveHandler}>
-            {userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? t('buttons.cancelSickLeave') : t('buttons.takeSickLeave')}
-          </Button>
-          <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL} onClick={userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? cancelVacationHandler : takeVacationHandler}>
-            {userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? t('buttons.cancelVacation') : t('buttons.takeVacation')}
-          </Button>
-          <Button className="w-100 button button-height" onClick={crewSettingsHandler}>
-            {t('buttons.crewSettings')}
-          </Button>
+          {crewId && (
+            <>
+              <Button className="w-100 button button-height" onClick={scheduleHandler}>
+                {t('buttons.makeSchedule')}
+              </Button>
+              <Button className="w-100 button button-height" onClick={inviteReplacementHandler}>
+                {t('buttons.inviteReplacement')}
+              </Button>
+              <Button className="w-100 button button-height" onClick={carsSettingsHandler}>
+                {t('buttons.car')}
+              </Button>
+              <Button className="w-100 button button-height" onClick={swapShiftsHandler}>
+                {t('buttons.swapShifts')}
+              </Button>
+              <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.VACATION} onClick={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? cancelSickLeaveHandler : takeSickLeaveHandler}>
+                {userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? t('buttons.cancelSickLeave') : t('buttons.takeSickLeave')}
+              </Button>
+              <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL} onClick={userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? cancelVacationHandler : takeVacationHandler}>
+                {userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? t('buttons.cancelVacation') : t('buttons.takeVacation')}
+              </Button>
+              <Button className="w-100 button button-height" onClick={crewSettingsHandler}>
+                {t('buttons.crewSettings')}
+              </Button>
+            </>
+          )}
           <Button
             className="w-100 button button-height"
             onClick={() => {
