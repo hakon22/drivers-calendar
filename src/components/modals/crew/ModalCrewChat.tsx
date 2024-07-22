@@ -73,7 +73,7 @@ const ModalCrewChat = () => {
   }, 500);
 
   const fetchMessages = () => {
-    if (chatRef.current?.scrollTop === 0 && (pagination.total !== pagination.current || !pagination.total)) {
+    if (chatRef.current?.scrollTop === 0 && pagination.current >= 100 && (pagination.total !== pagination.current || !pagination.total)) {
       debouncedFetchChatMessages(pagination.offset);
     }
   };

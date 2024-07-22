@@ -23,10 +23,7 @@ const useAuthHandler = () => {
       logIn();
     }
     if (token) {
-      axios.interceptors.request.use((config) => {
-        config.headers.Authorization = `Bearer ${token}`;
-        return config;
-      });
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`;
     }
   }, [token]);
 

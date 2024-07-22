@@ -56,7 +56,6 @@ const Notifications = db.define<NotificationsModel>(
     },
     data: {
       type: DataTypes.JSONB,
-      defaultValue: '{}',
     },
     isDecision: {
       type: DataTypes.BOOLEAN,

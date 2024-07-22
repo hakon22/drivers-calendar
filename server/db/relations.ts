@@ -6,6 +6,7 @@ import Crews from './tables/Crews.js';
 import CrewsCars from './tables/CrewsCars.js';
 import ReservedDays from './tables/ReservedDays.js';
 import ChatMessages from './tables/ChatMessages.js';
+import CompletedShifts from './tables/CompletedShifts.js';
 
 const createRelations = async () => {
   try {
@@ -17,6 +18,9 @@ const createRelations = async () => {
     Crews.hasMany(Users, { as: 'users' });
     Crews.hasMany(ChatMessages, { as: 'chat' });
     Crews.belongsTo(Cars, { foreignKey: 'activeCar' });
+    CompletedShifts.belongsTo(Users, { foreignKey: 'userId' });
+    CompletedShifts.belongsTo(Cars, { foreignKey: 'carId' });
+    CompletedShifts.belongsTo(Crews, { foreignKey: 'crewId' });
     Notifications.belongsTo(Users, { foreignKey: 'authorId' });
     Notifications.belongsTo(Users, { foreignKey: 'userId' });
     Notifications.belongsTo(Crews, { foreignKey: 'crewId' });
