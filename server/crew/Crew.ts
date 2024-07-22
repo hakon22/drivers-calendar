@@ -32,6 +32,8 @@ import ReservedDaysTypeEnum from '../types/user/enum/ReservedDaysTypeEnum';
 import ChatMessages from '../db/tables/ChatMessages';
 import SeasonEnum from '../types/crew/enum/SeasonEnum';
 import { socketEventsService } from '../server';
+import CompletedShifts from '../db/tables/CompletedShifts';
+import truncateLastDecimal from '../utilities/truncateLastDecimal';
 
 dayjs.extend(minMax);
 dayjs.extend(isBetween);
@@ -426,7 +428,7 @@ class Crew {
 
   async endWorkShift(req: Request, res: Response) {
     try {
-      const { dataValues: { username, crewId } } = req.user as PassportRequest;
+      const { dataValues: { id, username, crewId } } = req.user as PassportRequest;
       const {
         mileageCity = 0, mileageHighway = 0, refueling = 0, downtime = 0,
       } = req.body as EndWorkShiftFormType;
@@ -466,16 +468,16 @@ class Crew {
 
       const newFuelConsumptionCity = isRoundFuelConsumption
         ? Math.ceil((mileageCity * fuelConsumptionCity) / 100)
-        : Number(((mileageCity * fuelConsumptionCity) / 100).toFixed(2));
+        : truncateLastDecimal(((mileageCity * fuelConsumptionCity) / 100));
 
       const newFuelConsumptionHighway = isRoundFuelConsumption
         ? Math.ceil((mileageHighway * fuelConsumptionHighway) / 100)
-        : Number(((mileageHighway * fuelConsumptionHighway) / 100).toFixed(2));
+        : truncateLastDecimal(((mileageHighway * fuelConsumptionHighway) / 100));
 
-      const fuelResult = remaining_fuel - (newFuelConsumptionCity + newFuelConsumptionHighway + downtime) + refueling;
+      const fuelResult = Number(remaining_fuel) - (newFuelConsumptionCity + newFuelConsumptionHighway + downtime) + refueling;
 
-      const newRemainingFuel = isRoundFuelConsumption ? Math.ceil(fuelResult) : Number(fuelResult.toFixed(2));
-      const totalFuelConsumption = (isRoundFuelConsumption ? Math.ceil(newFuelConsumptionCity + newFuelConsumptionHighway) : Number((newFuelConsumptionCity + newFuelConsumptionHighway).toFixed(2))) + downtime;
+      const newRemainingFuel = isRoundFuelConsumption ? Math.ceil(fuelResult) : truncateLastDecimal(fuelResult);
+      const totalFuelConsumption = (isRoundFuelConsumption ? Math.ceil(newFuelConsumptionCity + newFuelConsumptionHighway) : truncateLastDecimal((newFuelConsumptionCity + newFuelConsumptionHighway))) + downtime;
 
       const result: Omit<Result, 'code'> = {
         mileage: newMileage,
@@ -520,6 +522,17 @@ class Crew {
         },
         { where: { id: activeCar.id }, returning: true },
       );
+
+      await CompletedShifts.create({
+        date: dayjs().toDate(),
+        mileage: newMileage,
+        mileageAfterMaintenance: newMileageAfterMaintenance,
+        remainingFuel: newRemainingFuel,
+        refueling,
+        userId: id,
+        crewId,
+        carId: activeCar.id,
+      });
 
       socketEventsService.socketCarUpdate({ crewId, car: affectedRows[0] });
       notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
