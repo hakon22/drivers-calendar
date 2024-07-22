@@ -29,7 +29,7 @@ const handle = app.getRequestHandler();
 
 const server = express();
 const socketServer = createServer(server);
-const io = new Server(socketServer);
+const io = new Server(socketServer, { transports: ['websocket'] });
 
 export const socketEventsService = new SocketEvents(io);
 

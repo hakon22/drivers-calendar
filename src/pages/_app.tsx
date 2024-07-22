@@ -34,7 +34,7 @@ import '../scss/app.scss';
 import SocketEventEnum from '../../server/types/notification/enum/SocketEventEnum';
 
 const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
-const socket = io(process.env.NODE_ENV === 'development' ? '' : process.env.NEXT_PUBLIC_SOCKET_HOST ?? '');
+const socket = io(process.env.NODE_ENV === 'development' ? '' : process.env.NEXT_PUBLIC_SOCKET_HOST ?? '', { transports: ['websocket'] });
 
 const Init = (props: AppProps) => {
   const { pageProps, Component } = props;
