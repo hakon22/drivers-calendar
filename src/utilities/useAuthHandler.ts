@@ -1,6 +1,7 @@
 import { useEffect, useContext } from 'react';
 import { fetchTokenStorage, updateTokens } from '@/slices/userSlice';
 import { AuthContext } from '@/components/Context';
+import axios from 'axios';
 import { useAppDispatch, useAppSelector } from './hooks';
 
 const storageKey = process.env.NEXT_PUBLIC_STORAGE_KEY ?? '';
@@ -20,6 +21,12 @@ const useAuthHandler = () => {
   useEffect(() => {
     if (token && !loggedIn) {
       logIn();
+    }
+    if (token) {
+      axios.interceptors.request.use((config) => {
+        config.headers.Authorization = `Bearer ${token}`;
+        return config;
+      });
     }
   }, [token]);
 

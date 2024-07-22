@@ -26,7 +26,6 @@ const ModalNotifications = () => {
   const { closeNavbar } = useContext(NavbarContext);
   const { setIsSubmit } = useContext(SubmitContext);
 
-  const { token } = useAppSelector((state) => state.user);
   const notifications = useAppSelector(selectors.selectAll)
     .filter(({ type }) => type !== NotificationEnum.CHAT && type !== NotificationEnum.EXILE && type !== NotificationEnum.INVITE);
 
@@ -54,7 +53,7 @@ const ModalNotifications = () => {
       const id = +key[0];
       const notification = notifications.find((notif) => notif.id === id);
       if (notification && !notification.isRead) {
-        dispatch(fetchNotificationReadUpdate({ id, token }));
+        dispatch(fetchNotificationReadUpdate(id));
         updateNotificationsGroup((state) => {
           const group = state[notification.type];
           const updatedItems = group.map((notif) => {
@@ -74,15 +73,13 @@ const ModalNotifications = () => {
     if (notification) {
       const notifGroup = notificationsGroup[notification.type].filter((notif) => notif.id !== notification.id);
       updateNotificationsGroup((state) => ({ ...state, [notification.type]: notifGroup }));
-      dispatch(fetchNotificationRemove({ id, token }));
+      dispatch(fetchNotificationRemove(id));
     }
   };
 
   const acceptSwapShift = async (id: number) => {
     try {
-      const { data: { code } } = await axios.get(`${routes.acceptNotification}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      }) as { data: { code: number, notifications: Notification[], firstShift: ScheduleSchemaType, secondShift: ScheduleSchemaType } };
+      const { data: { code } } = await axios.get(`${routes.acceptNotification}/${id}`) as { data: { code: number, notifications: Notification[], firstShift: ScheduleSchemaType, secondShift: ScheduleSchemaType } };
       if (code === 1) {
         back();
         decline(id);

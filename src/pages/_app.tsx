@@ -18,11 +18,11 @@ import {
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew, socketCarRemove, socketSwipShift, socketSendMessageToChat,
-  removeToken as crewRemoveToken, socketChangeFuelSeason, socketChangeIsRoundFuel,
+  removeToken as crewRemoveToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew,
 } from '@/slices/crewSlice';
 import routes from '@/routes';
 import { fetchNotifications, socketSendNotification, removeToken as notifRemoveToken } from '@/slices/notificationSlice';
-import { removeToken } from '@/slices/userSlice';
+import { removeToken, socketUserProfileUpdate } from '@/slices/userSlice';
 import favicon16 from '../images/favicon16x16.png';
 import favicon32 from '../images/favicon32x32.png';
 import favicon57 from '../images/favicon57x57.png';
@@ -41,9 +41,7 @@ const Init = (props: AppProps) => {
   const { dispatch } = store;
   const router = useRouter();
 
-  const {
-    id, token, refreshToken, crewId,
-  } = store.getState().user;
+  const { id, refreshToken, crewId } = store.getState().user;
 
   const [isSubmit, setIsSubmit] = useState(false); // submit spinner
   const [isActive, setIsActive] = useState(false); // navbar
@@ -98,7 +96,7 @@ const Init = (props: AppProps) => {
       if (socket.disconnected) {
         socket.connect();
       }
-      dispatch(fetchNotifications(token));
+      dispatch(fetchNotifications());
       socket.emit(SocketEventEnum.USER_CONNECTION, id);
       socket.on(SocketEventEnum.MAKE_SCHEDULE, (data) => dispatch(socketMakeSchedule(data)));
       socket.on(SocketEventEnum.SEND_NOTIFICATION, (data) => dispatch(socketSendNotification(data)));
@@ -110,12 +108,18 @@ const Init = (props: AppProps) => {
       socket.on(SocketEventEnum.SEND_MESSAGE_TO_CHAT, (data) => dispatch(socketSendMessageToChat(data)));
       socket.on(SocketEventEnum.CHANGE_IS_ROUND_FUEL, (data) => dispatch(socketChangeIsRoundFuel(data)));
       socket.on(SocketEventEnum.CHANGE_FUEL_SEASON, (data) => dispatch(socketChangeFuelSeason(data)));
+      socket.on(SocketEventEnum.USER_PROFILE_UPDATE, (data) => {
+        if (crewId) {
+          dispatch(socketUserProfileUpdateCrew(data));
+        }
+        dispatch(socketUserProfileUpdate(data));
+      });
     }
   }, [loggedIn]);
 
   useEffect(() => {
     if (crewId) {
-      dispatch(fetchCrew(token));
+      dispatch(fetchCrew());
       socket.emit(SocketEventEnum.CREW_CONNECTION, crewId);
     }
   }, [crewId]);

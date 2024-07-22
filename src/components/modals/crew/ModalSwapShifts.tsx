@@ -1,6 +1,5 @@
 import { Modal, Button, Result } from 'antd';
 import { useContext, useState } from 'react';
-import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import type { CalendarProps } from '@/components/Calendar';
 import { ModalContext, NavbarContext, SubmitContext } from '@/components/Context';
@@ -21,8 +20,6 @@ const ModalSwapShifts = () => {
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
 
-  const { token } = useAppSelector((state) => state.user);
-
   const close = () => {
     if (dateValues?.secondShift) {
       setDateValues({});
@@ -34,9 +31,7 @@ const ModalSwapShifts = () => {
   const onFinish = async () => {
     try {
       setIsSubmit(true);
-      const { data: { code } } = await axios.post(routes.swapShift, dateValues, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data: { code } } = await axios.post(routes.swapShift, dateValues);
       if (code === 1) {
         setIsSuccess(true);
       }

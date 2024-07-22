@@ -21,7 +21,6 @@ const ModalInviteNotifications = () => {
   const { modalClose } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
 
-  const { token } = useAppSelector((state) => state.user);
   const notifications = useAppSelector(selectors.selectAll);
 
   const filteredNotifications = notifications.filter((notification) => notification.type === NotificationEnum.INVITE);
@@ -30,19 +29,18 @@ const ModalInviteNotifications = () => {
     if (key.length) {
       const id = +key[0];
       if (!notifications.find((notification) => notification.id === id)?.isRead) {
-        dispatch(fetchNotificationReadUpdate({ id, token }));
+        dispatch(fetchNotificationReadUpdate(id));
       }
     }
   };
 
-  const decline = (id: number) => dispatch(fetchNotificationRemove({ id, token }));
+  const decline = (id: number) => dispatch(fetchNotificationRemove(id));
 
   const accept = async (id: number) => {
     setIsSubmit(true);
     const { payload: { code } } = await dispatch(fetchAcceptInvitation({
       id,
       authorId: filteredNotifications.find((notification) => notification.id === id)?.authorId,
-      token,
     })) as { payload: { code: number } };
     if (code === 1) {
       modalClose();

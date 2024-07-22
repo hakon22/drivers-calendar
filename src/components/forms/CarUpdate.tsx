@@ -8,7 +8,6 @@ import { isEqual } from 'lodash';
 import { carValidation } from '@/validations/validations';
 import routes from '@/routes';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
-import { useAppSelector } from '@/utilities/hooks';
 import toast from '@/utilities/toast';
 import type { Brand } from '../../../server/types/Cars';
 import type { CarSignupType } from './CarSignup';
@@ -44,7 +43,6 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const [form] = Form.useForm();
-  const { token } = useAppSelector((state) => state.user);
 
   const [values, setValues] = useState(car);
 
@@ -52,7 +50,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
   const [brands, setBrands] = useState<Brand[]>();
 
   const { setIsSubmit } = useContext(SubmitContext);
-  const { modalOpen } = useContext(ModalContext);
+  const { modalOpen, modalClose } = useContext(ModalContext);
 
   const { brand, model } = values;
 
@@ -67,11 +65,12 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
 
   const onFinish = async (finishValues: CarSignupType) => {
     try {
-      if (isEqual(car, { id: values.id, ...finishValues })) return;
+      if (isEqual(car, { id: values.id, ...finishValues })) {
+        modalClose();
+        return;
+      }
       setIsSubmit(true);
-      const { data: { code } } = await axios.patch(`${routes.updateCar}/${car.id}`, finishValues, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data: { code } } = await axios.patch(`${routes.updateCar}/${car.id}`, finishValues);
       if (code === 3) {
         toast(tToast('carAlreadyExists'), 'error');
         form.setFields([
@@ -128,7 +127,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
   }, [brand]);
 
   return (
-    <Form name="car-update" form={form} onFinish={onFinish} onValuesChange={onValuesChange} initialValues={values} className="signup-form d-flex flex-column">
+    <Form name="car-update" form={form} onFinish={onFinish} onValuesChange={onValuesChange} initialValues={values} className="d-flex flex-column">
       <Form.Item<CarSignupType> name="brand" rules={[carValidation]}>
         <Select size="large" placeholder={tCarForm('brand')} options={brands} showSearch filterOption={filterOption} />
       </Form.Item>
@@ -142,13 +141,13 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
         <Input size="large" className="w-100" placeholder={tCarForm('inventory')} min={1} />
       </Form.Item>
       <Form.Item<CarSignupType> name="mileage" rules={[carValidation]}>
-        <InputNumber size="large" className="w-100" suffix={tCarForm('km')} placeholder={t('mileage')} min={1} keyboard />
+        <InputNumber size="large" className="w-100" suffix={tCarForm('km')} placeholder={tCarForm('mileage')} min={1} keyboard />
       </Form.Item>
       <Form.Item<CarSignupType> name="mileage_after_maintenance" rules={[carValidation]}>
-        <InputNumber size="large" className="w-100" suffix={tCarForm('km')} placeholder={t('mileage_after_maintenance')} min={1} keyboard />
+        <InputNumber size="large" className="w-100" suffix={tCarForm('km')} placeholder={tCarForm('mileage_after_maintenance')} min={1} keyboard />
       </Form.Item>
       <Form.Item<CarSignupType> name="remaining_fuel" rules={[carValidation]}>
-        <InputNumber size="large" className="w-100" suffix={tCarForm('litre')} placeholder={t('remaining_fuel')} min={1} keyboard />
+        <InputNumber size="large" className="w-100" suffix={tCarForm('litre')} placeholder={tCarForm('remaining_fuel')} min={1} keyboard />
       </Form.Item>
       <FuelConsumption name="fuel_consumption_summer" t={tCarForm} />
       <FuelConsumption name="fuel_consumption_winter" t={tCarForm} />

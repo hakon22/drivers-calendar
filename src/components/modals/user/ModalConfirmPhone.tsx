@@ -9,7 +9,7 @@ import VerificationInput from 'react-verification-input';
 import { ModalContext } from '@/components/Context';
 import toast from '@/utilities/toast';
 
-const ModalConfirmPhone = ({ setState }: { setState: (arg: boolean) => void }) => {
+const ModalConfirmPhone = ({ setState, newPhone }: { setState: (arg: boolean) => void, newPhone?: string }) => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.confirmPhone' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
   const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
@@ -23,7 +23,7 @@ const ModalConfirmPhone = ({ setState }: { setState: (arg: boolean) => void }) =
   const [errorMessage, setErrorMessage] = useState('');
 
   const onFinish = async (codeValue: string) => {
-    const { payload: { code } } = await dispatch(fetchConfirmCode({ phone, key, code: codeValue })) as { payload: { code: number } };
+    const { payload: { code } } = await dispatch(fetchConfirmCode({ phone: newPhone || phone, key, code: codeValue })) as { payload: { code: number } };
     if (code === 2) {
       setState(true);
     }
@@ -38,7 +38,7 @@ const ModalConfirmPhone = ({ setState }: { setState: (arg: boolean) => void }) =
   };
 
   const repeatSMS = async () => {
-    const { payload: { code } } = await dispatch(fetchConfirmCode({ phone })) as { payload: { code: number } };
+    const { payload: { code } } = await dispatch(fetchConfirmCode({ phone: newPhone || phone })) as { payload: { code: number } };
     if (code === 1) {
       setValue('');
       setErrorMessage('');
@@ -91,6 +91,10 @@ const ModalConfirmPhone = ({ setState }: { setState: (arg: boolean) => void }) =
       </Form>
     </Modal>
   );
+};
+
+ModalConfirmPhone.defaultProps = {
+  newPhone: '',
 };
 
 export default ModalConfirmPhone;

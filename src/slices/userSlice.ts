@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import axios from 'axios';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { User, UserInitialState } from '../types/User';
+import type { User, UserInitialState, UserProfileType } from '../types/User';
 import routes from '../routes';
 
 type KeysUserInitialState = keyof UserInitialState;
@@ -29,11 +29,9 @@ export const fetchInviteSignup = createAsyncThunk(
 
 export const fetchAcceptInvitation = createAsyncThunk(
   'user/fetchAcceptInvitation',
-  async (data: { id: number, authorId?: number, token?: string }) => {
-    const { id, authorId, token } = data;
-    const response = await axios.post(routes.acceptInvitation, { id, authorId }, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async (data: { id: number, authorId?: number }) => {
+    const { id, authorId } = data;
+    const response = await axios.post(routes.acceptInvitation, { id, authorId });
     return response.data;
   },
 );
@@ -96,6 +94,18 @@ const userSlice = createSlice({
           delete state[key];
         }
       });
+    },
+    socketUserProfileUpdate: (state, { payload }: PayloadAction<{ code: number, values: UserProfileType }>) => {
+      const { phone, username, color } = payload.values;
+      if (phone) {
+        state.phone = phone as string;
+      }
+      if (username) {
+        state.username = username as string;
+      }
+      if (color) {
+        state.color = color as string;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -193,7 +203,9 @@ const userSlice = createSlice({
         : PayloadAction<{ code: number, key: string, phone: string }>) => {
         if (payload.code === 1) {
           state.key = payload.key;
-          state.phone = payload.phone;
+          if (!state.id) {
+            state.phone = payload.phone;
+          }
         }
         state.loadingStatus = 'finish';
         state.error = null;
@@ -221,6 +233,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { removeToken } = userSlice.actions;
+export const { removeToken, socketUserProfileUpdate } = userSlice.actions;
 
 export default userSlice.reducer;

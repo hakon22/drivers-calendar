@@ -1,6 +1,5 @@
 import { Form, Modal } from 'antd';
 import { useContext, useEffect, useState } from 'react';
-import { useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
 import { ModalContext, SubmitContext } from '@/components/Context';
 import CarSignup, { CarSignupType } from '@/components/forms/CarSignup';
@@ -16,8 +15,6 @@ const ModalCarsAdd = () => {
 
   const { modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
-
-  const { token } = useAppSelector((state) => state.user);
 
   const initialCarValues = {
     brand: undefined,
@@ -66,9 +63,7 @@ const ModalCarsAdd = () => {
           if (name === 'car-signup') {
             try {
               setIsSubmit(true);
-              const { data } = await axios.post(routes.createCar, carsValues, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
+              const { data } = await axios.post(routes.createCar, carsValues);
               if (data.code === 1) {
                 modalOpen('carsControl');
               } else if (data.code === 2) {

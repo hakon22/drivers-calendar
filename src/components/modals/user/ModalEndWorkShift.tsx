@@ -31,7 +31,6 @@ const ModalEndWorkShift = () => {
   const { setIsSubmit } = useContext(SubmitContext);
   const { modalClose } = useContext(ModalContext);
 
-  const { token } = useAppSelector((state) => state.user);
   const { activeCar, cars } = useAppSelector((state) => state.crew);
 
   const [isRefueling, setIsRefueling] = useState(false);
@@ -46,9 +45,7 @@ const ModalEndWorkShift = () => {
   const onFinish = async (values: EndWorkShiftFormType) => {
     try {
       setIsSubmit(true);
-      const { data } = await axios.post(routes.endWorkShift, values, {
-        headers: { Authorization: `Bearer ${token}` },
-      }) as { data: Result };
+      const { data } = await axios.post(routes.endWorkShift, values) as { data: Result };
       const { code, ...rest } = data;
       if (code === 1) {
         setResult(rest);
@@ -93,7 +90,7 @@ const ModalEndWorkShift = () => {
             </Button>
           </div>
         ) : (
-          <Form name="end-work-shift" className="signup-form text-start mt-n5" onFinish={onFinish}>
+          <Form name="end-work-shift" className="text-start mt-n5" onFinish={onFinish}>
             <div className="text-muted d-flex justify-content-between mt-2 mb-3">
               <span>{t('startMileage', { mileage: car?.mileage })}</span>
               <span>{t('startRemainingFuel', { fuel: car?.remaining_fuel })}</span>

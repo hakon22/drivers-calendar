@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import PaginationInterface from '@/types/PaginationInterface';
+import { UserProfileType } from '@/types/User';
 import type { CrewInitialState } from '../types/Crew';
 import routes from '../routes';
 import { CrewModel } from '../../server/db/tables/Crews';
@@ -14,19 +15,16 @@ type KeysCrewInitialState = keyof CrewInitialState;
 
 export const fetchCrew = createAsyncThunk(
   'crew/fetchCrew',
-  async (token?: string) => {
-    const response = await axios.get(routes.fetchCrew, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async () => {
+    const response = await axios.get(routes.fetchCrew);
     return response.data;
   },
 );
 
 export const fetchChatMessages = createAsyncThunk(
   'crew/fetchChatMessages',
-  async ({ token, offset }: { token?: string, offset: number }) => {
+  async (offset: number) => {
     const response = await axios.get(routes.fetchChatMessages, {
-      headers: { Authorization: `Bearer ${token}` },
       params: { offset },
     });
     return response.data;
@@ -99,6 +97,25 @@ const crewSlice = createSlice({
     socketChangeFuelSeason: (state, { payload }: PayloadAction<{ code: number, season: SeasonEnum }>) => {
       state.season = payload.season;
     },
+    socketUserProfileUpdateCrew: (state, { payload }: PayloadAction<{ code: number, id: number, values: UserProfileType }>) => {
+      const { username, phone, color } = payload.values;
+      if (username || color || phone) {
+        state.users = state.users.map((user) => {
+          if (user.id === payload.id) {
+            if (username) {
+              user.username = payload.values.username as string;
+            }
+            if (color) {
+              user.color = payload.values.color as string;
+            }
+            if (phone) {
+              user.phone = payload.values.phone as string;
+            }
+          }
+          return user;
+        });
+      }
+    },
     readChatMessages: (state, { payload }: PayloadAction<{ userId: number }>) => {
       state.chat = state.chat.map((message) => {
         if (!message.readBy.includes(payload.userId)) {
@@ -160,7 +177,7 @@ const crewSlice = createSlice({
 
 export const {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, socketCarRemove, socketSwipShift, socketSendMessageToChat,
-  readChatMessages, removeToken, socketChangeFuelSeason, socketChangeIsRoundFuel,
+  readChatMessages, removeToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

@@ -12,6 +12,7 @@ import { userValidation } from '@/validations/validations';
 import toast from '@/utilities/toast';
 import { Color } from 'antd/es/color-picker';
 import { ModalContext, SubmitContext } from '../Context';
+import CrewScheduleEnum from '../../../server/types/crew/enum/CrewScheduleEnum';
 
 export type UserSignupType = {
   phone: string;
@@ -68,7 +69,7 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
   }, [isConfirm]);
 
   return (
-    <Form name="user-signup" form={form} initialValues={values} className="signup-form" onFinish={onFinish}>
+    <Form name="user-signup" form={form} initialValues={values} onFinish={onFinish}>
       <Form.Item<UserSignupType> name="phone" rules={[userValidation]} required>
         <MaskedInput mask="+7 (000) 000-00-00" size="large" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
       </Form.Item>
@@ -77,9 +78,9 @@ const UserSignup = ({ values, setValues, next }: UserSignupProps) => {
       </Form.Item>
       <Form.Item<UserSignupType> name="schedule" label={t('schedule')} rules={[userValidation]} required>
         <Radio.Group size="large" className="border-button">
-          <Radio.Button className="border-button" value="2/2">{t('2/2')}</Radio.Button>
-          <Radio.Button className="border-button" value="1/2">{t('1/2')}</Radio.Button>
-          <Radio.Button className="border-button" value="1/3">{t('1/3')}</Radio.Button>
+          <Radio.Button className="border-button" value={CrewScheduleEnum['2/2']}>{t(CrewScheduleEnum['2/2'])}</Radio.Button>
+          <Radio.Button className="border-button" value={CrewScheduleEnum['1/2']}>{t(CrewScheduleEnum['1/2'])}</Radio.Button>
+          <Radio.Button className="border-button" value={CrewScheduleEnum['1/3']}>{t(CrewScheduleEnum['1/3'])}</Radio.Button>
         </Radio.Group>
       </Form.Item>
       <Form.Item<UserSignupType> name="color" tooltip={{ title: t('colorTooltip'), icon: <QuestionCircleOutlined /> }} rules={[userValidation]} label={t('color')} required>

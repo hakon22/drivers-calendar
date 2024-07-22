@@ -28,6 +28,7 @@ const NavBar = () => {
   const takeVacationHandler = () => modalOpen('takeVacation');
   const cancelSickLeaveHandler = () => modalOpen('cancelSickLeave');
   const crewSettingsHandler = () => modalOpen('crewSettings');
+  const userProfileHandler = () => modalOpen('userProfile');
   const cancelVacationHandler = () => modalOpen('cancelVacation');
 
   const container = useRef(null);
@@ -48,7 +49,7 @@ const NavBar = () => {
         width="100%"
         open={isActive}
       >
-        <div className="d-flex flex-column gap-3">
+        <div className="d-flex flex-column gap-3 mb-5">
           {crewId && (
             <>
               <Button className="w-100 button button-height" onClick={scheduleHandler}>
@@ -71,6 +72,9 @@ const NavBar = () => {
               </Button>
               <Button className="w-100 button button-height" onClick={crewSettingsHandler}>
                 {t('buttons.crewSettings')}
+              </Button>
+              <Button className="w-100 button button-height" onClick={userProfileHandler}>
+                {t('buttons.userProfile')}
               </Button>
             </>
           )}
