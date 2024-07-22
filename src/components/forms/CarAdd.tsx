@@ -20,7 +20,6 @@ const CarAdd = () => {
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const [form] = Form.useForm();
-  const { token } = useAppSelector((state) => state.user);
   const { cars: currentCars } = useAppSelector((state) => state.crew);
 
   const [cars, setCars] = useState<Brand[]>([]);
@@ -32,9 +31,7 @@ const CarAdd = () => {
   const fetchCarList = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(routes.fetchCarList, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await axios.get(routes.fetchCarList);
       if (data.code === 1) {
         setCars(data.cars);
       }
@@ -49,9 +46,7 @@ const CarAdd = () => {
       setIsSubmit(true);
       const car = cars?.find((item) => item.label === brand);
       if (car) {
-        const { data } = await axios.post(routes.addCar, car, {
-          headers: { Authorization: `Bearer ${token}` },
-        }) as { data: { code: number } };
+        const { data } = await axios.post(routes.addCar, car) as { data: { code: number } };
         if (data.code === 1) {
           setCars(cars.filter(({ value }) => value !== car.value));
           form.setFieldValue('brand', undefined);
@@ -79,7 +74,7 @@ const CarAdd = () => {
   }, [currentCars.length]);
 
   return (
-    <Form name="car-add" form={form} onFinish={onFinish} className="signup-form d-flex flex-column col-9">
+    <Form name="car-add" form={form} onFinish={onFinish} className="d-flex flex-column col-9">
       <Form.Item<CarAddType> name="brand" rules={[carValidation]}>
         <Select
           size="large"

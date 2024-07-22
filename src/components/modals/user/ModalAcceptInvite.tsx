@@ -43,7 +43,7 @@ const ModalAcceptInvite = () => {
         title={t('title', { users })}
         subTitle={t('subTitle', { cars })}
         extra={(
-          <Form name="user-signup" className="signup-form text-start" onFinish={onFinish}>
+          <Form name="user-signup" className="text-start" onFinish={onFinish}>
             <Form.Item<UserSignupType> label={t('username')} name="username" rules={[userValidation]} required>
               <Input size="large" prefix={<UserOutlined className="site-form-item-icon" />} placeholder={t('username')} />
             </Form.Item>

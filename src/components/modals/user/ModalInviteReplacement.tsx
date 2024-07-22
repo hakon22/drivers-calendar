@@ -25,7 +25,6 @@ const ModalInviteReplacement = () => {
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
 
-  const { token } = useAppSelector((state) => state.user);
   const { users } = useAppSelector((state) => state.crew);
 
   const [form] = Form.useForm();
@@ -37,9 +36,7 @@ const ModalInviteReplacement = () => {
         toast(tToast('userInYouCrew'), 'error');
         form.setFields([{ name: 'phone', errors: [tValidation('userInCrew')] }]);
       } else {
-        const { data: { code } } = await axios.post(routes.inviteReplacement, { phone }, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const { data: { code } } = await axios.post(routes.inviteReplacement, { phone });
         if (code === 1) {
           setIsSuccess(true);
         } else if (code === 2) {

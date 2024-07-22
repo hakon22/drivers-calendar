@@ -17,7 +17,8 @@ export type ModalShowType = 'none'
   | 'cancelVacation'
   | 'chat'
   | 'endWorkShift'
-  | 'crewSettings';
+  | 'crewSettings'
+  | 'userProfile';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

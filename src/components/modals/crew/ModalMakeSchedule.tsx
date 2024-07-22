@@ -23,7 +23,6 @@ const ModalMakeSchedule = () => {
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
 
-  const { token } = useAppSelector((state) => state.user);
   const { users, shiftOrder } = useAppSelector((state) => state.crew);
 
   const [sortableUsers, setSortableUsers] = useState(shiftOrder.length ? [...shiftOrder.map((orderId) => users.find((usr) => usr.id === orderId) as UserModel), ...users.filter((usr) => !shiftOrder.includes(usr.id))] : users);
@@ -52,9 +51,7 @@ const ModalMakeSchedule = () => {
     try {
       if (!Array.isArray(startDate)) {
         setIsSubmit(true);
-        const { data } = await axios.post(routes.makeSchedule, { startDate, users: sortableUsers }, {
-          headers: { Authorization: `Bearer ${token}` },
-        }) as { data: { code: number } };
+        const { data } = await axios.post(routes.makeSchedule, { startDate, users: sortableUsers }) as { data: { code: number } };
         if (data.code === 1) {
           modalClose();
           closeNavbar();

@@ -93,7 +93,7 @@ const CarSignup = ({ values, setValues, brands }: CarSignupProps) => {
   }, [brand]);
 
   return (
-    <Form name="car-signup" form={form} onValuesChange={onValuesChange} initialValues={values} className="signup-form d-flex flex-column">
+    <Form name="car-signup" form={form} onValuesChange={onValuesChange} initialValues={values} className="d-flex flex-column">
       <Form.Item<CarSignupType> name="brand" rules={[carValidation]}>
         <Select size="large" placeholder={t('brand')} options={brands} showSearch filterOption={filterOption} />
       </Form.Item>

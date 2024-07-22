@@ -51,7 +51,7 @@ const ModalCrewChat = () => {
   const dispatch = useAppDispatch();
 
   const { id: crewId, chat, pagination } = useAppSelector((state) => state.crew);
-  const { id: authorId, token } = useAppSelector((state) => state.user);
+  const { id: authorId } = useAppSelector((state) => state.user);
 
   const [message, setMessage] = useState('');
   const [isFetch, setIsFetch] = useState(false);
@@ -68,7 +68,7 @@ const ModalCrewChat = () => {
 
   const debouncedFetchChatMessages = debounce((offset: number) => {
     setIsFetch(true);
-    dispatch(fetchChatMessages({ token, offset }));
+    dispatch(fetchChatMessages(offset));
     setTimeout(() => setIsFetch(false), 1000);
   }, 500);
 
@@ -81,9 +81,7 @@ const ModalCrewChat = () => {
   const onFinish = async () => {
     try {
       setIsSubmit(true);
-      await axios.post(routes.sendMessageToChat, { crewId, authorId, message }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(routes.sendMessageToChat, { crewId, authorId, message });
       setMessage('');
       setIsSubmit(false);
     } catch (e) {
@@ -93,9 +91,7 @@ const ModalCrewChat = () => {
 
   const onRead = async () => {
     try {
-      const { data } = await axios.get(routes.readChatMessages, {
-        headers: { Authorization: `Bearer ${token}` },
-      }) as { data: { code: number, message: ChatMessagesModel } };
+      const { data } = await axios.get(routes.readChatMessages) as { data: { code: number, message: ChatMessagesModel } };
       if (data.code === 1) {
         dispatch(readChatMessages({ userId: authorId as number }));
       }

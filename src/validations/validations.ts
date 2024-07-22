@@ -101,12 +101,45 @@ const carSchema = yup.object().shape({
   fuel_consumption_winter: fuelConsumptionSchema,
 });
 
-const endWorkShift = yup.object().shape({
+const endWorkShiftSchema = yup.object().shape({
   mileageCity: yup.number().min(0).required(),
   mileageHighway: numberSchema,
   refueling: numberSchema,
   downtime: numberSchema,
 });
+
+const profileSchema = yup.object().shape({
+  phone: phoneSchema,
+  username: stringSchema
+    .trim()
+    .min(3)
+    .max(20),
+  color: yup
+    .lazy((value) => (typeof value === 'object'
+      ? yup.object()
+        .required()
+      : yup.string()
+        .required()
+        .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t('validation.incorrectColor'))
+    )),
+  password: yup.string().when('password', ([value]) => {
+    if (value) {
+      return yup
+        .string()
+        .required()
+        .min(6, t('validation.passMin'));
+    }
+    return yup
+      .string()
+      .transform((v, originalValue) => (v ? originalValue : null))
+      .nullable()
+      .optional();
+  }),
+  confirmPassword: yup.string().required(),
+  oldPassword: yup.string().required().min(6, t('validation.passMin')),
+}, [
+  ['password', 'password'],
+]);
 
 export const confirmCodeValidation = validate(confirmCodeSchema);
 export const phoneValidation = validate(confirmPhoneSchema);
@@ -114,4 +147,5 @@ export const loginValidation = validate(loginSchema);
 export const userValidation = validate(userSchema);
 export const userInviteValidation = validate(userInviteSchema);
 export const carValidation = validate(carSchema);
-export const endWorkShiftValidation = validate(endWorkShift);
+export const endWorkShiftValidation = validate(endWorkShiftSchema);
+export const profileValidation = validate(profileSchema);

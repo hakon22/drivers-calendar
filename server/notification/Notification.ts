@@ -33,7 +33,7 @@ class Notification {
   async acceptNotification(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { dataValues: { crewId, username } } = req.user as PassportRequest;
 
       const notification = await Notifications.findByPk(id);
       if (!notification) {
@@ -55,6 +55,12 @@ class Notification {
 
         const firstUser = crew.schedule_schema[firstShift.format('DD-MM-YYYY')];
         const secondUser = crew.schedule_schema[secondShift.format('DD-MM-YYYY')];
+
+        const fetchedSecondUser = await Users.findByPk(secondUser.id);
+        if (!fetchedSecondUser) {
+          throw new Error(`Пользователь с id ${secondUser?.id} не найден`);
+        }
+
         crew.schedule_schema[firstShift.format('DD-MM-YYYY')] = secondUser;
         crew.schedule_schema[secondShift.format('DD-MM-YYYY')] = firstUser;
 
@@ -63,9 +69,9 @@ class Notification {
         crew.users?.forEach(async (user) => {
           const preparedNotification = {
             userId: user.id,
-            title: `${firstUser.username} поменялся сменами с ${secondUser.username}`,
-            description: `${firstUser.username} выйдет ${secondShift?.locale('ru').format('D MMMM, dddd')}`,
-            description2: `${secondUser.username} выйдет ${firstShift?.locale('ru').format('D MMMM, dddd')}`,
+            title: `${username} поменялся сменами с ${fetchedSecondUser.username}`,
+            description: `${username} выйдет ${secondShift?.locale('ru').format('D MMMM, dddd')}`,
+            description2: `${fetchedSecondUser.username} выйдет ${firstShift?.locale('ru').format('D MMMM, dddd')}`,
             type: NotificationEnum.SHIFT,
           };
 

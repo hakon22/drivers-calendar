@@ -41,11 +41,7 @@ const paginationChatLimit = 100;
 
 const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: ScheduleSchemaUserType[], shiftOrder: number[], numDays: number = defaultScheduleDays, oldSchedule: ScheduleSchemaType = {}) => {
   const schedule: ScheduleSchemaType = oldSchedule;
-  const users = originalUsers.map(({
-    id, username, phone, color,
-  }) => ({
-    id, username, phone, color,
-  }));
+  const users = originalUsers.map(({ id }) => ({ id }));
   if (!users || !users?.length) return schedule;
 
   const reservedDays = (await ReservedDays.findAll({ where: { userId: { [Op.in]: shiftOrder } } })) ?? [];
@@ -111,7 +107,11 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
         break;
       default:
         // result = currDay.day() === 0 || currDay.day() === 6 ? -1 : 0; // 5/2
-        result = i % 4 < 2 ? -1 : 0; // оставляем 2/2
+        if (originalUsers.length === 1 || !lastDaysUser.find(({ userId }) => originalUsers.find((origUser) => origUser.id === userId))) { // оставляем 2/2
+          result = i % 4 < 2 ? 0 : -1;
+        } else {
+          result = i % 4 < 2 ? -1 : 0;
+        }
         break;
     }
     return result;
@@ -138,7 +138,7 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
         }
       });
       getLastUsers(currDay, newUsersList);
-      iteration = 0;
+      iteration = lastDaysUser.find(({ userId }) => userId === schedule[dayjs(currDay, 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')].id) ? 1 : 0;
       return fillingSchedule();
     }
 
@@ -273,7 +273,7 @@ class Crew {
 
   async swapShift(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { dataValues: { crewId, username } } = req.user as PassportRequest;
       req.body.firstShift = dayjs(req.body.firstShift);
       req.body.secondShift = dayjs(req.body.secondShift);
       const { firstShift, secondShift } = req.body as { firstShift: Dayjs, secondShift: Dayjs };
@@ -289,7 +289,7 @@ class Crew {
       const preparedNotification = {
         userId: secondUser.id,
         authorId: firstUser.id,
-        title: `${firstUser.username} хочет поменяться с вами сменами!`,
+        title: `${username} хочет поменяться с вами сменами!`,
         description: `Он выйдет за вас ${secondShift?.locale('ru').format('D MMMM, dddd')}`,
         description2: `Вы за него - ${firstShift?.locale('ru').format('D MMMM, dddd')}`,
         type: NotificationEnum.SHIFT,
@@ -390,7 +390,11 @@ class Crew {
       await ReservedDays.destroy({ where: { userId: id } });
 
       const length = defaultScheduleDays - Object.keys(crew.schedule_schema).findIndex((key) => userReservedDays.reserved_days.includes(key));
-      const schedule = await generateScheduleSchema(dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY'), crew.users as UserModel[], crew.shiftOrder, length, crew.schedule_schema);
+      const startDay = crew.schedule_schema[dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')].id === id
+        ? dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day')
+        : dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY');
+
+      const schedule = await generateScheduleSchema(startDay, crew.users as UserModel[], crew.shiftOrder, length, crew.schedule_schema);
 
       const scheduleSchema = { ...crew.schedule_schema, ...schedule };
 

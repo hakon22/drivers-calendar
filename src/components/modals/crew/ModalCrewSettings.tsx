@@ -17,15 +17,12 @@ const ModalCrewSettings = () => {
   const { setIsSubmit } = useContext(SubmitContext);
   const { modalClose } = useContext(ModalContext);
 
-  const { token } = useAppSelector((state) => state.user);
   const { season = SeasonEnum.SUMMER, isRoundFuelConsumption = false } = useAppSelector((state) => state.crew);
 
   const onChangeIsRound = async ({ target }: CheckboxChangeEvent) => {
     try {
       setIsSubmit(true);
-      await axios.patch(routes.changeIsRoundFuel, { isRoundFuelConsumption: target.checked }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.patch(routes.changeIsRoundFuel, { isRoundFuelConsumption: target.checked });
       setIsSubmit(false);
     } catch (e) {
       axiosErrorHandler(e, tToast);
@@ -35,9 +32,7 @@ const ModalCrewSettings = () => {
   const onChangeFuelSeason = async ({ target }: RadioChangeEvent) => {
     try {
       setIsSubmit(true);
-      await axios.patch(routes.changeFuelSeason, { season: target.value }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.patch(routes.changeFuelSeason, { season: target.value });
       setIsSubmit(false);
     } catch (e) {
       axiosErrorHandler(e, tToast);

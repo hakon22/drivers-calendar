@@ -20,6 +20,7 @@ router.post(`${apiPath}/auth/logout`, Auth.logout);
 router.get(`${apiPath}/auth/updateTokens`, passport.authenticate('jwt-refresh', { session: false }), Auth.updateTokens);
 router.post(`${apiPath}/auth/inviteSignup`, passport.authenticate('jwt-temporary', { session: false }), Auth.inviteSignup);
 router.post(`${apiPath}/auth/acceptInvitation`, jwtToken, Auth.acceptInvitation);
+router.post(`${apiPath}/auth/changeUserProfile`, jwtToken, Auth.changeUserProfile);
 
 // car
 router.get(`${apiPath}/car/fetchBrands`, Car.fetchBrands);

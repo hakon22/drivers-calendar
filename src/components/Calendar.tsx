@@ -1,12 +1,15 @@
 import { useAppSelector } from '@/utilities/hooks';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import locale from '@/locales/pickers.locale.RU';
 import cn from 'classnames';
 import dayjs, { type Dayjs } from 'dayjs';
 import { CellRenderInfo } from 'rc-picker/lib/interface';
-import { Calendar as CalendarAntd } from 'antd';
+import { DoubleLeftOutlined, DoubleRightOutlined } from '@ant-design/icons';
+import { Calendar as CalendarAntd, Button } from 'antd';
 import { SelectInfo } from 'antd/lib/calendar/generateCalendar';
 import { ScheduleSchemaType } from '../../server/types/crew/ScheduleSchemaType';
+import { ModalContext } from './Context';
 
 export type CalendarProps = {
   dateValues?: { firstShift?: Dayjs, secondShift?: Dayjs },
@@ -45,19 +48,26 @@ const isDisabled: IsDisabledType = (mode, id, scheduleSchema, currentDay, select
 };
 
 const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProps) => {
-  const { schedule_schema: scheduleSchema, users, shiftOrder } = useAppSelector((state) => state.crew);
+  const { t } = useTranslation('translation', { keyPrefix: 'modals.endWorkShift' });
+
+  const {
+    schedule_schema: scheduleSchema, users, shiftOrder, activeCar,
+  } = useAppSelector((state) => state.crew);
   const { id } = useAppSelector((state) => state.user);
+
+  const { modalOpen } = useContext(ModalContext);
 
   const [selectedDate, setSelectedDate] = useState<Dayjs>();
 
   const today = dayjs().format('DD-MM-YYYY');
   const isMyShift = scheduleSchema?.[today]?.id === id;
 
-  const userLegendClassName = cn('user-legend w-100 gap-2', { 'mt-3-5': isMyShift });
+  const endWorkShiftHandler = () => modalOpen('endWorkShift');
 
   const getListData = (value: Dayjs) => {
-    if (scheduleSchema && scheduleSchema[value.format('DD-MM-YYYY')]) {
-      return { user: scheduleSchema[value.format('DD-MM-YYYY')], content: value.date() };
+    const user = users.find((usr) => usr.id === scheduleSchema?.[value.format('DD-MM-YYYY')]?.id);
+    if (user) {
+      return { user: { id: user.id, color: user.color }, content: value.date() };
     }
     return {
       user: {
@@ -81,7 +91,11 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
         type="button"
         disabled={disabled}
         style={{
-          backgroundColor: listData.user.color, height: '13.5vw', width: '13.5vw',
+          backgroundColor: listData.user.color,
+          height: '13.5vw',
+          width: '13.5vw',
+          maxWidth: '100%',
+          maxHeight: '60px',
         }}
       >
         {listData.content}
@@ -113,7 +127,14 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
         fullCellRender={dateFullCellRender}
         locale={locale}
       />
-      <div className={userLegendClassName}>
+      {isMyShift && activeCar && (
+      <Button className="end-work-shift-btn button-height button" style={{ marginTop: '-1.2em', marginBottom: '-0.1em' }} onClick={endWorkShiftHandler}>
+        <DoubleRightOutlined className="fs-6 me-3" />
+        {t('floatButton')}
+        <DoubleLeftOutlined className="fs-6 ms-3" />
+      </Button>
+      )}
+      <div className="user-legend w-100 gap-2">
         {shiftOrder?.map((orderId) => {
           const user = users.find((usr) => usr.id === orderId);
           if (user) {

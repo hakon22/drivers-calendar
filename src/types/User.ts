@@ -1,3 +1,4 @@
+import { UserSignupType } from '@/components/forms/UserSignup';
 import { InitialState } from './InitialState';
 
 export type User = {
@@ -24,3 +25,11 @@ export type UserInitialState = InitialState & {
   crewId?: number;
   [key: string]: number[] | string[] | string | number | null | undefined;
 };
+
+export type UserProfileType = Omit<UserSignupType & {
+  password?: string;
+  confirmPassword?: string;
+  oldPassword?: string;
+  id?: number;
+  [key: string]: string | number | undefined;
+}, 'schedule'>;

@@ -22,8 +22,6 @@ const ModalCancelSickLeaveOrVacation = ({ type }: { type: 'cancelSickLeave' | 'c
   const { setIsSubmit } = useContext(SubmitContext);
   const { closeNavbar } = useContext(NavbarContext);
 
-  const { token } = useAppSelector((state) => state.user);
-
   const back = () => {
     modalClose();
     closeNavbar();
@@ -32,9 +30,7 @@ const ModalCancelSickLeaveOrVacation = ({ type }: { type: 'cancelSickLeave' | 'c
   const onFinish = async () => {
     try {
       setIsSubmit(true);
-      const { data } = await axios.post(routes.cancelSickLeaveOrVacation, { type }, {
-        headers: { Authorization: `Bearer ${token}` },
-      }) as { data: { code: number } };
+      const { data } = await axios.post(routes.cancelSickLeaveOrVacation, { type }) as { data: { code: number } };
       if (data.code === 1) {
         toast(tToast(type), 'success');
       } else if (data.code === 2) {

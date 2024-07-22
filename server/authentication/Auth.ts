@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 /* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable consistent-return */
 /* eslint-disable class-methods-use-this */
@@ -9,7 +10,9 @@ import {
   userValidation, carValidation, phoneValidation, confirmCodeValidation,
   userInviteValidation,
 } from '@/validations/validations.js';
+import dayjs from 'dayjs';
 import type { UserSignupType } from '@/components/forms/UserSignup';
+import type { UserProfileType } from '@/types/User';
 import isOverdueDate from '@/utilities/isOverdueDate.js';
 import type { CarType } from '../types/Car.js';
 import redis from '../db/redis.js';
@@ -22,6 +25,8 @@ import { generateAccessToken, generateRefreshToken, generateTemporaryToken } fro
 import { upperCase } from '../utilities/textTransform.js';
 import Notifications from '../db/tables/Notifications.js';
 import SeasonEnum from '../types/crew/enum/SeasonEnum.js';
+import ReservedDays from '../db/tables/ReservedDays.js';
+import { socketEventsService } from '../server';
 
 const adminPhone = ['79999999999'];
 
@@ -81,6 +86,13 @@ class Auth {
         } as CarModel],
       }, { include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }] });
 
+      const createdUser = await Users.findOne({ where: { phone: user.phone } });
+      const createdCar = await Cars.findOne({ where: { [Op.and]: [{ inventory }, { call }] } });
+
+      if (createdUser && createdCar) {
+        await Crews.update({ activeCar: createdCar.id }, { where: { id: createdUser.crewId } });
+      }
+
       res.json({ code: 1 });
     } catch (e) {
       console.log(e);
@@ -100,7 +112,7 @@ class Auth {
       }
       if (cacheData) { // если пришёл по приглашению
         const candidate: { phone: string, password: string, role: string, crewId: number } = JSON.parse(cacheData);
-        const isValidPassword = bcrypt.compareSync(password, candidate.password);
+        const isValidPassword = bcrypt.compareSync(password, candidate?.password);
         if (!isValidPassword) {
           return res.json({ code: 2 });
         }
@@ -135,7 +147,7 @@ class Auth {
         const token = generateAccessToken(user.id, user.phone);
         const refreshToken = generateRefreshToken(user.id, user.phone);
         const {
-          id, username, role, refresh_token, crewId,
+          id, username, role, refresh_token, crewId, color,
         } = user;
 
         if (refresh_token.length < 4) {
@@ -147,7 +159,7 @@ class Auth {
         res.status(200).send({
           code: 1,
           user: {
-            token, refreshToken, username, role, id, phone, crewId,
+            token, refreshToken, username, role, id, phone, crewId, color,
           },
         });
       }
@@ -172,7 +184,7 @@ class Auth {
       const refreshToken = generateRefreshToken(user.id, user.phone);
 
       const {
-        id, username, phone, role, refresh_token, crewId,
+        id, username, phone, role, refresh_token, crewId, color,
       } = user;
 
       refresh_token.push(refreshToken);
@@ -181,7 +193,7 @@ class Auth {
       res.status(200).send({
         code: 1,
         user: {
-          token, refreshToken, username, role, id, phone, crewId,
+          token, refreshToken, username, role, id, phone, crewId, color,
         },
       });
     } catch (e) {
@@ -266,7 +278,7 @@ class Auth {
     try {
       const {
         dataValues: {
-          id, username, refresh_token, phone, role, crewId,
+          id, username, refresh_token, phone, role, crewId, color,
         }, token, refreshToken,
       } = req.user as PassportRequest;
       const oldRefreshToken = req.get('Authorization')?.split(' ')[1] ?? '';
@@ -275,13 +287,20 @@ class Auth {
         const newRefreshTokens = refresh_token.filter((key: string) => key !== oldRefreshToken);
         newRefreshTokens.push(refreshToken);
         await Users.update({ refresh_token: newRefreshTokens }, { where: { id } });
+        const reservedDays = await ReservedDays.findByPk(id);
+        if (reservedDays) {
+          const isReservedEnd = dayjs(reservedDays.reserved_days.at(-1), 'DD-MM-YYYY').isBefore(dayjs(), 'day');
+          if (isReservedEnd) {
+            await ReservedDays.destroy({ where: { userId: id } });
+          }
+        }
       } else {
         throw new Error('Ошибка доступа');
       }
       res.status(200).send({
         code: 1,
         user: {
-          id, username, token, refreshToken, role, phone, crewId,
+          id, username, token, refreshToken, role, phone, crewId, color,
         },
       });
     } catch (e) {
@@ -328,6 +347,53 @@ class Auth {
       const hashPassword = bcrypt.hashSync(password, 10);
       await Users.update({ password: hashPassword }, { where: { phone } });
       res.status(200).json({ code: 1 });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async changeUserProfile(req: Request, res: Response) {
+    try {
+      const { dataValues: { id, password, crewId } } = req.user as PassportRequest;
+      const {
+        confirmPassword, oldPassword, key, ...values
+      } = req.body as UserProfileType;
+
+      if (values.password) {
+        if (oldPassword && confirmPassword === values.password) {
+          const isValidPassword = bcrypt.compareSync(oldPassword as string, password);
+          if (!isValidPassword) {
+            return res.json({ code: 2 });
+          }
+          const hashPassword = bcrypt.hashSync(values.password as string, 10);
+          values.password = hashPassword;
+        } else {
+          throw new Error('Пароль не совпадает или не введён старый пароль');
+        }
+      }
+      if (values?.username) {
+        values.username = upperCase(values.username as string);
+      }
+      if (values.phone) {
+        values.phone = phoneTransform(values.phone as string);
+        if (key) {
+          const cacheData = await redis.get(key as string);
+          const data: { phone: string, code: string, result?: 'done' } | null = cacheData ? JSON.parse(cacheData) : null;
+          if (data && data.result === 'done' && data.phone === values.phone) {
+            await redis.del(data.phone);
+            await Users.update(values, { where: { id } });
+            socketEventsService.socketUserProfileUpdate({ crewId, id, values });
+          }
+        } else {
+          throw new Error('Телефон не подтверждён');
+        }
+      } else {
+        await Users.update(values, { where: { id } });
+        socketEventsService.socketUserProfileUpdate({ crewId, id, values });
+      }
+
+      res.json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

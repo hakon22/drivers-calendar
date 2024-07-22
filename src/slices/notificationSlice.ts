@@ -9,30 +9,24 @@ import type { RootState } from './index';
 
 export const fetchNotifications = createAsyncThunk(
   'notification/fetchNotifications',
-  async (token?: string) => {
-    const response = await axios.get(routes.fetchNotifications, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async () => {
+    const response = await axios.get(routes.fetchNotifications);
     return response.data;
   },
 );
 
 export const fetchNotificationReadUpdate = createAsyncThunk(
   'notification/fetchNotificationReadUpdate',
-  async ({ id, token }: { id: number, token?: string }) => {
-    const response = await axios.get(`${routes.notificationReadUpdate}/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async (id: number) => {
+    const response = await axios.get(`${routes.notificationReadUpdate}/${id}`);
     return response.data;
   },
 );
 
 export const fetchNotificationRemove = createAsyncThunk(
   'notification/fetchNotificationRemove',
-  async ({ id, token }: { id: number, token?: string }) => {
-    const response = await axios.delete(`${routes.notificationRemove}/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async (id: number) => {
+    const response = await axios.delete(`${routes.notificationRemove}/${id}`);
     return response.data;
   },
 );
