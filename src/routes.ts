@@ -22,6 +22,8 @@ export default {
   inviteSignup: [apiPath, 'auth', 'inviteSignup'].join('/'),
   acceptInvitation: [apiPath, 'auth', 'acceptInvitation'].join('/'),
   changeUserProfile: [apiPath, 'auth', 'changeUserProfile'].join('/'),
+  fetchUpdates: [apiPath, 'auth', 'fetchUpdates'].join('/'),
+  readUpdates: [apiPath, 'auth', 'readUpdates'].join('/'),
   // car
   fetchBrands: [serverHost, apiPath, 'car', 'fetchBrands'].join('/'),
   fetchBrandsChange: [apiPath, 'car', 'fetchBrands'].join('/'),

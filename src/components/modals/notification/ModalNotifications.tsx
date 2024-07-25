@@ -120,12 +120,12 @@ const ModalNotifications = () => {
       const preparedItems = items.map(({
         id, title, description, description2, isRead, isDecision,
       }) => {
-        const headerClass = cn('p-1 d-flex align-items-center', { 'fw-bold': !isRead });
+        const headerClass = cn('d-flex align-items-center p-2', { 'fw-bold': !isRead });
         return {
           key: id,
           label: title,
           headerClass,
-          style: { backgroundColor: '#DEE3F3', width: '100%' },
+          style: { width: '100%' },
           children:
   <>
     <div className="d-flex flex-column align-items-start gap-3 mb-4">
@@ -156,17 +156,22 @@ const ModalNotifications = () => {
       return {
         key,
         label: TranslateNotificationEnum[label as keyof typeof NotificationEnum],
-        headerClass: 'ps-2 d-flex align-items-center',
+        headerClass: 'd-flex align-items-center',
         extra: groupUnreadCount ? <Tag bordered={false} className="fw-bold text-dark rounded-pill" color="#ffcc80">{groupUnreadCount}</Tag> : null,
         style: { width: '100%', border: '1px solid gray', borderRadius: '10px' },
         children: preparedItems.length ? (
-          <Collapse
-            accordion
-            onChange={isReadHandler}
-            expandIcon={({ isActive }) => <CaretRightOutlined className="d-flex align-items-center" rotate={isActive ? 90 : 0} />}
-            className="d-flex flex-column align-items-center gap-2"
-            items={preparedItems}
-          />
+          <div className="d-flex flex-column gap-2">
+            {preparedItems.map((item) => (
+              <Collapse
+                key={item.key}
+                accordion
+                style={{ backgroundColor: '#f0f2fa', width: '100%' }}
+                onChange={isReadHandler}
+                expandIcon={({ isActive }) => <CaretRightOutlined className="d-flex align-items-center" rotate={isActive ? 90 : 0} />}
+                items={[item]}
+              />
+            ))}
+          </div>
         ) : <Alert message={t('noNotifications')} type="success" />,
       };
     });

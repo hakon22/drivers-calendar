@@ -54,6 +54,10 @@ class SocketEvents {
     this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.CHANGE_FUEL_SEASON, data);
   };
 
+  public socketCompletedShift = (data: any) => {
+    this.io.sockets.in(`CREW:${data.crewId}`).emit(SocketEventEnum.COMPLETED_SHIFT, data);
+  };
+
   public socketUserProfileUpdate = ({ crewId, ...data }: any) => {
     if (crewId && data?.username) {
       this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.USER_PROFILE_UPDATE, data);

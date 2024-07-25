@@ -18,7 +18,8 @@ export type ModalShowType = 'none'
   | 'chat'
   | 'endWorkShift'
   | 'crewSettings'
-  | 'userProfile';
+  | 'userProfile'
+  | 'shiftReport';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

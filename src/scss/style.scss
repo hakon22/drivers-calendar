@@ -299,7 +299,11 @@ h1 {
   }
   
   &.invitation-btn {
-    left: 1em;
+    left: 1.7em;
+  }
+
+  &.shift-report-btn {
+    left: 1.7em;
   }
 }
 
@@ -329,6 +333,10 @@ h1 {
   margin-right: 4px;
 }
 
+.ant-table-cell:has(.background-filling) {
+  background-color: $table-column;
+}
+
 @keyframes progress {
 	0% { width: 100%;	}
 	100% { width: 0%;	}
@@ -337,6 +345,28 @@ h1 {
 @keyframes show {
   0% { opacity: 0; }
   100% { opacity: 1; }
+}
+
+@keyframes flipInY {
+  0% {
+    transform: perspective(400px) rotateY(90deg);
+    animation-timing-function: ease-in;
+    opacity: 1;
+  }
+  40% {
+    transform: perspective(400px) rotateY(-20deg);
+    animation-timing-function: ease-in;
+  }
+  60% {
+    transform: perspective(400px) rotateY(10deg);
+    opacity: 1;
+  }
+  80% {
+    transform: perspective(400px) rotateY(-5deg);
+  }
+  100% {
+    transform: perspective(400px);
+  }
 }
 
 @-webkit-keyframes pulsing {

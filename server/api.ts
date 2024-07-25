@@ -21,6 +21,8 @@ router.get(`${apiPath}/auth/updateTokens`, passport.authenticate('jwt-refresh', 
 router.post(`${apiPath}/auth/inviteSignup`, passport.authenticate('jwt-temporary', { session: false }), Auth.inviteSignup);
 router.post(`${apiPath}/auth/acceptInvitation`, jwtToken, Auth.acceptInvitation);
 router.post(`${apiPath}/auth/changeUserProfile`, jwtToken, Auth.changeUserProfile);
+router.get(`${apiPath}/auth/fetchUpdates`, jwtToken, Auth.fetchUpdates);
+router.get(`${apiPath}/auth/readUpdates/:id`, jwtToken, Auth.readUpdates);
 
 // car
 router.get(`${apiPath}/car/fetchBrands`, Car.fetchBrands);

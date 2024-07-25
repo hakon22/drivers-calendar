@@ -109,7 +109,9 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
         break;
       default:
         // result = currDay.day() === 0 || currDay.day() === 6 ? -1 : 0; // 5/2
-        if (originalUsers.length === 1 || !lastDaysUser.find(({ userId }) => originalUsers.find((origUser) => origUser.id === userId))) { // оставляем 2/2
+        if (originalUsers.length === 1
+          || !lastDaysUser.find(({ userId }) => originalUsers.find((origUser) => origUser.id === userId))
+          || lastDaysUser.find(({ userId }) => originalUsers.find((origUser) => origUser.id === userId))?.userId !== shiftOrder?.[0]) { // оставляем 2/2
           result = i % 4 < 2 ? 0 : -1;
         } else {
           result = i % 4 < 2 ? -1 : 0;
@@ -140,7 +142,7 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
         }
       });
       getLastUsers(currDay, newUsersList);
-      iteration = lastDaysUser.find(({ userId }) => userId === schedule[dayjs(currDay, 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')].id) ? 1 : 0;
+      iteration = lastDaysUser.find(({ userId }) => userId === schedule[dayjs(currDay, 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')]?.id) ? 1 : 0;
       return fillingSchedule();
     }
 
@@ -199,7 +201,11 @@ class Crew {
           { model: Cars, as: 'cars', through: { attributes: [] } },
           {
             attributes: ['id', 'message', 'createdAt', 'readBy'], limit: paginationChatLimit, order: [['id', 'DESC']], model: ChatMessages, as: 'chat', include: [{ attributes: ['id', 'username'], model: Users, as: 'author' }],
-          }],
+          },
+          {
+            model: CompletedShifts, as: 'completedShifts', limit: 50, include: [{ attributes: ['id', 'username'], model: Users, as: 'user' }, { attributes: ['id', 'call'], model: Cars, as: 'car' }],
+          },
+        ],
       });
       if (!crew) {
         throw new Error('Экипаж не существует');
@@ -326,7 +332,7 @@ class Crew {
       const range = dateRange(dayjs(firstShift), dayjs(secondShift));
       const rangeDateFormat = range.map((date) => date.format('DD-MM-YYYY'));
 
-      const userFirstShiftIndex = range.findIndex((date) => crew.schedule_schema[date.format('DD-MM-YYYY')].id === id);
+      const userFirstShiftIndex = range.findIndex((date) => crew.schedule_schema[date.format('DD-MM-YYYY')]?.id === id);
       if (userFirstShiftIndex === -1) {
         return res.json({ code: 2 });
       }
@@ -392,7 +398,7 @@ class Crew {
       await ReservedDays.destroy({ where: { userId: id } });
 
       const length = defaultScheduleDays - Object.keys(crew.schedule_schema).findIndex((key) => userReservedDays.reserved_days.includes(key));
-      const startDay = crew.schedule_schema[dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')].id === id
+      const startDay = crew.schedule_schema[dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')]?.id === id
         ? dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day')
         : dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY');
 
@@ -523,19 +529,24 @@ class Crew {
         { where: { id: activeCar.id }, returning: true },
       );
 
-      await CompletedShifts.create({
-        date: dayjs().toDate(),
+      const creatededShift = await CompletedShifts.create({
         mileage: newMileage,
         mileageAfterMaintenance: newMileageAfterMaintenance,
         remainingFuel: newRemainingFuel,
-        refueling,
+        refueling: refueling || undefined,
         userId: id,
         crewId,
         carId: activeCar.id,
       });
 
+      const completedShift = await CompletedShifts.findByPk(creatededShift.id, {
+        include: [{ attributes: ['id', 'username'], model: Users, as: 'user' }, { attributes: ['id', 'call'], model: Cars, as: 'car' }],
+      });
+
       socketEventsService.socketCarUpdate({ crewId, car: affectedRows[0] });
       notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
+
+      socketEventsService.socketCompletedShift(completedShift);
 
       return res.json({ code: 1, ...result });
     } catch (e) {

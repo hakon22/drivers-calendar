@@ -3,6 +3,7 @@ import axios from 'axios';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { User, UserInitialState, UserProfileType } from '../types/User';
 import routes from '../routes';
+import { UpdateNoticeModel } from '../../server/db/tables/UpdateNotice';
 
 type KeysUserInitialState = keyof UserInitialState;
 
@@ -54,6 +55,14 @@ export const fetchTokenStorage = createAsyncThunk(
   },
 );
 
+export const fetchUpdates = createAsyncThunk(
+  'user/fetchUpdates',
+  async () => {
+    const response = await axios.get(routes.fetchUpdates);
+    return response.data;
+  },
+);
+
 export const updateTokens = createAsyncThunk(
   'user/updateTokens',
   async (refresh: string | undefined) => {
@@ -78,9 +87,18 @@ export const updateTokens = createAsyncThunk(
   },
 );
 
+export const readUpdates = createAsyncThunk(
+  'user/readUpdate',
+  async (id: number) => {
+    const response = await axios.get(`${routes.readUpdates}/${id}`);
+    return response.data;
+  },
+);
+
 export const initialState: { [K in keyof UserInitialState]: UserInitialState[K] } = {
   loadingStatus: 'idle',
   error: null,
+  updatesNotice: [],
 };
 
 const userSlice = createSlice({
@@ -93,10 +111,15 @@ const userSlice = createSlice({
         if (key !== 'loadingStatus' && key !== 'error') {
           delete state[key];
         }
+        if (state?.updatesNotice?.length) {
+          state.updatesNotice = [];
+        }
       });
     },
     socketUserProfileUpdate: (state, { payload }: PayloadAction<{ code: number, values: UserProfileType }>) => {
-      const { phone, username, color } = payload.values;
+      const {
+        phone, username, color, isRoundCalendarDays,
+      } = payload.values;
       if (phone) {
         state.phone = phone as string;
       }
@@ -105,6 +128,9 @@ const userSlice = createSlice({
       }
       if (color) {
         state.color = color as string;
+      }
+      if (isRoundCalendarDays !== undefined) {
+        state.isRoundCalendarDays = isRoundCalendarDays as boolean;
       }
     },
   },
@@ -227,6 +253,38 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchAcceptInvitation.rejected, (state, action) => {
+        state.loadingStatus = 'failed';
+        state.error = action.error.message ?? null;
+      })
+      .addCase(fetchUpdates.pending, (state) => {
+        state.loadingStatus = 'loading';
+        state.error = null;
+      })
+      .addCase(fetchUpdates.fulfilled, (state, { payload }
+        : PayloadAction<{ code: number, updates: UpdateNoticeModel[] }>) => {
+        if (payload.code === 1) {
+          state.updatesNotice = payload.updates;
+        }
+        state.loadingStatus = 'finish';
+        state.error = null;
+      })
+      .addCase(fetchUpdates.rejected, (state, action) => {
+        state.loadingStatus = 'failed';
+        state.error = action.error.message ?? null;
+      })
+      .addCase(readUpdates.pending, (state) => {
+        state.loadingStatus = 'loading';
+        state.error = null;
+      })
+      .addCase(readUpdates.fulfilled, (state, { payload }
+        : PayloadAction<{ code: number, updateId: number }>) => {
+        if (payload.code === 1) {
+          state.updatesNotice = (state?.updatesNotice as UpdateNoticeModel[])?.filter((update) => update.id !== payload.updateId);
+        }
+        state.loadingStatus = 'finish';
+        state.error = null;
+      })
+      .addCase(readUpdates.rejected, (state, action) => {
         state.loadingStatus = 'failed';
         state.error = action.error.message ?? null;
       });

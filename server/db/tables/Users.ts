@@ -13,6 +13,7 @@ export interface UserModel extends Model<InferAttributes<UserModel>, InferCreati
   color: string;
   refresh_token: CreationOptional<string[]>;
   crewId: CreationOptional<number>;
+  isRoundCalendarDays: CreationOptional<boolean>;
 }
 
 export interface PassportRequest {
@@ -56,6 +57,10 @@ const Users = db.define<UserModel>(
     },
     crewId: {
       type: DataTypes.INTEGER,
+    },
+    isRoundCalendarDays: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {

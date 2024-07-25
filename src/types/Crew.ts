@@ -7,6 +7,7 @@ import { ReservedDaysModel } from '../../server/db/tables/ReservedDays';
 import { ChatMessagesModel } from '../../server/db/tables/ChatMessages';
 import PaginationInterface from './PaginationInterface';
 import SeasonEnum from '../../server/types/crew/enum/SeasonEnum';
+import { CompletedShiftsModel } from '../../server/db/tables/CompletedShifts';
 
 export type CrewInitialState = InitialState & {
   id?: number;
@@ -17,6 +18,7 @@ export type CrewInitialState = InitialState & {
   schedule_schema: ScheduleSchemaType;
   users: UserModel[];
   cars: CarModel[];
+  completedShifts: CompletedShiftsModel[],
   reservedDays: ReservedDaysModel[];
   chat: ChatMessagesModel[];
   activeCar: number | null;
@@ -31,6 +33,7 @@ export type CrewInitialState = InitialState & {
     | CarModel[]
     | ReservedDaysModel[]
     | ChatMessagesModel[]
+    | CompletedShiftsModel[]
     | ScheduleSchemaType
     | Omit<PaginationInterface<ChatMessagesModel>, 'rows'>;
 };

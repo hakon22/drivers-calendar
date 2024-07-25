@@ -17,9 +17,10 @@ const createRelations = async () => {
     Users.belongsTo(Crews, { foreignKey: 'crewId' });
     Crews.hasMany(Users, { as: 'users' });
     Crews.hasMany(ChatMessages, { as: 'chat' });
+    Crews.hasMany(CompletedShifts, { as: 'completedShifts' });
     Crews.belongsTo(Cars, { foreignKey: 'activeCar' });
-    CompletedShifts.belongsTo(Users, { foreignKey: 'userId' });
-    CompletedShifts.belongsTo(Cars, { foreignKey: 'carId' });
+    CompletedShifts.belongsTo(Users, { foreignKey: 'userId', as: 'user' });
+    CompletedShifts.belongsTo(Cars, { foreignKey: 'carId', as: 'car' });
     CompletedShifts.belongsTo(Crews, { foreignKey: 'crewId' });
     Notifications.belongsTo(Users, { foreignKey: 'authorId' });
     Notifications.belongsTo(Users, { foreignKey: 'userId' });

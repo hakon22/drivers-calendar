@@ -51,9 +51,9 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
   const { t } = useTranslation('translation', { keyPrefix: 'modals.endWorkShift' });
 
   const {
-    schedule_schema: scheduleSchema, users, shiftOrder, activeCar,
+    schedule_schema: scheduleSchema, users, shiftOrder, activeCar, completedShifts,
   } = useAppSelector((state) => state.crew);
-  const { id } = useAppSelector((state) => state.user);
+  const { id, isRoundCalendarDays } = useAppSelector((state) => state.user);
 
   const { modalOpen } = useContext(ModalContext);
 
@@ -85,12 +85,28 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
       disabled,
       selected: value.isSame(selectedDate),
     });
+
+    let style = {};
+
+    if (isRoundCalendarDays) {
+      const lastId = scheduleSchema[value.subtract(1, 'day').format('DD-MM-YYYY')]?.id;
+      const firstId = scheduleSchema[value.add(1, 'day').format('DD-MM-YYYY')]?.id;
+      style = lastId !== listData.user.id && firstId !== listData.user.id
+        ? { borderRadius: '7px' }
+        : {
+          borderTopRightRadius: lastId === listData.user.id ? '7px' : 'unset',
+          borderBottomRightRadius: lastId === listData.user.id ? '7px' : 'unset',
+          borderTopLeftRadius: firstId === listData.user.id ? '7px' : 'unset',
+          borderBottomLeftRadius: firstId === listData.user.id ? '7px' : 'unset',
+        };
+    }
     return (
       <button
         className={className}
         type="button"
         disabled={disabled}
         style={{
+          ...style,
           backgroundColor: listData.user.color,
           height: '13.5vw',
           width: '13.5vw',
@@ -127,7 +143,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
         fullCellRender={dateFullCellRender}
         locale={locale}
       />
-      {isMyShift && activeCar && (
+      {isMyShift && activeCar && !completedShifts.find(({ userId, date }) => userId === id && dayjs(date).isSame(dayjs(), 'day')) && (
       <Button className="end-work-shift-btn button-height button" style={{ marginTop: '-1.2em', marginBottom: '-0.1em' }} onClick={endWorkShiftHandler}>
         <DoubleRightOutlined className="fs-6 me-3" />
         {t('floatButton')}

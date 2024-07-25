@@ -27,6 +27,7 @@ import Notifications from '../db/tables/Notifications.js';
 import SeasonEnum from '../types/crew/enum/SeasonEnum.js';
 import ReservedDays from '../db/tables/ReservedDays.js';
 import { socketEventsService } from '../server';
+import UpdateNotice from '../db/tables/UpdateNotice.js';
 
 const adminPhone = ['79999999999'];
 
@@ -147,7 +148,7 @@ class Auth {
         const token = generateAccessToken(user.id, user.phone);
         const refreshToken = generateRefreshToken(user.id, user.phone);
         const {
-          id, username, role, refresh_token, crewId, color,
+          id, username, role, refresh_token, crewId, color, isRoundCalendarDays,
         } = user;
 
         if (refresh_token.length < 4) {
@@ -159,7 +160,7 @@ class Auth {
         res.status(200).send({
           code: 1,
           user: {
-            token, refreshToken, username, role, id, phone, crewId, color,
+            token, refreshToken, username, role, id, phone, crewId, color, isRoundCalendarDays,
           },
         });
       }
@@ -184,7 +185,7 @@ class Auth {
       const refreshToken = generateRefreshToken(user.id, user.phone);
 
       const {
-        id, username, phone, role, refresh_token, crewId, color,
+        id, username, phone, role, refresh_token, crewId, color, isRoundCalendarDays,
       } = user;
 
       refresh_token.push(refreshToken);
@@ -193,7 +194,7 @@ class Auth {
       res.status(200).send({
         code: 1,
         user: {
-          token, refreshToken, username, role, id, phone, crewId, color,
+          token, refreshToken, username, role, id, phone, crewId, color, isRoundCalendarDays,
         },
       });
     } catch (e) {
@@ -278,7 +279,7 @@ class Auth {
     try {
       const {
         dataValues: {
-          id, username, refresh_token, phone, role, crewId, color,
+          id, username, refresh_token, phone, role, crewId, color, isRoundCalendarDays,
         }, token, refreshToken,
       } = req.user as PassportRequest;
       const oldRefreshToken = req.get('Authorization')?.split(' ')[1] ?? '';
@@ -300,7 +301,7 @@ class Auth {
       res.status(200).send({
         code: 1,
         user: {
-          id, username, token, refreshToken, role, phone, crewId, color,
+          id, username, token, refreshToken, role, phone, crewId, color, isRoundCalendarDays,
         },
       });
     } catch (e) {
@@ -347,6 +348,46 @@ class Auth {
       const hashPassword = bcrypt.hashSync(password, 10);
       await Users.update({ password: hashPassword }, { where: { phone } });
       res.status(200).json({ code: 1 });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async fetchUpdates(req: Request, res: Response) {
+    try {
+      const { dataValues: { id } } = req.user as PassportRequest;
+
+      const allUpdates = await UpdateNotice.findAll({ order: [['id', 'DESC']] });
+      const updates = allUpdates.filter(({ readBy }) => !readBy.includes(id));
+
+      res.status(200).json({ code: 1, updates });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async readUpdates(req: Request, res: Response) {
+    try {
+      const { dataValues: { id: userId } } = req.user as PassportRequest;
+      const { id } = req.params;
+
+      const update = await UpdateNotice.findByPk(id);
+
+      if (!update) {
+        throw new Error('Уведомление об обновлении не найдено');
+      }
+
+      if (update.readBy.includes(userId)) {
+        throw new Error('Уведомление об обновлении уже прочитано');
+      }
+
+      update.readBy.push(userId);
+
+      await UpdateNotice.update({ readBy: update.readBy }, { where: { id } });
+
+      res.status(200).json({ code: 1, updateId: update.id });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
