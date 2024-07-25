@@ -2,10 +2,12 @@ import {
   DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional,
 } from 'sequelize';
 import { db } from '../connect.js';
+import { UserModel } from './Users.js';
+import { CarModel } from './Cars.js';
 
 export interface CompletedShiftsModel extends Model<InferAttributes<CompletedShiftsModel>, InferCreationAttributes<CompletedShiftsModel>> {
   id: CreationOptional<number>;
-  date: Date;
+  date: CreationOptional<Date>;
   mileage: number;
   mileageAfterMaintenance: number;
   remainingFuel: number;
@@ -13,6 +15,8 @@ export interface CompletedShiftsModel extends Model<InferAttributes<CompletedShi
   carId: number;
   crewId: number;
   userId: number;
+  user?: UserModel;
+  car?: CarModel;
 }
 
 const CompletedShifts = db.define<CompletedShiftsModel>(
@@ -27,6 +31,7 @@ const CompletedShifts = db.define<CompletedShiftsModel>(
     date: {
       type: DataTypes.DATE,
       allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     mileage: {
       type: DataTypes.INTEGER,

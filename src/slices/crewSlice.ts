@@ -10,6 +10,7 @@ import { CarModel } from '../../server/db/tables/Cars';
 import { ReservedDaysModel } from '../../server/db/tables/ReservedDays';
 import { ChatMessagesModel } from '../../server/db/tables/ChatMessages';
 import SeasonEnum from '../../server/types/crew/enum/SeasonEnum';
+import { CompletedShiftsModel } from '../../server/db/tables/CompletedShifts';
 
 type KeysCrewInitialState = keyof CrewInitialState;
 
@@ -39,6 +40,7 @@ export const initialState: { [K in keyof CrewInitialState]: CrewInitialState[K] 
   schedule_schema: {},
   shiftOrder: [],
   reservedDays: [],
+  completedShifts: [],
   chat: [],
   activeCar: null,
   pagination: {
@@ -96,6 +98,9 @@ const crewSlice = createSlice({
     },
     socketChangeFuelSeason: (state, { payload }: PayloadAction<{ code: number, season: SeasonEnum }>) => {
       state.season = payload.season;
+    },
+    socketCompletedShift: (state, { payload }: PayloadAction<CompletedShiftsModel>) => {
+      state.completedShifts = [...state.completedShifts, payload];
     },
     socketUserProfileUpdateCrew: (state, { payload }: PayloadAction<{ code: number, id: number, values: UserProfileType }>) => {
       const { username, phone, color } = payload.values;
@@ -177,7 +182,7 @@ const crewSlice = createSlice({
 
 export const {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, socketCarRemove, socketSwipShift, socketSendMessageToChat,
-  readChatMessages, removeToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew,
+  readChatMessages, removeToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew, socketCompletedShift,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

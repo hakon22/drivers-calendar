@@ -18,7 +18,7 @@ import {
 import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew, socketCarRemove, socketSwipShift, socketSendMessageToChat,
-  removeToken as crewRemoveToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew,
+  removeToken as crewRemoveToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew, socketCompletedShift,
 } from '@/slices/crewSlice';
 import routes from '@/routes';
 import { fetchNotifications, socketSendNotification, removeToken as notifRemoveToken } from '@/slices/notificationSlice';
@@ -108,6 +108,7 @@ const Init = (props: AppProps) => {
       socket.on(SocketEventEnum.SEND_MESSAGE_TO_CHAT, (data) => dispatch(socketSendMessageToChat(data)));
       socket.on(SocketEventEnum.CHANGE_IS_ROUND_FUEL, (data) => dispatch(socketChangeIsRoundFuel(data)));
       socket.on(SocketEventEnum.CHANGE_FUEL_SEASON, (data) => dispatch(socketChangeFuelSeason(data)));
+      socket.on(SocketEventEnum.COMPLETED_SHIFT, (data) => dispatch(socketCompletedShift(data)));
       socket.on(SocketEventEnum.USER_PROFILE_UPDATE, (data) => {
         if (crewId) {
           dispatch(socketUserProfileUpdateCrew(data));

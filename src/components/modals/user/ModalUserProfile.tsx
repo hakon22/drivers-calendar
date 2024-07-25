@@ -1,5 +1,6 @@
 import {
   Modal, Button, Form, Input, ColorPicker,
+  Checkbox,
 } from 'antd';
 import { useContext, useState, useEffect } from 'react';
 import { Color } from 'antd/es/color-picker';
@@ -26,7 +27,7 @@ const ModalUserProfile = () => {
   const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
 
   const {
-    username, phone, color, key,
+    username, phone, color, key, isRoundCalendarDays,
   } = useAppSelector((state) => state.user);
 
   const dispatch = useAppDispatch();
@@ -45,6 +46,7 @@ const ModalUserProfile = () => {
     password: '',
     confirmPassword: '',
     oldPassword: '',
+    isRoundCalendarDays,
   };
 
   const [form] = Form.useForm();
@@ -160,6 +162,9 @@ const ModalUserProfile = () => {
           )}
           <Form.Item<UserProfileType> name="color" tooltip={{ title: t('colorTooltip'), icon: <QuestionCircleOutlined /> }} rules={[profileValidation]} label={t('color')}>
             <ColorPicker size="large" className="border-button" disabledAlpha />
+          </Form.Item>
+          <Form.Item<UserProfileType> name="isRoundCalendarDays" valuePropName="checked" rules={[profileValidation]}>
+            <Checkbox>{t('isRoundCalendarDays')}</Checkbox>
           </Form.Item>
           <div className="mt-4 d-flex justify-content-center col-10 mx-auto">
             <Button type="primary" htmlType="submit" className="w-100 button-height button">

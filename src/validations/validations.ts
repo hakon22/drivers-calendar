@@ -137,6 +137,7 @@ const profileSchema = yup.object().shape({
   }),
   confirmPassword: yup.string().required(),
   oldPassword: yup.string().required().min(6, t('validation.passMin')),
+  isRoundCalendarDays: yup.boolean(),
 }, [
   ['password', 'password'],
 ]);

@@ -1,4 +1,6 @@
-import { MessageOutlined, UserAddOutlined, BellOutlined } from '@ant-design/icons';
+import {
+  MessageOutlined, UserAddOutlined, BellOutlined, BarChartOutlined,
+} from '@ant-design/icons';
 import { FloatButton } from 'antd';
 import { useContext } from 'react';
 import { selectors } from '@/slices/notificationSlice';
@@ -22,10 +24,16 @@ const FloatButtons = () => {
   const invitationHandler = () => modalOpen('inviteNotification');
   const chatHandler = () => modalOpen('chat');
   const notificationHandler = () => modalOpen('notifications');
+  const shiftReportHandler = () => modalOpen('shiftReport');
 
   return (
     <>
-      {crewId && <FloatButton badge={{ count: unreadChatMessages.length }} icon={<MessageOutlined />} onClick={chatHandler} />}
+      {crewId ? (
+        <>
+          <FloatButton className="animate__heartBeat" badge={{ count: unreadChatMessages.length }} icon={<MessageOutlined />} onClick={chatHandler} />
+          <FloatButton className="float-button shift-report-btn" onClick={shiftReportHandler} icon={<BarChartOutlined />} />
+        </>
+      ) : null}
       {inviteNotifications.length ? <FloatButton className="float-button invitation-btn animate__heartBeat" badge={{ count: unreadInviteCount }} onClick={invitationHandler} icon={<UserAddOutlined />} /> : null}
       <FloatButton className="float-button notification-btn" badge={{ count: unreadAllCount - unreadInviteCount }} icon={<BellOutlined />} onClick={notificationHandler} />
     </>
