@@ -12,6 +12,7 @@ export type Notification = {
   crewId: number;
   isRead: boolean;
   isDecision: boolean;
+  createdAt: Date;
 };
 
 export type NotificationInitialState = InitialState;

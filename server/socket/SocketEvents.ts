@@ -58,6 +58,18 @@ class SocketEvents {
     this.io.sockets.in(`CREW:${data.crewId}`).emit(SocketEventEnum.COMPLETED_SHIFT, data);
   };
 
+  public socketKickReplacement = ({ crewId, ...data }: any) => {
+    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.KICK_REPLACEMENT, data);
+  };
+
+  public socketKickLogout = ({ userId, ...data }: any) => {
+    this.io.sockets.in(`USER:${userId}`).emit(SocketEventEnum.LOGOUT, data);
+  };
+
+  public socketAddUserInCrew = ({ crewId, ...data }: any) => {
+    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.ADD_USER_IN_CREW, data);
+  };
+
   public socketUserProfileUpdate = ({ crewId, ...data }: any) => {
     if (crewId && data?.username) {
       this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.USER_PROFILE_UPDATE, data);

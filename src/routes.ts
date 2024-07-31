@@ -54,4 +54,5 @@ export default {
   endWorkShift: [apiPath, 'crew', 'endWorkShift'].join('/'),
   changeIsRoundFuel: [apiPath, 'crew', 'changeIsRoundFuel'].join('/'),
   changeFuelSeason: [apiPath, 'crew', 'changeFuelSeason'].join('/'),
+  kickReplacement: [apiPath, 'crew', 'kickReplacement'].join('/'),
 } as ApiUrl;

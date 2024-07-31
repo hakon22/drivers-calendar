@@ -36,7 +36,7 @@ const ModalCarsAdd = () => {
       const { data } = await axios.get(routes.fetchBrandsChange);
       setBrands(data);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -76,7 +76,7 @@ const ModalCarsAdd = () => {
               setIsSubmit(false);
             } catch (e) {
               setTimeout(setIsSubmit, 1500, false);
-              axiosErrorHandler(e, tToast);
+              axiosErrorHandler(e, tToast, setIsSubmit);
             }
           }
         }}

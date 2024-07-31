@@ -9,7 +9,7 @@ import { Request, Response } from 'express';
 import dayjs, { type Dayjs } from 'dayjs';
 import isOverdueDate from '@/utilities/isOverdueDate.js';
 import Notifications, { NotificationsModel } from '../db/tables/Notifications.js';
-import Users, { PassportRequest } from '../db/tables/Users.js';
+import Users, { PassportRequest, UserModel } from '../db/tables/Users.js';
 import type NotificationType from '../types/notification/NotificationType.js';
 import NotificationEnum from '../types/notification/enum/NotificationEnum.js';
 import Crews from '../db/tables/Crews.js';
@@ -34,6 +34,9 @@ class Notification {
     try {
       const { id } = req.params;
       const { dataValues: { crewId, username } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
 
       const notification = await Notifications.findByPk(id);
       if (!notification) {
@@ -56,8 +59,8 @@ class Notification {
         const firstUser = crew.schedule_schema[firstShift.format('DD-MM-YYYY')];
         const secondUser = crew.schedule_schema[secondShift.format('DD-MM-YYYY')];
 
-        const fetchedSecondUser = await Users.findByPk(secondUser.id);
-        if (!fetchedSecondUser) {
+        const fetchedFirstUser = await Users.findByPk(firstUser.id);
+        if (!fetchedFirstUser) {
           throw new Error(`Пользователь с id ${secondUser?.id} не найден`);
         }
 
@@ -66,18 +69,18 @@ class Notification {
 
         const notifications: NotificationType[] = [];
 
-        crew.users?.forEach(async (user) => {
+        await Promise.all((crew.users as UserModel[]).map(async (user) => {
           const preparedNotification = {
             userId: user.id,
-            title: `${username} поменялся сменами с ${fetchedSecondUser.username}`,
-            description: `${username} выйдет ${secondShift?.locale('ru').format('D MMMM, dddd')}`,
-            description2: `${fetchedSecondUser.username} выйдет ${firstShift?.locale('ru').format('D MMMM, dddd')}`,
+            title: `${fetchedFirstUser.username} поменялся сменами с ${username}`,
+            description: `${fetchedFirstUser.username} выйдет ${secondShift?.locale('ru').format('D MMMM, dddd')}`,
+            description2: `${username} выйдет ${firstShift?.locale('ru').format('D MMMM, dddd')}`,
             type: NotificationEnum.SHIFT,
           };
 
           const newNotification = await Notification.prototype.create(preparedNotification);
           notifications.push(newNotification as NotificationType);
-        });
+        }));
 
         await Crews.update({ schedule_schema: crew.schedule_schema }, { where: { id: crewId } });
 

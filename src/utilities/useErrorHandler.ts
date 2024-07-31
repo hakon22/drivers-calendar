@@ -1,13 +1,16 @@
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/router';
 import type { Error } from '@/types/InitialState';
 import routes from '@/routes';
+import { SubmitContext } from '@/components/Context';
 import toast from './toast';
 
 const useErrorHandler = (...errors: Error[]) => {
   const { t } = useTranslation('translation', { keyPrefix: 'toast' });
   const router = useRouter();
+
+  const { setIsSubmit } = useContext(SubmitContext);
 
   useEffect(() => {
     const errorHandler = (err: string) => {
@@ -25,6 +28,7 @@ const useErrorHandler = (...errors: Error[]) => {
       } else {
         toast(t('networkError'), 'error');
       }
+      setIsSubmit(false);
       console.log(err);
     };
 

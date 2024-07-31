@@ -85,7 +85,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
       }
       setIsSubmit(false);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -94,7 +94,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
       const { data } = await axios.get(`${routes.getModels}/${searchedValue}`);
       setModels(data);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -103,7 +103,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
       const { data } = await axios.get(routes.fetchBrandsChange);
       setBrands(data);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 

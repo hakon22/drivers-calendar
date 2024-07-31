@@ -121,6 +121,10 @@ class Car {
   async removeCar(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const { id } = req.params;
 
       const [car, crew] = await Promise.all([
@@ -153,6 +157,10 @@ class Car {
   async createCar(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const candidateCar = req.body as CarType;
       await carValidation.serverValidator({ ...candidateCar });
 
@@ -189,6 +197,10 @@ class Car {
   async addCar(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const { id } = req.body as { id: number };
 
       const [car, crew] = await Promise.all([

@@ -17,6 +17,8 @@ const CrewsCars = db.define<CrewCarModel>(
   {
     crewId: {
       type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: false,
       references: {
         model: Crews,
         key: 'id',
@@ -24,6 +26,8 @@ const CrewsCars = db.define<CrewCarModel>(
     },
     carId: {
       type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: false,
       references: {
         model: Cars,
         key: 'id',

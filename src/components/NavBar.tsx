@@ -1,20 +1,39 @@
 import { useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cn from 'classnames';
-import { Drawer, Button } from 'antd';
+import { Drawer, Button, Popconfirm } from 'antd';
+import { Telegram } from 'react-bootstrap-icons';
 import { useAppSelector } from '@/utilities/hooks';
-import { AuthContext, ModalContext, NavbarContext } from './Context';
+import axios from 'axios';
+import routes from '@/routes';
+import axiosErrorHandler from '@/utilities/axiosErrorHandler';
+import {
+  AuthContext, ModalContext, NavbarContext, SubmitContext,
+} from './Context';
 import ReservedDaysTypeEnum from '../../server/types/user/enum/ReservedDaysTypeEnum';
 
 const NavBar = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'index.navbar' });
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const { id } = useAppSelector((state) => state.user);
-  const { id: crewId, reservedDays } = useAppSelector((state) => state.crew);
+  const { id: crewId, reservedDays, users } = useAppSelector((state) => state.crew);
 
   const { logOut } = useContext(AuthContext);
   const { modalOpen } = useContext(ModalContext);
+  const { setIsSubmit } = useContext(SubmitContext);
   const { isActive, closeNavbar, setIsActive } = useContext(NavbarContext);
+
+  const fullLogout = async () => {
+    try {
+      setIsSubmit(true);
+      await axios.get(routes.kickReplacement) as { data: { code: number } };
+      closeNavbar();
+      setIsSubmit(false);
+    } catch (e) {
+      axiosErrorHandler(e, tToast, setIsSubmit);
+    }
+  };
 
   const className = cn('menu-btn', { active: isActive });
 
@@ -22,6 +41,7 @@ const NavBar = () => {
 
   const scheduleHandler = () => modalOpen('makeSchedule');
   const inviteReplacementHandler = () => modalOpen('inviteReplacement');
+  const kickReplacementHandler = () => modalOpen('kickReplacement');
   const carsSettingsHandler = () => modalOpen('carsControl');
   const swapShiftsHandler = () => modalOpen('swapShifts');
   const takeSickLeaveHandler = () => modalOpen('takeSickLeave');
@@ -49,7 +69,7 @@ const NavBar = () => {
         width="100%"
         open={isActive}
       >
-        <div className="d-flex flex-column gap-3 mb-5">
+        <div className="d-flex flex-column mb-5" style={{ gap: '0.75rem' }}>
           {crewId && (
             <>
               <Button className="w-100 button button-height" onClick={scheduleHandler}>
@@ -58,6 +78,11 @@ const NavBar = () => {
               <Button className="w-100 button button-height" onClick={inviteReplacementHandler}>
                 {t('buttons.inviteReplacement')}
               </Button>
+              {users.length > 1 ? (
+                <Button className="w-100 button button-height" onClick={kickReplacementHandler}>
+                  {t('buttons.kickReplacement')}
+                </Button>
+              ) : null}
               <Button className="w-100 button button-height" onClick={carsSettingsHandler}>
                 {t('buttons.car')}
               </Button>
@@ -73,11 +98,11 @@ const NavBar = () => {
               <Button className="w-100 button button-height" onClick={crewSettingsHandler}>
                 {t('buttons.crewSettings')}
               </Button>
-              <Button className="w-100 button button-height" onClick={userProfileHandler}>
-                {t('buttons.userProfile')}
-              </Button>
             </>
           )}
+          <Button className="w-100 button button-height" onClick={userProfileHandler}>
+            {t('buttons.userProfile')}
+          </Button>
           <Button
             className="w-100 button button-height"
             onClick={() => {
@@ -86,6 +111,25 @@ const NavBar = () => {
             }}
           >
             {t('buttons.exit')}
+          </Button>
+          {crewId ? (
+            <Popconfirm
+              title={t('popconfirm.title')}
+              description={t('popconfirm.description')}
+              placement="top"
+              onConfirm={fullLogout}
+              okButtonProps={{ danger: true }}
+              okText={t('popconfirm.ok')}
+              cancelText={t('popconfirm.cancel')}
+            >
+              <Button className="w-100 button button-height">
+                {t('buttons.leave')}
+              </Button>
+            </Popconfirm>
+          ) : null}
+          <Button type="link" className="support-button border-0 mt-2 d-flex justify-content-center align-items-center gap-2 p-1 px-2 mx-auto" href="https://t.me/hakonxak">
+            <Telegram color="#72a7f2" className="fs-6" />
+            <span>{t('buttons.writeToSupport')}</span>
           </Button>
         </div>
       </Drawer>

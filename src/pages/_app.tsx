@@ -9,7 +9,7 @@ import {
   useCallback, useEffect, useMemo, useState,
 } from 'react';
 import { Provider } from 'react-redux';
-import { I18nextProvider } from 'react-i18next';
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import { ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import {
@@ -19,10 +19,12 @@ import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew, socketCarRemove, socketSwipShift, socketSendMessageToChat,
   removeToken as crewRemoveToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew, socketCompletedShift,
+  socketKickReplacement, socketAddUserInCrew,
 } from '@/slices/crewSlice';
 import routes from '@/routes';
 import { fetchNotifications, socketSendNotification, removeToken as notifRemoveToken } from '@/slices/notificationSlice';
 import { removeToken, socketUserProfileUpdate } from '@/slices/userSlice';
+import toast from '@/utilities/toast';
 import favicon16 from '../images/favicon16x16.png';
 import favicon32 from '../images/favicon32x32.png';
 import favicon57 from '../images/favicon57x57.png';
@@ -40,6 +42,8 @@ const Init = (props: AppProps) => {
   const { pageProps, Component } = props;
   const { dispatch } = store;
   const router = useRouter();
+
+  const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const { id, refreshToken, crewId } = store.getState().user;
 
@@ -109,6 +113,14 @@ const Init = (props: AppProps) => {
       socket.on(SocketEventEnum.CHANGE_IS_ROUND_FUEL, (data) => dispatch(socketChangeIsRoundFuel(data)));
       socket.on(SocketEventEnum.CHANGE_FUEL_SEASON, (data) => dispatch(socketChangeFuelSeason(data)));
       socket.on(SocketEventEnum.COMPLETED_SHIFT, (data) => dispatch(socketCompletedShift(data)));
+      socket.on(SocketEventEnum.KICK_REPLACEMENT, (data) => dispatch(socketKickReplacement(data)));
+      socket.on(SocketEventEnum.ADD_USER_IN_CREW, (data) => dispatch(socketAddUserInCrew(data)));
+      socket.on(SocketEventEnum.LOGOUT, (data) => {
+        logOut();
+        if (!data?.himSelf) {
+          toast(tToast('expelledFromCrewSuccess'), 'info');
+        }
+      });
       socket.on(SocketEventEnum.USER_PROFILE_UPDATE, (data) => {
         if (crewId) {
           dispatch(socketUserProfileUpdateCrew(data));

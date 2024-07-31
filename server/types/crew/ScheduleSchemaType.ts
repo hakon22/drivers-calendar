@@ -1,5 +1,6 @@
 export type ScheduleSchemaUserType = {
   id: number;
+  color: string;
 };
 
 export type ScheduleSchemaType = {

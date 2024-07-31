@@ -59,7 +59,7 @@ const ModalMakeSchedule = () => {
         setIsSubmit(false);
       }
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 

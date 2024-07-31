@@ -25,7 +25,7 @@ const ModalCrewSettings = () => {
       await axios.patch(routes.changeIsRoundFuel, { isRoundFuelConsumption: target.checked });
       setIsSubmit(false);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -35,7 +35,7 @@ const ModalCrewSettings = () => {
       await axios.patch(routes.changeFuelSeason, { season: target.value });
       setIsSubmit(false);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 

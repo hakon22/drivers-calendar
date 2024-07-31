@@ -2,6 +2,7 @@
 import {
   Modal, Button, Collapse, Tag, type CollapseProps, Alert,
 } from 'antd';
+import dayjs from 'dayjs';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { useContext, useEffect, useState } from 'react';
 import cn from 'classnames';
@@ -83,11 +84,12 @@ const ModalNotifications = () => {
       if (code === 1) {
         back();
         decline(id);
+        toast(tToast('swipShiftSuccess'), 'success');
       } else if (code === 2) {
         toast(tToast('notificationNotExist'), 'error');
       }
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -110,7 +112,7 @@ const ModalNotifications = () => {
       }
       setIsSubmit(false);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -118,13 +120,14 @@ const ModalNotifications = () => {
     .filter(([type]) => type !== NotificationEnum.INVITE && type !== NotificationEnum.CHAT && type !== NotificationEnum.EXILE)
     .map(([label, items], key) => {
       const preparedItems = items.map(({
-        id, title, description, description2, isRead, isDecision,
+        id, title, description, description2, isRead, isDecision, createdAt,
       }) => {
         const headerClass = cn('d-flex align-items-center p-2', { 'fw-bold': !isRead });
         return {
           key: id,
           label: title,
           headerClass,
+          createdAt,
           style: { width: '100%' },
           children:
   <>
@@ -162,14 +165,16 @@ const ModalNotifications = () => {
         children: preparedItems.length ? (
           <div className="d-flex flex-column gap-2">
             {preparedItems.map((item) => (
-              <Collapse
-                key={item.key}
-                accordion
-                style={{ backgroundColor: '#f0f2fa', width: '100%' }}
-                onChange={isReadHandler}
-                expandIcon={({ isActive }) => <CaretRightOutlined className="d-flex align-items-center" rotate={isActive ? 90 : 0} />}
-                items={[item]}
-              />
+              <div key={item.key}>
+                <div className="text-muted">{dayjs(item.createdAt).format('DD.MM (HH:mm)')}</div>
+                <Collapse
+                  accordion
+                  style={{ backgroundColor: '#f0f2fa', width: '100%' }}
+                  onChange={isReadHandler}
+                  expandIcon={({ isActive }) => <CaretRightOutlined className="d-flex align-items-center" rotate={isActive ? 90 : 0} />}
+                  items={[item]}
+                />
+              </div>
             ))}
           </div>
         ) : <Alert message={t('noNotifications')} type="success" />,
