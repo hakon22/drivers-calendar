@@ -19,7 +19,8 @@ export type ModalShowType = 'none'
   | 'endWorkShift'
   | 'crewSettings'
   | 'userProfile'
-  | 'shiftReport';
+  | 'shiftReport'
+  | 'kickReplacement';
 
 export type ModalShowObjectType = {
   show: ModalShowType;

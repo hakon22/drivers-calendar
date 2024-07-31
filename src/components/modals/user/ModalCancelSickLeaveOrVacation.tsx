@@ -39,7 +39,7 @@ const ModalCancelSickLeaveOrVacation = ({ type }: { type: 'cancelSickLeave' | 'c
       setIsSubmit(false);
       back();
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 

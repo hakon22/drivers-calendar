@@ -12,7 +12,7 @@ export interface UserModel extends Model<InferAttributes<UserModel>, InferCreati
   role: string;
   color: string;
   refresh_token: CreationOptional<string[]>;
-  crewId: CreationOptional<number>;
+  crewId: CreationOptional<number | null>;
   isRoundCalendarDays: CreationOptional<boolean>;
 }
 

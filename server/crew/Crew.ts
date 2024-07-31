@@ -1,3 +1,5 @@
+/* eslint-disable no-confusing-arrow */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable import/no-cycle */
 /* eslint-disable no-continue */
 /* eslint-disable import/no-anonymous-default-export */
@@ -41,9 +43,16 @@ dayjs.extend(isBetween);
 const defaultScheduleDays = 500;
 const paginationChatLimit = 100;
 
-const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: ScheduleSchemaUserType[], shiftOrder: number[], numDays: number = defaultScheduleDays, oldSchedule: ScheduleSchemaType = {}) => {
+const generateScheduleSchema = async (
+  startDate: Dayjs | string,
+  originalUsers: ScheduleSchemaUserType[],
+  shiftOrder: number[],
+  numDays: number = defaultScheduleDays,
+  oldSchedule: ScheduleSchemaType = {},
+  kickedUserId: number | null = null,
+) => {
   const schedule: ScheduleSchemaType = oldSchedule;
-  const users = originalUsers.map(({ id }) => ({ id }));
+  const users = originalUsers.map(({ id, color }) => ({ id, color }));
   if (!users || !users?.length) return schedule;
 
   const reservedDays = (await ReservedDays.findAll({ where: { userId: { [Op.in]: shiftOrder } } })) ?? [];
@@ -60,11 +69,11 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
       if (usersList && !usersList.find((user) => user.id === candidate?.id)) {
         continue;
       }
-      if (candidate && !newUsersList.find((user) => user.id === candidate.id) && !lastDaysUser.find((usr) => usr.userId === candidate.id)) {
+      if (candidate && candidate.id !== kickedUserId && !newUsersList.find((user) => user.id === candidate.id) && !lastDaysUser.find((usr) => usr.userId === candidate.id)) {
         newUsersList.unshift(candidate);
       } else if (!candidate) {
         const lastDaysUserCopy = [...lastDaysUser];
-        const missingUsers = users.filter(({ id }) => !lastDaysUserCopy.find((usr) => usr.userId === id));
+        const missingUsers = users.filter(({ id }) => !lastDaysUserCopy.find((usr) => usr.userId === id) && id);
         const sortMissingUsers = shiftOrder.map((order) => missingUsers.find((user) => user.id === order) as ScheduleSchemaUserType).filter(Boolean);
         newUsersList = [...sortMissingUsers];
         getLastUsers(currDay, newUsersList);
@@ -109,13 +118,7 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
         break;
       default:
         // result = currDay.day() === 0 || currDay.day() === 6 ? -1 : 0; // 5/2
-        if (originalUsers.length === 1
-          || !lastDaysUser.find(({ userId }) => originalUsers.find((origUser) => origUser.id === userId))
-          || lastDaysUser.find(({ userId }) => originalUsers.find((origUser) => origUser.id === userId))?.userId !== shiftOrder?.[0]) { // оставляем 2/2
-          result = i % 4 < 2 ? 0 : -1;
-        } else {
-          result = i % 4 < 2 ? -1 : 0;
-        }
+        result = i % 4 < 2 ? 0 : -1;
         break;
     }
     return result;
@@ -142,7 +145,22 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
         }
       });
       getLastUsers(currDay, newUsersList);
-      iteration = lastDaysUser.find(({ userId }) => userId === schedule[dayjs(currDay, 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')]?.id) ? 1 : 0;
+      if (newUsersList.length !== 1) {
+        iteration = 0;
+      } else {
+        const yesterdayUserId = lastDaysUser.find(({ userId }) => userId === schedule[dayjs(currDay, 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')]?.id)?.userId;
+        const beforeYesterdayUserId = lastDaysUser.find(({ userId }) => userId === schedule[dayjs(currDay, 'DD-MM-YYYY').subtract(2, 'day').format('DD-MM-YYYY')]?.id)?.userId;
+
+        if ((_.isEmpty(schedule) && lastDaysUser.find(({ userId }) => userId !== shiftOrder?.[0])) || (yesterdayUserId && beforeYesterdayUserId && yesterdayUserId === beforeYesterdayUserId)) {
+          iteration = 0;
+        } else if ((Object.keys(schedule).length === 1 && lastDaysUser.find(({ userId }) => userId !== shiftOrder?.[0])) || (beforeYesterdayUserId && !yesterdayUserId)) {
+          iteration = 1;
+        } else if (!yesterdayUserId && !beforeYesterdayUserId) {
+          iteration = 2;
+        } else if (yesterdayUserId && !beforeYesterdayUserId) {
+          iteration = 3;
+        }
+      }
       return fillingSchedule();
     }
 
@@ -167,10 +185,23 @@ const generateScheduleSchema = async (startDate: Dayjs | string, originalUsers: 
   return schedule;
 };
 
+const sortingSchedule = (schema: ScheduleSchemaType) => {
+  const sortedSchedule: ScheduleSchemaType = {};
+
+  Object.keys(schema)
+    .sort((a, b) => dayjs(a, 'DD-MM-YYYY').isBefore(dayjs(b, 'DD-MM-YYYY')) ? -1 : (dayjs(a, 'DD-MM-YYYY').isAfter(dayjs(b, 'DD-MM-YYYY')) ? 1 : 0))
+    .forEach((day) => { sortedSchedule[day] = schema[day]; });
+  return sortedSchedule;
+};
+
 class Crew {
   async fetchChatMessages(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const limit = paginationChatLimit;
       const offset = req?.query?.offset ? +req.query.offset : 0;
 
@@ -195,6 +226,10 @@ class Crew {
   async fetchCrew(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const crew = await Crews.findByPk(crewId, {
         include: [
           { attributes: ['id', 'username', 'color', 'phone'], model: Users, as: 'users' },
@@ -223,6 +258,10 @@ class Crew {
   async makeSchedule(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const { startDate, users } = req.body as { startDate: Dayjs, users: UserModel[] };
       const crew = await Crews.findByPk(crewId, { include: { model: Users, as: 'users' } });
       if (!crew) {
@@ -246,6 +285,10 @@ class Crew {
   async activeCarsUpdate(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const { activeCar } = req.body;
 
       const crew = await Crews.findByPk(crewId, {
@@ -282,6 +325,10 @@ class Crew {
   async swapShift(req: Request, res: Response) {
     try {
       const { dataValues: { crewId, username } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       req.body.firstShift = dayjs(req.body.firstShift);
       req.body.secondShift = dayjs(req.body.secondShift);
       const { firstShift, secondShift } = req.body as { firstShift: Dayjs, secondShift: Dayjs };
@@ -318,6 +365,10 @@ class Crew {
   async takeSickLeaveOrVacation(req: Request, res: Response) {
     try {
       const { dataValues: { id, crewId, username } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       req.body.firstShift = dayjs(req.body.firstShift);
       req.body.secondShift = dayjs(req.body.secondShift);
       const { firstShift, secondShift } = req.body as { firstShift: Dayjs, secondShift: Dayjs, type: 'takeSickLeave' | 'takeVacation' };
@@ -344,13 +395,15 @@ class Crew {
         await ReservedDays.create({ userId: id, reserved_days: rangeDateFormat, type });
       }
 
+      crew.schedule_schema = sortingSchedule(crew.schedule_schema);
+
       const length = defaultScheduleDays - Object.keys(crew.schedule_schema).findIndex((key) => rangeDateFormat.includes(key));
 
       const schedule = await generateScheduleSchema(range[0], crew.users as UserModel[], crew.shiftOrder, length, crew.schedule_schema);
 
       const notifications: NotificationType[] = [];
 
-      crew.users?.forEach(async (user) => {
+      await Promise.all((crew.users as UserModel[]).map(async (user) => {
         const preparedNotification = {
           userId: user.id,
           title: `${username} взял ${req.body.type === 'takeSickLeave' ? 'больничный' : 'отпуск'}!`,
@@ -361,7 +414,7 @@ class Crew {
 
         const newNotification = await Notification.create(preparedNotification);
         notifications.push(newNotification as NotificationType);
-      });
+      }));
 
       const scheduleSchema = { ...crew.schedule_schema, ...schedule };
 
@@ -382,6 +435,10 @@ class Crew {
   async cancelSickLeaveOrVacation(req: Request, res: Response) {
     try {
       const { dataValues: { id, crewId, username } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const { type } = req.body as { type: 'cancelSickLeave' | 'cancelVacation' };
 
       const crew = await Crews.findByPk(crewId, { include: { model: Users, as: 'users' } });
@@ -397,6 +454,8 @@ class Crew {
 
       await ReservedDays.destroy({ where: { userId: id } });
 
+      crew.schedule_schema = sortingSchedule(crew.schedule_schema);
+
       const length = defaultScheduleDays - Object.keys(crew.schedule_schema).findIndex((key) => userReservedDays.reserved_days.includes(key));
       const startDay = crew.schedule_schema[dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')]?.id === id
         ? dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day')
@@ -408,7 +467,7 @@ class Crew {
 
       const notifications: NotificationType[] = [];
 
-      crew.users?.forEach(async (user) => {
+      await Promise.all((crew.users as UserModel[]).map(async (user) => {
         const preparedNotification = {
           userId: user.id,
           title: `${username} отменил ${type === 'cancelSickLeave' ? 'больничный' : 'отпуск'}!`,
@@ -418,7 +477,7 @@ class Crew {
 
         const newNotification = await Notification.create(preparedNotification);
         notifications.push(newNotification as NotificationType);
-      });
+      }));
 
       await Crews.update({ schedule_schema: scheduleSchema }, { where: { id: crewId } });
 
@@ -435,6 +494,10 @@ class Crew {
   async endWorkShift(req: Request, res: Response) {
     try {
       const { dataValues: { id, username, crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const {
         mileageCity = 0, mileageHighway = 0, refueling = 0, downtime = 0,
       } = req.body as EndWorkShiftFormType;
@@ -507,7 +570,7 @@ class Crew {
 
       const notifications: NotificationType[] = [];
 
-      crew.users?.forEach(async (user) => {
+      await Promise.all((crew.users as UserModel[]).map(async (user) => {
         const preparedNotification = {
           userId: user.id,
           title: `${username} закрыл смену ${dayjs().format('DD-MM-YYYY')}`,
@@ -518,7 +581,7 @@ class Crew {
 
         const newNotification = await Notification.create(preparedNotification);
         notifications.push(newNotification as NotificationType);
-      });
+      }));
 
       const [, affectedRows] = await Cars.update(
         {
@@ -558,6 +621,9 @@ class Crew {
   async sendMessageToChat(req: Request, res: Response) {
     try {
       const { dataValues: { id, crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
 
       const crew = await Crews.findByPk(crewId);
       if (!crew) {
@@ -582,6 +648,9 @@ class Crew {
   async readChatMessages(req: Request, res: Response) {
     try {
       const { dataValues: { id, crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
 
       const crew = await Crews.findByPk(crewId);
       if (!crew) {
@@ -613,6 +682,10 @@ class Crew {
       req.body.phone = phoneTransform(req.body.phone);
       const { phone }: { phone: string } = req.body;
       const { dataValues: { id, crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const crew = await Crews.findByPk(crewId, {
         include: [
           { attributes: ['username'], model: Users, as: 'users' },
@@ -642,6 +715,7 @@ class Crew {
           description: `Водители: ${users}`,
           description2: `Автомобили: ${cars}`,
           type: NotificationEnum.INVITE,
+          data: crewId,
           isDecision: true,
         };
         const notification = await Notification.create(preparedNotification);
@@ -666,6 +740,10 @@ class Crew {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
       const { isRoundFuelConsumption }: { isRoundFuelConsumption: boolean } = req.body;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const crew = await Crews.findByPk(crewId);
       if (!crew) {
         throw new Error('Экипаж не существует');
@@ -685,6 +763,10 @@ class Crew {
   async changeFuelSeason(req: Request, res: Response) {
     try {
       const { dataValues: { crewId } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const { season }: { season: SeasonEnum } = req.body;
       const crew = await Crews.findByPk(crewId);
       if (!crew) {
@@ -694,6 +776,92 @@ class Crew {
       await Crews.update({ season }, { where: { id: crewId } });
 
       socketEventsService.socketChangeFuelSeason({ crewId, season });
+
+      return res.json({ code: 1 });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async kickReplacement(req: Request, res: Response) {
+    try {
+      const { dataValues: { id: userId, crewId, username } } = req.user as PassportRequest;
+      if (!crewId) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+      const { id = userId } = req.params;
+
+      const crew = await Crews.findByPk(crewId, {
+        include: { attributes: ['id', 'username', 'color'], model: Users, as: 'users' },
+      });
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      crew.schedule_schema = sortingSchedule(crew.schedule_schema);
+
+      const user = crew.users?.find((usr) => usr.id === +id);
+      if (!user) {
+        throw new Error('Пользователь не существует');
+      }
+
+      await Users.update({ crewId: null }, { where: { id } });
+
+      socketEventsService.socketKickReplacement({ crewId, userId: +id });
+      socketEventsService.socketKickLogout({ userId: id, himSelf: +id === userId });
+
+      const today = dayjs();
+      const shift = Object.keys(crew.schedule_schema)
+        .map((date) => dayjs(date, 'DD-MM-YYYY'))
+        .filter((date) => date.isSame(today, 'day') || date.isAfter(today))
+        .sort((a, b) => a.isBefore(b) ? -1 : (a.isAfter(b) ? 1 : 0))
+        .find((date) => crew.schedule_schema[dayjs(date).format('DD-MM-YYYY')]?.id === +id);
+
+      const notifications: NotificationType[] = [];
+
+      await Promise.all((crew.users as UserModel[]).map(async (usr) => {
+        let preparedNotification;
+        if (usr.id === +id && +id !== userId) {
+          preparedNotification = {
+            userId: +id,
+            title: `${username} исключил вас из экипажа`,
+            description: 'Вернуться или вступить в экипаж вы можете только по приглашению',
+            type: NotificationEnum.CREW,
+          };
+        } else if (+id !== usr.id) {
+          preparedNotification = {
+            userId: usr.id,
+            title: `${user.username} покидает экипаж`,
+            description: shift ? `${user.username} был убран из графика с ${shift.format('DD.MM.YYYY')}` : '',
+            type: NotificationEnum.CREW,
+          };
+        }
+
+        if (preparedNotification) {
+          const newNotification = await Notification.create(preparedNotification);
+          notifications.push(newNotification as NotificationType);
+        }
+      }));
+
+      if (shift) {
+        const newUsers = crew.users?.filter((usr) => usr.id !== +id);
+        const shiftOrder = crew.shiftOrder.filter((order) => order !== +id);
+        let scheduleSchema;
+
+        if (newUsers?.length === 1) {
+          scheduleSchema = Object.fromEntries(Object.entries(crew.schedule_schema).filter(([date, usr]) => !((dayjs(date, 'DD-MM-YYYY').isSame(shift) || dayjs(date, 'DD-MM-YYYY').isAfter(shift)) && usr.id === +id)));
+        } else {
+          const length = defaultScheduleDays - Object.keys(crew.schedule_schema).findIndex((key) => shift.isSame(dayjs(key, 'DD-MM-YYYY')));
+          const schedule = await generateScheduleSchema(shift, newUsers as UserModel[], shiftOrder, length, crew.schedule_schema, +id);
+          scheduleSchema = { ...crew.schedule_schema, ...schedule };
+        }
+        await Crews.update({ schedule_schema: scheduleSchema, shiftOrder }, { where: { id: crew.id } });
+
+        socketEventsService.socketMakeSchedule({ crewId, scheduleSchema, shiftOrder });
+
+        notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
+      }
 
       return res.json({ code: 1 });
     } catch (e) {

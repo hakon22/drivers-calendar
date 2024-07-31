@@ -42,7 +42,7 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
       }
       setIsSubmit(false);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -57,7 +57,7 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
         toast(tToast('carIsActive'), 'error');
       }
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 

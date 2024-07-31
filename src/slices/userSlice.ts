@@ -30,9 +30,8 @@ export const fetchInviteSignup = createAsyncThunk(
 
 export const fetchAcceptInvitation = createAsyncThunk(
   'user/fetchAcceptInvitation',
-  async (data: { id: number, authorId?: number }) => {
-    const { id, authorId } = data;
-    const response = await axios.post(routes.acceptInvitation, { id, authorId });
+  async (id: number) => {
+    const response = await axios.post(routes.acceptInvitation, { id });
     return response.data;
   },
 );

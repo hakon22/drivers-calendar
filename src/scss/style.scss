@@ -333,8 +333,14 @@ h1 {
   margin-right: 4px;
 }
 
-.ant-table-cell:has(.background-filling) {
-  background-color: $table-column;
+.ant-table-cell:has(.background-filling),
+.ant-table-cell-row-hover {
+  background-color: $table-column !important;
+}
+
+.support-button {
+  border-color: #72a7f2 !important;
+  text-decoration: none;
 }
 
 @keyframes progress {

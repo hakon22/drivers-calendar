@@ -20,6 +20,7 @@ import ModalEndWorkShift from './modals/user/ModalEndWorkShift';
 import ModalCrewSettings from './modals/crew/ModalCrewSettings';
 import ModalUserProfile from './modals/user/ModalUserProfile';
 import ModalShiftReport from './modals/crew/ModalShiftReport';
+import ModalKickReplacement from './modals/crew/ModalKickReplacement';
 
 const Modals = () => {
   const { show } = useContext(ModalContext);
@@ -58,6 +59,7 @@ const Modals = () => {
     crewSettings: <ModalCrewSettings />,
     userProfile: <ModalUserProfile />,
     shiftReport: <ModalShiftReport />,
+    kickReplacement: <ModalKickReplacement />,
     carsControl: params && typeof params === 'string' ? <ModalCarsControl modalContext={params} /> : <ModalCarsControl />,
     carsEdit: params && typeof params === 'number' ? <ModalCarsEdit modalContext={params} /> : null,
     activation: params && typeof params !== 'number' && typeof params !== 'string' ? <ModalConfirmPhone setState={params} /> : null,

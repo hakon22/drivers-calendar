@@ -3,6 +3,7 @@ import {
   Modal, Button, Result, Collapse,
 } from 'antd';
 import { useContext, useState } from 'react';
+import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { SubmitContext } from '@/components/Context';
@@ -27,7 +28,7 @@ const ModalUpdateNotice = ({ updatesNotice }: { updatesNotice: UpdateNoticeModel
       await dispatch(readUpdates(id));
       setIsSubmit(false);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -38,7 +39,7 @@ const ModalUpdateNotice = ({ updatesNotice }: { updatesNotice: UpdateNoticeModel
       footer={null}
       styles={{
         content: {
-          paddingLeft: '0.25em', paddingRight: '0.25em',
+          paddingLeft: '0.25em', paddingRight: '0.25em', maxHeight: '90vh', overflow: 'auto',
         },
       }}
       onCancel={() => {
@@ -52,7 +53,9 @@ const ModalUpdateNotice = ({ updatesNotice }: { updatesNotice: UpdateNoticeModel
         extra={(
           <div className="d-flex flex-column gap-2">
             {
-          updatesNotice.map(({ id: key, title: label, message }) => (
+          updatesNotice.map(({
+            id: key, title: label, createdAt, message,
+          }) => (
             <Collapse
               key={key}
               bordered={false}
@@ -61,10 +64,16 @@ const ModalUpdateNotice = ({ updatesNotice }: { updatesNotice: UpdateNoticeModel
               expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
               items={[{
                 key,
-                label: <div className="fs-6 fw-bold text-center">{label}</div>,
+                label: (
+                  <div className="d-flex justify-content-between align-items-center">
+                    <span className="fs-6 fw-bold">{label}</span>
+                    <span className="text-muted">{dayjs(createdAt).format('DD.MM.YYYY')}</span>
+                  </div>
+                ),
+                headerClass: 'd-flex align-items-center',
                 children: (
                   <div className="d-flex flex-column gap-4">
-                    <div className="text-start" style={{ overflow: 'auto', lineHeight: 1.8 }}><p>{message}</p></div>
+                    <div className="text-start" style={{ lineHeight: 1.8 }}>{message}</div>
                     <div className="mt-4 d-flex justify-content-center col-10 mx-auto">
                       <Button className="button-height button w-100" onClick={() => onRead(key)}>{t('readButton')}</Button>
                     </div>

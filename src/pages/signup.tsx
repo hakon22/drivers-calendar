@@ -90,7 +90,7 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
             setIsSubmit(false);
           } catch (e) {
             setTimeout(setIsSubmit, 1500, false);
-            axiosErrorHandler(e, tToast);
+            axiosErrorHandler(e, tToast, setIsSubmit);
           }
         }
       }}

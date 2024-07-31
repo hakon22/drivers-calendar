@@ -103,7 +103,7 @@ const ModalShiftReport = () => {
       footer={null}
       styles={{
         content: {
-          paddingLeft: '0.5em', paddingRight: '0.5em', maxHeight: '90vh', overflow: 'auto',
+          paddingLeft: '0.25em', paddingRight: '0.25em', maxHeight: '90vh', overflow: 'auto',
         },
       }}
       onCancel={modalClose}

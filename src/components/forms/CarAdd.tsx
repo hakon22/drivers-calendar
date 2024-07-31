@@ -37,7 +37,7 @@ const CarAdd = () => {
       }
       setLoading(false);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -54,7 +54,7 @@ const CarAdd = () => {
       }
       setIsSubmit(false);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 

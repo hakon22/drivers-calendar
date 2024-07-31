@@ -28,6 +28,9 @@ import SeasonEnum from '../types/crew/enum/SeasonEnum.js';
 import ReservedDays from '../db/tables/ReservedDays.js';
 import { socketEventsService } from '../server';
 import UpdateNotice from '../db/tables/UpdateNotice.js';
+import NotificationType from '../types/notification/NotificationType.js';
+import Notification from '../notification/Notification.js';
+import NotificationEnum from '../types/notification/enum/NotificationEnum.js';
 
 const adminPhone = ['79999999999'];
 
@@ -90,8 +93,10 @@ class Auth {
       const createdUser = await Users.findOne({ where: { phone: user.phone } });
       const createdCar = await Cars.findOne({ where: { [Op.and]: [{ inventory }, { call }] } });
 
+      await redis.del(user.phone);
+
       if (createdUser && createdCar) {
-        await Crews.update({ activeCar: createdCar.id }, { where: { id: createdUser.crewId } });
+        await Crews.update({ activeCar: createdCar.id }, { where: { id: createdUser.crewId as number } });
       }
 
       res.json({ code: 1 });
@@ -205,8 +210,12 @@ class Auth {
 
   async acceptInvitation(req: Request, res: Response) {
     try {
-      const { dataValues: { id, crewId } } = req.user as PassportRequest;
-      const { id: notificationId, authorId } = req.body;
+      const {
+        dataValues: {
+          id, crewId, username, color, phone,
+        },
+      } = req.user as PassportRequest;
+      const { id: notificationId } = req.body;
 
       const notification = await Notifications.findByPk(notificationId);
       if (isOverdueDate(notification?.createdAt as Date, 1)) {
@@ -218,15 +227,39 @@ class Auth {
         return res.json({ code: 3 });
       }
 
-      const author = await Users.findByPk(authorId);
-
-      if (!author?.crewId) {
-        return res.json({ code: 2 });
+      const crew = await Crews.findByPk(notification?.data as number, {
+        include: { attributes: ['id', 'username'], model: Users, as: 'users' },
+      });
+      if (!crew) {
+        throw new Error('Экипаж не существует');
       }
 
-      await Users.update({ crewId: author.crewId }, { where: { id } });
+      await Users.update({ crewId: crew.id }, { where: { id } });
 
-      res.status(200).json({ code: 1, crewId: author.crewId });
+      const notifications: NotificationType[] = [];
+
+      await Promise.all((crew.users as UserModel[]).map(async (user) => {
+        const preparedNotification = {
+          userId: user.id,
+          title: `${username} присоединился к экипажу`,
+          description: `Пригласил: ${crew.users?.find((usr) => usr.id === notification?.authorId)?.username}`,
+          type: NotificationEnum.CREW,
+        };
+
+        const newNotification = await Notification.create(preparedNotification);
+        notifications.push(newNotification as NotificationType);
+      }));
+
+      socketEventsService.socketAddUserInCrew({
+        crewId: crew.id,
+        user: {
+          id, username, color, phone,
+        },
+      });
+
+      notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
+
+      res.status(200).json({ code: 1, crewId: crew.id });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

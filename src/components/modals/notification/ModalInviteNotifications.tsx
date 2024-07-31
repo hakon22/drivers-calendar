@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-unstable-nested-components */
 import {
   Modal, Button, Collapse, type CollapseProps,
 } from 'antd';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { useContext, useEffect } from 'react';
+import dayjs from 'dayjs';
 import cn from 'classnames';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { selectors, fetchNotificationReadUpdate, fetchNotificationRemove } from '@/slices/notificationSlice';
@@ -38,10 +40,7 @@ const ModalInviteNotifications = () => {
 
   const accept = async (id: number) => {
     setIsSubmit(true);
-    const { payload: { code } } = await dispatch(fetchAcceptInvitation({
-      id,
-      authorId: filteredNotifications.find((notification) => notification.id === id)?.authorId,
-    })) as { payload: { code: number } };
+    const { payload: { code } } = await dispatch(fetchAcceptInvitation(id)) as { payload: { code: number } };
     if (code === 1) {
       modalClose();
       decline(id);
@@ -56,13 +55,14 @@ const ModalInviteNotifications = () => {
 
   const inviteNotifications: CollapseProps['items'] = filteredNotifications
     .map(({
-      id, title, description, description2, isRead,
+      id, title, description, description2, isRead, createdAt,
     }) => {
-      const headerClass = cn('p-1 d-flex align-items-center', { 'fw-bold': !isRead });
+      const headerClass = cn('p-2 d-flex align-items-center', { 'fw-bold': !isRead });
       return {
         key: id,
         label: title,
         headerClass,
+        createdAt,
         style: { backgroundColor: '#DEE3F3', width: '100%' },
         children:
   <>
@@ -113,16 +113,21 @@ const ModalInviteNotifications = () => {
     >
       <div className="my-4 d-flex flex-column align-items-center gap-3">
         <div className="h1">{t('invitations')}</div>
-        <Collapse
-          style={{ width: '95%' }}
-          className="d-flex flex-column align-items-center gap-2"
-          accordion
-          bordered
-          onChange={isReadHandler}
-          defaultActiveKey={inviteNotifications.length === 1 ? inviteNotifications[0].key as string : undefined}
-          expandIcon={({ isActive }) => <CaretRightOutlined className="d-flex align-items-center" rotate={isActive ? 90 : 0} />}
-          items={inviteNotifications}
-        />
+        <div className="d-flex flex-column gap-2">
+          {inviteNotifications.map((item: any) => (
+            <div key={item.key}>
+              <div className="text-muted">{dayjs(item.createdAt).format('DD.MM (HH:mm)')}</div>
+              <Collapse
+                accordion
+                style={{ backgroundColor: '#f0f2fa', width: '100%' }}
+                onChange={isReadHandler}
+                defaultActiveKey={inviteNotifications.length === 1 ? inviteNotifications[0].key as string : undefined}
+                expandIcon={({ isActive }) => <CaretRightOutlined className="d-flex align-items-center" rotate={isActive ? 90 : 0} />}
+                items={[item]}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </Modal>
   );

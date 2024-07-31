@@ -72,6 +72,7 @@ export default {
         buttons: {
           makeSchedule: 'Составить график',
           inviteReplacement: 'Пригласить сменщика',
+          kickReplacement: 'Исключить сменщика',
           swapShifts: 'Поменяться сменами',
           takeSickLeave: 'Взять больничный',
           cancelSickLeave: 'Отменить больничный',
@@ -80,7 +81,15 @@ export default {
           car: 'Автомобиль',
           crewSettings: 'Настройки экипажа',
           userProfile: 'Настройки пользователя',
-          exit: 'Выйти из экипажа',
+          writeToSupport: 'Написать в поддержку',
+          exit: 'Выйти из аккаунта',
+          leave: 'Выйти из экипажа',
+        },
+        popconfirm: {
+          title: 'Подтвердите действие',
+          description: 'Вы действительно хотите покинуть экипаж? Вы сможете войти только по приглашению!',
+          cancel: 'Нет',
+          ok: 'Да',
         },
       },
     },
@@ -128,6 +137,9 @@ export default {
       cancelSickLeave: 'Больничный отменён',
       endShiftSuccess: 'Смена успешно завершена',
       changeProfileSuccess: 'Данные успешно изменены',
+      kickReplacementSuccess: 'Сменщик успешно исключён из экипажа',
+      expelledFromCrewSuccess: 'Вас исключили из экипажа',
+      swipShiftSuccess: 'Вы успешно поменялись сменами!',
     },
     modals: {
       signup: {
@@ -317,6 +329,18 @@ export default {
       updatesNotice: {
         title: 'Новое обновление!',
         readButton: 'Прочитать',
+      },
+      kickReplacement: {
+        title: 'Исключить сменщика',
+        submitButton: 'Исключить',
+        textP1: 'Сменщик будет исключён из экипажа и сможет вернуться только по приглашению.',
+        textP2: 'График будет перераспределён с первого рабочего дня исключаемого.',
+        popconfirm: {
+          title: 'Подтвердите действие',
+          description: 'Вы действительно хотите исключить {{ username }}?',
+          cancel: 'Нет',
+          ok: 'Да',
+        },
       },
     },
   },

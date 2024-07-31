@@ -85,7 +85,7 @@ const ModalCrewChat = () => {
       setMessage('');
       setIsSubmit(false);
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -96,7 +96,7 @@ const ModalCrewChat = () => {
         dispatch(readChatMessages({ userId: authorId as number }));
       }
     } catch (e) {
-      axiosErrorHandler(e, tToast);
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 

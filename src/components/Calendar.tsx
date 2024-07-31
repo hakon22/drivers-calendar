@@ -65,14 +65,11 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
   const endWorkShiftHandler = () => modalOpen('endWorkShift');
 
   const getListData = (value: Dayjs) => {
-    const user = users.find((usr) => usr.id === scheduleSchema?.[value.format('DD-MM-YYYY')]?.id);
-    if (user) {
-      return { user: { id: user.id, color: user.color }, content: value.date() };
+    if (scheduleSchema && scheduleSchema[value.format('DD-MM-YYYY')]) {
+      return { user: scheduleSchema[value.format('DD-MM-YYYY')], content: value.date() };
     }
     return {
-      user: {
-        id: null, color: 'white', username: null, phone: null,
-      },
+      user: { id: null, color: 'white' },
       content: value.date(),
     };
   };
@@ -89,15 +86,15 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
     let style = {};
 
     if (isRoundCalendarDays) {
-      const lastId = scheduleSchema[value.subtract(1, 'day').format('DD-MM-YYYY')]?.id;
-      const firstId = scheduleSchema[value.add(1, 'day').format('DD-MM-YYYY')]?.id;
+      const lastId = scheduleSchema?.[value?.subtract(1, 'day').format('DD-MM-YYYY')]?.id;
+      const firstId = scheduleSchema?.[value?.add(1, 'day').format('DD-MM-YYYY')]?.id;
       style = lastId !== listData.user.id && firstId !== listData.user.id
         ? { borderRadius: '7px' }
         : {
-          borderTopRightRadius: lastId === listData.user.id ? '7px' : 'unset',
-          borderBottomRightRadius: lastId === listData.user.id ? '7px' : 'unset',
-          borderTopLeftRadius: firstId === listData.user.id ? '7px' : 'unset',
-          borderBottomLeftRadius: firstId === listData.user.id ? '7px' : 'unset',
+          borderTopRightRadius: firstId !== listData.user.id ? '7px' : 'unset',
+          borderBottomRightRadius: firstId !== listData.user.id ? '7px' : 'unset',
+          borderTopLeftRadius: lastId !== listData.user.id ? '7px' : 'unset',
+          borderBottomLeftRadius: lastId !== listData.user.id ? '7px' : 'unset',
         };
     }
     return (
@@ -121,7 +118,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
 
   const onSelect = (date: Dayjs, selectInfo: SelectInfo) => {
     if (selectInfo.source === 'date' && setDateValues) {
-      if (!dateValues?.firstShift || (dateValues?.firstShift && mode === 'shift' && scheduleSchema[date.format('DD-MM-YYYY')].id === id)) {
+      if (!dateValues?.firstShift || (dateValues?.firstShift && mode === 'shift' && scheduleSchema?.[date.format('DD-MM-YYYY')]?.id === id)) {
         if (date.isSame(selectedDate)) {
           setDateValues({});
           setSelectedDate(undefined);
