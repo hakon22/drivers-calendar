@@ -429,7 +429,11 @@ class Auth {
 
   async changeUserProfile(req: Request, res: Response) {
     try {
-      const { dataValues: { id, password, crewId } } = req.user as PassportRequest;
+      const {
+        dataValues: {
+          id, password, crewId, color,
+        },
+      } = req.user as PassportRequest;
       const {
         confirmPassword, oldPassword, key, ...values
       } = req.body as UserProfileType;
@@ -456,6 +460,19 @@ class Auth {
           const data: { phone: string, code: string, result?: 'done' } | null = cacheData ? JSON.parse(cacheData) : null;
           if (data && data.result === 'done' && data.phone === values.phone) {
             await redis.del(data.phone);
+            if (values.color && crewId) {
+              const crew = await Crews.findByPk(crewId);
+              if (!crew) {
+                throw new Error('Экипаж не существует');
+              }
+              Object.keys(crew.schedule_schema).forEach((day) => {
+                if (crew.schedule_schema[day]?.color === color) {
+                  crew.schedule_schema[day].color = values.color as string;
+                }
+              });
+              await Crews.update({ schedule_schema: crew.schedule_schema }, { where: { id: crewId } });
+              socketEventsService.socketMakeSchedule({ crewId, scheduleSchema: crew.schedule_schema });
+            }
             await Users.update(values, { where: { id } });
             socketEventsService.socketUserProfileUpdate({ crewId, id, values });
           }
@@ -463,6 +480,19 @@ class Auth {
           throw new Error('Телефон не подтверждён');
         }
       } else {
+        if (values.color && crewId) {
+          const crew = await Crews.findByPk(crewId);
+          if (!crew) {
+            throw new Error('Экипаж не существует');
+          }
+          Object.keys(crew.schedule_schema).forEach((day) => {
+            if (crew.schedule_schema[day]?.color === color) {
+              crew.schedule_schema[day].color = values.color as string;
+            }
+          });
+          await Crews.update({ schedule_schema: crew.schedule_schema }, { where: { id: crewId } });
+          socketEventsService.socketMakeSchedule({ crewId, scheduleSchema: crew.schedule_schema });
+        }
         await Users.update(values, { where: { id } });
         socketEventsService.socketUserProfileUpdate({ crewId, id, values });
       }
