@@ -457,9 +457,13 @@ class Crew {
       crew.schedule_schema = sortingSchedule(crew.schedule_schema);
 
       const length = defaultScheduleDays - Object.keys(crew.schedule_schema).findIndex((key) => userReservedDays.reserved_days.includes(key));
-      const startDay = crew.schedule_schema[dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day').format('DD-MM-YYYY')]?.id === id
-        ? dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').subtract(1, 'day')
-        : dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY');
+      const firstReservedDay = dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY');
+
+      const lastWorkDay = dayjs(Object.keys(crew.schedule_schema).reverse().find((day) => (dayjs(day, 'DD-MM-YYYY').isSame(firstReservedDay) || dayjs(day, 'DD-MM-YYYY').isBefore(firstReservedDay)) && crew.schedule_schema[day]?.id === id) ?? firstReservedDay, 'DD-MM-YYYY');
+
+      const startDay = crew.schedule_schema[lastWorkDay.subtract(1, 'day').format('DD-MM-YYYY')]?.id === id
+        ? lastWorkDay.subtract(1, 'day')
+        : lastWorkDay;
 
       const schedule = await generateScheduleSchema(startDay, crew.users as UserModel[], crew.shiftOrder, length, crew.schedule_schema);
 
@@ -471,7 +475,7 @@ class Crew {
         const preparedNotification = {
           userId: user.id,
           title: `${username} отменил ${type === 'cancelSickLeave' ? 'больничный' : 'отпуск'}!`,
-          description: `График переделан с ${dayjs(userReservedDays.reserved_days[0], 'DD-MM-YYYY').locale('ru').format('D MMMM, dddd')}`,
+          description: `График переделан с ${startDay.locale('ru').format('D MMMM, dddd')}`,
           type: type === 'cancelSickLeave' ? NotificationEnum.HOSPITAL : NotificationEnum.VACATION,
         };
 

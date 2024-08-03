@@ -28,14 +28,14 @@ type IsDisabledType = (
 ) => boolean;
 
 const isDisabled: IsDisabledType = (mode, id, scheduleSchema, currentDay, selectedDay, firstShift, secondShift) => {
-  if (!scheduleSchema?.[currentDay.format('DD-MM-YYYY')]) return true;
+  if (!scheduleSchema?.[currentDay.format('DD-MM-YYYY')] && mode !== 'sickLeave') return true;
   if (mode === 'shift') {
     if (!firstShift) {
-      return scheduleSchema[currentDay.format('DD-MM-YYYY')].id !== id;
+      return scheduleSchema?.[currentDay.format('DD-MM-YYYY')]?.id !== id;
     }
     if (firstShift && !secondShift) {
       if (currentDay.format('DD-MM-YYYY') !== selectedDay?.format('DD-MM-YYYY')) {
-        return scheduleSchema[currentDay.format('DD-MM-YYYY')].id === id;
+        return scheduleSchema?.[currentDay.format('DD-MM-YYYY')]?.id === id;
       }
     }
   }
