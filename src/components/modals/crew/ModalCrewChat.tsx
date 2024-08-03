@@ -123,7 +123,7 @@ const ModalCrewChat = () => {
     return () => {
       chatRef.current?.removeEventListener('scroll', fetchMessages);
     };
-  }, [chat.length]);
+  }, [chat.length, pagination.total, pagination.current]);
 
   return (
     <Modal
