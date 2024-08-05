@@ -43,7 +43,13 @@ class Car {
         FROM "driver"."cars" AS "cars"
         LEFT JOIN "driver"."crews_cars" AS "crewsCars" ON "cars"."id" = "crewsCars"."carId"
         LEFT JOIN "driver"."crews" AS "crews" ON "crewsCars"."crewId" = "crews"."id" AND "crews"."id" != ${crewId}
-        WHERE "crewsCars"."carId" IS NULL
+        WHERE
+          ("crews"."activeCar" != "cars"."id" OR "crewsCars"."carId" IS NULL)
+          AND NOT EXISTS (
+            SELECT 1
+            FROM "driver"."crews_cars" AS "crewsCars"
+            WHERE "crewsCars"."carId" = "cars"."id" AND "crewsCars"."crewId" = ${crewId}
+          )
       `) as CarModel[][];
       const preparedCars = cars.map(({
         id, brand, model, inventory, call,

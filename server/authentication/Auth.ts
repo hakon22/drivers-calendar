@@ -14,13 +14,14 @@ import dayjs from 'dayjs';
 import type { UserSignupType } from '@/components/forms/UserSignup';
 import type { UserProfileType } from '@/types/User';
 import isOverdueDate from '@/utilities/isOverdueDate.js';
+import isEmpty from 'lodash/isEmpty';
 import type { CarType } from '../types/Car.js';
 import redis from '../db/redis.js';
 import Sms from '../sms/Sms.js';
 import phoneTransform from '../utilities/phoneTransform.js';
 import Users, { PassportRequest, UserModel } from '../db/tables/Users.js';
 import Cars, { CarModel } from '../db/tables/Cars.js';
-import Crews from '../db/tables/Crews.js';
+import Crews, { CrewModel } from '../db/tables/Crews.js';
 import { generateAccessToken, generateRefreshToken, generateTemporaryToken } from './tokensGen.js';
 import { upperCase } from '../utilities/textTransform.js';
 import Notifications from '../db/tables/Notifications.js';
@@ -31,11 +32,13 @@ import UpdateNotice from '../db/tables/UpdateNotice.js';
 import NotificationType from '../types/notification/NotificationType.js';
 import Notification from '../notification/Notification.js';
 import NotificationEnum from '../types/notification/enum/NotificationEnum.js';
+import RolesEnum from '../types/user/enum/RolesEnum.js';
+import { ScheduleSchemaType } from '../types/crew/ScheduleSchemaType.js';
 
-const adminPhone = ['79999999999'];
+const adminPhone = [process.env.ADMIN_PHONE];
 
 class Auth {
-  public adminPhone = ['79999999999'];
+  public adminPhone = [process.env.ADMIN_PHONE];
 
   async signup(req: Request, res: Response) {
     try {
@@ -66,7 +69,7 @@ class Auth {
 
       const password = await Sms.sendPass(user.phone);
 
-      const role = adminPhone.includes(user.phone) ? 'admin' : 'member';
+      const role = adminPhone.includes(user.phone) ? RolesEnum.ADMIN : RolesEnum.GRAND_MEMBER;
 
       await Crews.create({
         schedule,
@@ -431,12 +434,40 @@ class Auth {
     try {
       const {
         dataValues: {
-          id, password, crewId, color,
+          id, password, crewId, color, username,
         },
       } = req.user as PassportRequest;
       const {
         confirmPassword, oldPassword, key, ...values
       } = req.body as UserProfileType;
+
+      const update = async (crew?: CrewModel | null, schedule: ScheduleSchemaType = {}, notifications: NotificationType[] = []) => {
+        if (values.color && crewId && !isEmpty(schedule)) {
+          if (!crew) {
+            throw new Error('Экипаж не существует');
+          }
+          Object.keys(schedule).forEach((day) => {
+            if (schedule[day]?.color === color) {
+              schedule[day].color = values.color as string;
+            }
+          });
+          await Crews.update({ schedule_schema: schedule }, { where: { id: crewId } });
+          socketEventsService.socketMakeSchedule({ crewId, scheduleSchema: schedule });
+        }
+        await Users.update(values, { where: { id } });
+        socketEventsService.socketUserProfileUpdate({ crewId, id, values });
+        notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
+      };
+
+      let crew;
+
+      if (crewId) {
+        crew = await Crews.findByPk(crewId, {
+          include: { attributes: ['id'], model: Users, as: 'users' },
+        });
+      }
+
+      const notifications: NotificationType[] = [];
 
       if (values.password) {
         if (oldPassword && confirmPassword === values.password) {
@@ -452,6 +483,19 @@ class Auth {
       }
       if (values?.username) {
         values.username = upperCase(values.username as string);
+        if (crew) {
+          await Promise.all((crew.users as UserModel[]).map(async (user) => {
+            const preparedNotification = {
+              userId: user.id,
+              title: `${username} изменил имя пользователя`,
+              description: `Новое имя пользователя: ${values.username}`,
+              type: NotificationEnum.USER,
+            };
+
+            const newNotification = await Notification.create(preparedNotification);
+            notifications.push(newNotification as NotificationType);
+          }));
+        }
       }
       if (values.phone) {
         values.phone = phoneTransform(values.phone as string);
@@ -460,41 +504,13 @@ class Auth {
           const data: { phone: string, code: string, result?: 'done' } | null = cacheData ? JSON.parse(cacheData) : null;
           if (data && data.result === 'done' && data.phone === values.phone) {
             await redis.del(data.phone);
-            if (values.color && crewId) {
-              const crew = await Crews.findByPk(crewId);
-              if (!crew) {
-                throw new Error('Экипаж не существует');
-              }
-              Object.keys(crew.schedule_schema).forEach((day) => {
-                if (crew.schedule_schema[day]?.color === color) {
-                  crew.schedule_schema[day].color = values.color as string;
-                }
-              });
-              await Crews.update({ schedule_schema: crew.schedule_schema }, { where: { id: crewId } });
-              socketEventsService.socketMakeSchedule({ crewId, scheduleSchema: crew.schedule_schema });
-            }
-            await Users.update(values, { where: { id } });
-            socketEventsService.socketUserProfileUpdate({ crewId, id, values });
+            await update(crew, crew?.schedule_schema, notifications);
           }
         } else {
           throw new Error('Телефон не подтверждён');
         }
       } else {
-        if (values.color && crewId) {
-          const crew = await Crews.findByPk(crewId);
-          if (!crew) {
-            throw new Error('Экипаж не существует');
-          }
-          Object.keys(crew.schedule_schema).forEach((day) => {
-            if (crew.schedule_schema[day]?.color === color) {
-              crew.schedule_schema[day].color = values.color as string;
-            }
-          });
-          await Crews.update({ schedule_schema: crew.schedule_schema }, { where: { id: crewId } });
-          socketEventsService.socketMakeSchedule({ crewId, scheduleSchema: crew.schedule_schema });
-        }
-        await Users.update(values, { where: { id } });
-        socketEventsService.socketUserProfileUpdate({ crewId, id, values });
+        await update(crew, crew?.schedule_schema, notifications);
       }
 
       res.json({ code: 1 });

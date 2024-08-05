@@ -82,7 +82,7 @@ const ModalInviteReplacement = () => {
               <MaskedInput mask="+7 (000) 000-00-00" className="button-height" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder={t('phone')} />
             </Form.Item>
             <div className="d-flex col-12">
-              <Button type="primary" htmlType="submit" className="w-100 button">
+              <Button type="primary" htmlType="submit" className="w-100 button button-height">
                 {t('submitButton')}
               </Button>
             </div>

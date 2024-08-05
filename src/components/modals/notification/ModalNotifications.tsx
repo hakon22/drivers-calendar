@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable react/no-unstable-nested-components */
 import {
   Modal, Button, Collapse, Tag, type CollapseProps, Alert,
@@ -160,7 +161,9 @@ const ModalNotifications = () => {
         key,
         label: TranslateNotificationEnum[label as keyof typeof NotificationEnum],
         headerClass: 'd-flex align-items-center',
-        extra: groupUnreadCount ? <Tag bordered={false} className="fw-bold text-dark rounded-pill" color="#ffcc80">{groupUnreadCount}</Tag> : null,
+        extra: groupUnreadCount
+          ? <Tag bordered={false} className="fw-bold text-dark rounded-pill" color="#ffcc80">{groupUnreadCount}</Tag>
+          : items.length ? <Tag bordered={false} className="fw-bold text-dark rounded-pill" color="#f0f2fa">{items.length}</Tag> : null,
         style: { width: '100%', border: '1px solid gray', borderRadius: '10px' },
         children: preparedItems.length ? (
           <div className="d-flex flex-column gap-2">

@@ -78,7 +78,7 @@ export default {
           cancelSickLeave: 'Отменить больничный',
           takeVacation: 'Взять отпуск',
           cancelVacation: 'Отменить отпуск',
-          car: 'Автомобиль',
+          car: 'Автомобили',
           crewSettings: 'Настройки экипажа',
           userProfile: 'Настройки пользователя',
           writeToSupport: 'Написать в поддержку',
