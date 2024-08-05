@@ -36,6 +36,7 @@ import SeasonEnum from '../types/crew/enum/SeasonEnum';
 import { socketEventsService } from '../server';
 import CompletedShifts from '../db/tables/CompletedShifts';
 import truncateLastDecimal from '../utilities/truncateLastDecimal';
+import RolesEnum from '../types/user/enum/RolesEnum';
 
 dayjs.extend(minMax);
 dayjs.extend(isBetween);
@@ -663,15 +664,9 @@ class Crew {
 
       const messages = await ChatMessages.findAll({ where: { crewId } });
 
-      const updatedMessage = messages.map((message) => {
-        if (!message.readBy.includes(id)) {
-          message.readBy.push(id);
-          return message;
-        }
-        return message;
-      });
+      const updatedMessage = messages.filter((message) => !message.readBy.includes(id));
 
-      await Promise.all(updatedMessage.map(async (message) => ChatMessages.update({ readBy: message.readBy }, { where: { id: message.id } })));
+      await Promise.all(updatedMessage.map(async (message) => ChatMessages.update({ readBy: [...message.readBy, id] }, { where: { id: message.id } })));
 
       return res.json({ code: 1 });
     } catch (e) {
@@ -728,7 +723,7 @@ class Crew {
         return res.json({ code: 1 });
       }
       const password = await Sms.sendPass(phone);
-      const role = Auth.adminPhone.includes(phone) ? 'admin' : 'member';
+      const role = Auth.adminPhone.includes(phone) ? RolesEnum.ADMIN : RolesEnum.MEMBER;
       await redis.setEx(phone, 86400, JSON.stringify({
         phone, password: bcrypt.hashSync(password, 10), role, crewId,
       }));
@@ -797,7 +792,7 @@ class Crew {
       const { id = userId } = req.params;
 
       const crew = await Crews.findByPk(crewId, {
-        include: { attributes: ['id', 'username', 'color'], model: Users, as: 'users' },
+        include: { attributes: ['id', 'username', 'color', 'role'], model: Users, as: 'users' },
       });
       if (!crew) {
         throw new Error('Экипаж не существует');
@@ -809,8 +804,12 @@ class Crew {
       if (!user) {
         throw new Error('Пользователь не существует');
       }
+      const newUsers = crew.users?.filter((usr) => usr.id !== +id);
+      if (user.role === RolesEnum.GRAND_MEMBER && newUsers?.length) {
+        await Users.update({ role: RolesEnum.GRAND_MEMBER }, { where: { id: newUsers[0].id } });
+      }
 
-      await Users.update({ crewId: null }, { where: { id } });
+      await Users.update({ crewId: null, role: RolesEnum.MEMBER }, { where: { id } });
 
       socketEventsService.socketKickReplacement({ crewId, userId: +id });
       socketEventsService.socketKickLogout({ userId: id, himSelf: +id === userId });
@@ -838,8 +837,12 @@ class Crew {
             userId: usr.id,
             title: `${user.username} покидает экипаж`,
             description: shift ? `${user.username} был убран из графика с ${shift.format('DD.MM.YYYY')}` : '',
+            description2: `Главным экипажа назначен ${newUsers?.[0].username}`,
             type: NotificationEnum.CREW,
-          };
+          } as NotificationType;
+          if (user.role !== RolesEnum.GRAND_MEMBER) {
+            delete preparedNotification.description2;
+          }
         }
 
         if (preparedNotification) {
@@ -849,7 +852,6 @@ class Crew {
       }));
 
       if (shift) {
-        const newUsers = crew.users?.filter((usr) => usr.id !== +id);
         const shiftOrder = crew.shiftOrder.filter((order) => order !== +id);
         let scheduleSchema;
 

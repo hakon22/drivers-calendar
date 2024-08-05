@@ -3,13 +3,14 @@ import {
 } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { db } from '../connect.js';
+import RolesEnum from '../../types/user/enum/RolesEnum.js';
 
 export interface UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>> {
   id: CreationOptional<number>;
   username: string;
   password: string;
   phone: string;
-  role: string;
+  role: RolesEnum;
   color: string;
   refresh_token: CreationOptional<string[]>;
   crewId: CreationOptional<number | null>;
@@ -44,7 +45,7 @@ const Users = db.define<UserModel>(
       unique: 'phone',
     },
     role: {
-      type: DataTypes.ENUM('admin', 'member'),
+      type: DataTypes.ENUM(...Object.keys(RolesEnum).filter((v) => Number.isNaN(Number(v)))),
       allowNull: false,
     },
     color: {
