@@ -41,7 +41,7 @@ const Modals = () => {
 
   const modals: { [K in ModalShowType]: JSX.Element | null } = {
     none: null,
-    signup: <ModalSignup />,
+    signup: <ModalSignup modalContext={params as number} />,
     recovery: <ModalRecovery />,
     makeSchedule: <ModalMakeSchedule />,
     inviteReplacement: <ModalInviteReplacement />,

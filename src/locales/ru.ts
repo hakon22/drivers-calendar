@@ -145,6 +145,7 @@ export default {
       signup: {
         title: 'Регистрация прошла успешно!',
         subTitle: 'Пароль для входа выслан Вам в SMS-сообщении.',
+        subTitleWithOldUser: 'Данные существующего пользователя были обновлены.',
         loginButton: 'Войти в экипаж',
       },
       recovery: {

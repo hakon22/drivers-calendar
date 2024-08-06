@@ -188,6 +188,7 @@ const generateScheduleSchema = async (
 
 const sortingSchedule = (schema: ScheduleSchemaType) => {
   const sortedSchedule: ScheduleSchemaType = {};
+  if (!schema) return sortedSchedule;
 
   Object.keys(schema)
     .sort((a, b) => dayjs(a, 'DD-MM-YYYY').isBefore(dayjs(b, 'DD-MM-YYYY')) ? -1 : (dayjs(a, 'DD-MM-YYYY').isAfter(dayjs(b, 'DD-MM-YYYY')) ? 1 : 0))

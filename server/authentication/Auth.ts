@@ -63,46 +63,78 @@ class Auth {
         return res.json({ code: 3 });
       }
 
-      if (isUser) {
-        return res.json({ code: 2 });
-      }
+      let isFindOldUser = false;
 
-      const password = await Sms.sendPass(user.phone);
+      if (isUser) {
+        if (isUser.crewId) {
+          return res.json({ code: 2 });
+        }
+        isFindOldUser = true;
+      }
 
       const role = adminPhone.includes(user.phone) ? RolesEnum.ADMIN : RolesEnum.GRAND_MEMBER;
 
-      await Crews.create({
-        schedule,
-        shiftOrder: [],
-        season: SeasonEnum.SUMMER,
-        isRoundFuelConsumption: false,
-        users: [{
-          ...userValues,
-          color: typeof color !== 'string' ? color.toHexString() : color,
-          role,
-          password,
-        } as UserModel],
-        cars: [{
-          ...rest,
-          inventory,
-          call,
-          fuel_consumption_summer_city: fuel_consumption_summer.city,
-          fuel_consumption_summer_highway: fuel_consumption_summer.highway,
-          fuel_consumption_winter_city: fuel_consumption_winter.city,
-          fuel_consumption_winter_highway: fuel_consumption_winter.highway,
-        } as CarModel],
-      }, { include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }] });
+      if (isFindOldUser) {
+        const crew = await Crews.create({
+          schedule,
+          shiftOrder: [],
+          season: SeasonEnum.SUMMER,
+          isRoundFuelConsumption: false,
+          cars: [{
+            ...rest,
+            inventory,
+            call,
+            fuel_consumption_summer_city: fuel_consumption_summer.city,
+            fuel_consumption_summer_highway: fuel_consumption_summer.highway,
+            fuel_consumption_winter_city: fuel_consumption_winter.city,
+            fuel_consumption_winter_highway: fuel_consumption_winter.highway,
+          } as CarModel],
+        }, { include: { model: Cars, as: 'cars' }, returning: true });
 
-      const createdUser = await Users.findOne({ where: { phone: user.phone } });
-      const createdCar = await Cars.findOne({ where: { [Op.and]: [{ inventory }, { call }] } });
+        await Users.update(
+          {
+            username: user.username,
+            role,
+            color: typeof color !== 'string' ? color.toHexString() : color,
+            crewId: crew.id,
+          },
+          {
+            where: { id: isUser?.id },
+          },
+        );
+
+        await Crews.update({ activeCar: crew.cars?.[0].id }, { where: { id: crew.id } });
+      } else {
+        const password = await Sms.sendPass(user.phone);
+
+        const crew = await Crews.create({
+          schedule,
+          shiftOrder: [],
+          season: SeasonEnum.SUMMER,
+          isRoundFuelConsumption: false,
+          users: [{
+            ...userValues,
+            color: typeof color !== 'string' ? color.toHexString() : color,
+            role,
+            password,
+          } as UserModel],
+          cars: [{
+            ...rest,
+            inventory,
+            call,
+            fuel_consumption_summer_city: fuel_consumption_summer.city,
+            fuel_consumption_summer_highway: fuel_consumption_summer.highway,
+            fuel_consumption_winter_city: fuel_consumption_winter.city,
+            fuel_consumption_winter_highway: fuel_consumption_winter.highway,
+          } as CarModel],
+        }, { include: [{ model: Users, as: 'users' }, { model: Cars, as: 'cars' }], returning: true });
+
+        await Crews.update({ activeCar: crew.cars?.[0].id }, { where: { id: crew.id } });
+      }
 
       await redis.del(user.phone);
 
-      if (createdUser && createdCar) {
-        await Crews.update({ activeCar: createdCar.id }, { where: { id: createdUser.crewId as number } });
-      }
-
-      res.json({ code: 1 });
+      res.json({ code: 1, isFindOldUser });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -276,7 +308,7 @@ class Auth {
       await phoneValidation.serverValidator({ phone });
 
       const candidate = await Users.findOne({ where: { phone } });
-      if (candidate) {
+      if (candidate && (candidate.crewId || !req.headers.referer?.endsWith('/signup'))) {
         return res.json({ code: 6 });
       }
 

@@ -6,7 +6,7 @@ import { ModalContext } from '@/components/Context';
 import { LoginButton } from '@/pages/welcome';
 import routes from '@/routes';
 
-const ModalSignup = () => {
+const ModalSignup = ({ modalContext }: { modalContext: number }) => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.signup' });
   const router = useRouter();
   const { modalClose } = useContext(ModalContext);
@@ -24,7 +24,7 @@ const ModalSignup = () => {
       <Result
         status="success"
         title={t('title')}
-        subTitle={t('subTitle')}
+        subTitle={t(modalContext ? 'subTitleWithOldUser' : 'subTitle')}
         extra={(
           <div className="col-9 d-flex justify-content-center mx-auto">
             <LoginButton title={t('loginButton')} className="button button-height w-100" onClick={modalClose} />
