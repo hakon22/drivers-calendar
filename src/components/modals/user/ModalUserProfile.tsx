@@ -20,6 +20,7 @@ import { isEmpty } from 'lodash';
 import { fetchConfirmCode } from '@/slices/userSlice';
 import type { UserProfileType } from '@/types/User';
 import ModalConfirmPhone from './ModalConfirmPhone';
+import RolesEnum from '../../../../server/types/user/enum/RolesEnum';
 
 const ModalUserProfile = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.userProfile' });
@@ -27,7 +28,7 @@ const ModalUserProfile = () => {
   const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
 
   const {
-    username, phone, color, key, isRoundCalendarDays,
+    username, phone, color, key, isRoundCalendarDays, role,
   } = useAppSelector((state) => state.user);
 
   const dispatch = useAppDispatch();
@@ -58,6 +59,8 @@ const ModalUserProfile = () => {
     const { data } = await axios.post(routes.changeUserProfile, { ...changedValues, key }) as { data: { code: number } };
     if (data.code === 1) {
       setUpdateValues(undefined);
+      setPhoneConfirm(undefined);
+      setIsConfirmed(false);
       form.setFieldsValue({ confirmPassword: '', oldPassword: '', password: '' });
       toast(tToast('changeProfileSuccess'), 'success');
     }
@@ -160,9 +163,11 @@ const ModalUserProfile = () => {
               </Form.Item>
             </>
           )}
-          <Form.Item<UserProfileType> name="color" tooltip={{ title: t('colorTooltip'), icon: <QuestionCircleOutlined /> }} rules={[profileValidation]} label={t('color')}>
-            <ColorPicker size="large" className="border-button" disabledAlpha />
-          </Form.Item>
+          {role !== RolesEnum.ADMIN ? (
+            <Form.Item<UserProfileType> name="color" tooltip={{ title: t('colorTooltip'), icon: <QuestionCircleOutlined /> }} rules={[profileValidation]} label={t('color')}>
+              <ColorPicker size="large" className="border-button" disabledAlpha />
+            </Form.Item>
+          ) : null}
           <Form.Item<UserProfileType> name="isRoundCalendarDays" valuePropName="checked" rules={[profileValidation]}>
             <Checkbox>{t('isRoundCalendarDays')}</Checkbox>
           </Form.Item>

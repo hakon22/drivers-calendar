@@ -7,11 +7,12 @@ import { selectors } from '@/slices/notificationSlice';
 import { useAppSelector } from '@/utilities/hooks';
 import { ModalContext } from './Context';
 import UserNotificationEnum from '../../server/types/notification/enum/NotificationEnum';
+import RolesEnum from '../../server/types/user/enum/RolesEnum';
 
 const FloatButtons = () => {
   const { modalOpen } = useContext(ModalContext);
 
-  const { id } = useAppSelector((state) => state.user);
+  const { id, role } = useAppSelector((state) => state.user);
   const { id: crewId, chat = [] } = useAppSelector((state) => state.crew);
 
   const notifications = useAppSelector(selectors.selectAll);
@@ -30,12 +31,12 @@ const FloatButtons = () => {
     <>
       {crewId ? (
         <>
-          <FloatButton className="animate__heartBeat" badge={{ count: unreadChatMessages.length }} icon={<MessageOutlined />} onClick={chatHandler} />
+          {role !== RolesEnum.ADMIN ? <FloatButton className="animate__heartBeat" badge={{ count: unreadChatMessages.length }} icon={<MessageOutlined />} onClick={chatHandler} /> : null}
           <FloatButton className="float-button shift-report-btn" onClick={shiftReportHandler} icon={<BarChartOutlined />} />
         </>
       ) : null}
-      {inviteNotifications.length ? <FloatButton className="float-button invitation-btn animate__heartBeat" badge={{ count: unreadInviteCount }} onClick={invitationHandler} icon={<UserAddOutlined />} /> : null}
-      <FloatButton className="float-button notification-btn" badge={{ count: unreadAllCount - unreadInviteCount }} icon={<BellOutlined />} onClick={notificationHandler} />
+      {role !== RolesEnum.ADMIN && inviteNotifications.length ? <FloatButton className="float-button invitation-btn animate__heartBeat" badge={{ count: unreadInviteCount }} onClick={invitationHandler} icon={<UserAddOutlined />} /> : null}
+      {role !== RolesEnum.ADMIN ? <FloatButton className="float-button notification-btn" badge={{ count: unreadAllCount - unreadInviteCount }} icon={<BellOutlined />} onClick={notificationHandler} /> : null}
     </>
   );
 };

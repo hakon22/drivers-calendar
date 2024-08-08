@@ -17,7 +17,7 @@ import _ from 'lodash';
 import type EndWorkShiftFormType from '@/types/EndWorkShiftForm';
 import { Result } from '@/components/modals/user/ModalEndWorkShift';
 import type { PassportRequest, UserModel } from '../db/tables/Users';
-import Crews from '../db/tables/Crews';
+import Crews, { CrewModel } from '../db/tables/Crews';
 import Users from '../db/tables/Users';
 import Cars from '../db/tables/Cars';
 import type { ScheduleSchemaType, ScheduleSchemaUserType } from '../types/crew/ScheduleSchemaType';
@@ -26,7 +26,6 @@ import NotificationEnum from '../types/notification/enum/NotificationEnum';
 import phoneTransform from '../utilities/phoneTransform';
 import Sms from '../sms/Sms';
 import dateRange from '../utilities/dateRange';
-import Auth from '../authentication/Auth';
 import redis from '../db/redis';
 import NotificationType from '../types/notification/NotificationType';
 import ReservedDays from '../db/tables/ReservedDays';
@@ -227,12 +226,18 @@ class Crew {
 
   async fetchCrew(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
-      if (!crewId) {
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
+      const id = req?.query?.id ? +req.query.id : undefined;
+
+      if (id && role !== RolesEnum.ADMIN) {
+        return res.sendStatus(403);
+      }
+
+      if (!crewId && !id) {
         throw new Error('Пользователь не состоит в экипаже');
       }
 
-      const crew = await Crews.findByPk(crewId, {
+      const crew = await Crews.findByPk(crewId || id, {
         include: [
           { attributes: ['id', 'username', 'color', 'phone'], model: Users, as: 'users' },
           { model: Cars, as: 'cars', through: { attributes: [] } },
@@ -247,8 +252,12 @@ class Crew {
       if (!crew) {
         throw new Error('Экипаж не существует');
       }
-      const reservedDays = (await ReservedDays.findAll({ where: { userId: { [Op.in]: crew.shiftOrder } } })) ?? [];
-      crew.dataValues.reservedDays = reservedDays;
+      if (crewId) {
+        const reservedDays = (await ReservedDays.findAll({ where: { userId: { [Op.in]: crew.shiftOrder } } })) ?? [];
+        crew.dataValues.reservedDays = reservedDays;
+      } else if (id) {
+        delete crew.dataValues.chat;
+      }
 
       return res.json({ code: 1, crew });
     } catch (e) {
@@ -286,14 +295,16 @@ class Crew {
 
   async activeCarsUpdate(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
-      if (!crewId) {
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
+      const paramsCrewId = req?.query?.crewId ? +req.query.crewId : undefined;
+
+      if (!crewId && role !== RolesEnum.ADMIN) {
         throw new Error('Пользователь не состоит в экипаже');
       }
 
       const { activeCar } = req.body;
 
-      const crew = await Crews.findByPk(crewId, {
+      const crew = await Crews.findByPk(crewId || paramsCrewId, {
         include: [
           { model: Cars, as: 'cars' }],
       });
@@ -315,7 +326,7 @@ class Crew {
       }
 
       await Crews.update({ activeCar }, { where: { id: crew.id } });
-      socketEventsService.socketActiveCarUpdate({ crewId, activeCar });
+      socketEventsService.socketActiveCarUpdate({ crewId: crewId || paramsCrewId, activeCar });
 
       return res.json({ code: 1, activeCar });
     } catch (e) {
@@ -579,7 +590,7 @@ class Crew {
       await Promise.all((crew.users as UserModel[]).map(async (user) => {
         const preparedNotification = {
           userId: user.id,
-          title: `${username} закрыл смену ${dayjs().format('DD-MM-YYYY')}`,
+          title: `${username} закрыл смену ${dayjs().format('DD.MM.YYYY')}`,
           description: `Пробег за смену: ${mileageCity + mileageHighway} км`,
           description2: `Потрачено топлива: ${result.totalFuelConsumption || result.fuelConsumptionCity} л`,
           type: NotificationEnum.CREW,
@@ -724,7 +735,7 @@ class Crew {
         return res.json({ code: 1 });
       }
       const password = await Sms.sendPass(phone);
-      const role = Auth.adminPhone.includes(phone) ? RolesEnum.ADMIN : RolesEnum.MEMBER;
+      const role = RolesEnum.MEMBER;
       await redis.setEx(phone, 86400, JSON.stringify({
         phone, password: bcrypt.hashSync(password, 10), role, crewId,
       }));
@@ -738,20 +749,22 @@ class Crew {
 
   async changeIsRoundFuel(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
       const { isRoundFuelConsumption }: { isRoundFuelConsumption: boolean } = req.body;
-      if (!crewId) {
+      const paramsCrewId = req?.query?.crewId ? +req.query.crewId : undefined;
+
+      if (!crewId && role !== RolesEnum.ADMIN) {
         throw new Error('Пользователь не состоит в экипаже');
       }
 
-      const crew = await Crews.findByPk(crewId);
+      const crew = await Crews.findByPk(crewId || paramsCrewId);
       if (!crew) {
         throw new Error('Экипаж не существует');
       }
 
-      await Crews.update({ isRoundFuelConsumption }, { where: { id: crewId } });
+      await Crews.update({ isRoundFuelConsumption }, { where: { id: crewId || paramsCrewId } });
 
-      socketEventsService.socketChangeIsRoundFuel({ crewId, isRoundFuelConsumption });
+      socketEventsService.socketChangeIsRoundFuel({ crewId: crewId || paramsCrewId, isRoundFuelConsumption });
 
       return res.json({ code: 1 });
     } catch (e) {
@@ -762,22 +775,58 @@ class Crew {
 
   async changeFuelSeason(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
-      if (!crewId) {
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
+      const paramsCrewId = req?.query?.crewId ? +req.query.crewId : undefined;
+
+      if (!crewId && role !== RolesEnum.ADMIN) {
         throw new Error('Пользователь не состоит в экипаже');
       }
 
       const { season }: { season: SeasonEnum } = req.body;
-      const crew = await Crews.findByPk(crewId);
+      const crew = await Crews.findByPk(crewId || paramsCrewId);
       if (!crew) {
         throw new Error('Экипаж не существует');
       }
 
-      await Crews.update({ season }, { where: { id: crewId } });
+      await Crews.update({ season }, { where: { id: crewId || paramsCrewId } });
 
-      socketEventsService.socketChangeFuelSeason({ crewId, season });
+      socketEventsService.socketChangeFuelSeason({ crewId: crewId || paramsCrewId, season });
 
       return res.json({ code: 1 });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async fetchCrewList(req: Request, res: Response) {
+    try {
+      let crews: CrewModel[];
+
+      const cacheData = await redis.get('adminCrews');
+      if (cacheData) {
+        crews = JSON.parse(cacheData);
+      } else {
+        crews = await Crews.findAll({
+          include: [
+            {
+              attributes: ['id', 'username'],
+              model: Users,
+              as: 'users',
+              where: { id: { [Op.ne]: null } },
+              required: true,
+            },
+            {
+              model: Cars,
+              as: 'cars',
+            },
+          ],
+          order: [['name', 'ASC']],
+        });
+        await redis.setEx('adminCrews', 300, JSON.stringify(crews));
+      }
+
+      return res.json({ code: 1, crews });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);

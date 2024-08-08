@@ -35,11 +35,7 @@ import NotificationEnum from '../types/notification/enum/NotificationEnum.js';
 import RolesEnum from '../types/user/enum/RolesEnum.js';
 import { ScheduleSchemaType } from '../types/crew/ScheduleSchemaType.js';
 
-const adminPhone = [process.env.ADMIN_PHONE];
-
 class Auth {
-  public adminPhone = [process.env.ADMIN_PHONE];
-
   async signup(req: Request, res: Response) {
     try {
       const { user, car } = req.body as { user: UserSignupType, car: CarType };
@@ -72,11 +68,12 @@ class Auth {
         isFindOldUser = true;
       }
 
-      const role = adminPhone.includes(user.phone) ? RolesEnum.ADMIN : RolesEnum.GRAND_MEMBER;
+      const role = RolesEnum.GRAND_MEMBER;
 
       if (isFindOldUser) {
         const crew = await Crews.create({
           schedule,
+          name: call,
           shiftOrder: [],
           season: SeasonEnum.SUMMER,
           isRoundFuelConsumption: false,
@@ -109,6 +106,7 @@ class Auth {
 
         const crew = await Crews.create({
           schedule,
+          name: call,
           shiftOrder: [],
           season: SeasonEnum.SUMMER,
           isRoundFuelConsumption: false,

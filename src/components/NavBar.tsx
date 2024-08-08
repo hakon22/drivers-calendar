@@ -11,12 +11,13 @@ import {
   AuthContext, ModalContext, NavbarContext, SubmitContext,
 } from './Context';
 import ReservedDaysTypeEnum from '../../server/types/user/enum/ReservedDaysTypeEnum';
+import RolesEnum from '../../server/types/user/enum/RolesEnum';
 
 const NavBar = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'index.navbar' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
-  const { id } = useAppSelector((state) => state.user);
+  const { id, role } = useAppSelector((state) => state.user);
   const { id: crewId, reservedDays, users } = useAppSelector((state) => state.crew);
 
   const { logOut } = useContext(AuthContext);
@@ -72,28 +73,32 @@ const NavBar = () => {
         <div className="d-flex flex-column mb-5" style={{ gap: '0.75rem' }}>
           {crewId && (
             <>
-              <Button className="w-100 button button-height" onClick={scheduleHandler}>
-                {t('buttons.makeSchedule')}
-              </Button>
-              <Button className="w-100 button button-height" onClick={inviteReplacementHandler}>
-                {t('buttons.inviteReplacement')}
-              </Button>
-              {users.length > 1 ? (
-                <Button className="w-100 button button-height" onClick={kickReplacementHandler}>
-                  {t('buttons.kickReplacement')}
-                </Button>
+              {role !== RolesEnum.ADMIN ? (
+                <>
+                  <Button className="w-100 button button-height" onClick={scheduleHandler}>
+                    {t('buttons.makeSchedule')}
+                  </Button>
+                  <Button className="w-100 button button-height" onClick={inviteReplacementHandler}>
+                    {t('buttons.inviteReplacement')}
+                  </Button>
+                  {users.length > 1 ? (
+                    <Button className="w-100 button button-height" onClick={kickReplacementHandler}>
+                      {t('buttons.kickReplacement')}
+                    </Button>
+                  ) : null}
+                  <Button className="w-100 button button-height" onClick={swapShiftsHandler}>
+                    {t('buttons.swapShifts')}
+                  </Button>
+                  <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.VACATION} onClick={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? cancelSickLeaveHandler : takeSickLeaveHandler}>
+                    {userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? t('buttons.cancelSickLeave') : t('buttons.takeSickLeave')}
+                  </Button>
+                  <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL} onClick={userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? cancelVacationHandler : takeVacationHandler}>
+                    {userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? t('buttons.cancelVacation') : t('buttons.takeVacation')}
+                  </Button>
+                </>
               ) : null}
               <Button className="w-100 button button-height" onClick={carsSettingsHandler}>
                 {t('buttons.car')}
-              </Button>
-              <Button className="w-100 button button-height" onClick={swapShiftsHandler}>
-                {t('buttons.swapShifts')}
-              </Button>
-              <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.VACATION} onClick={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? cancelSickLeaveHandler : takeSickLeaveHandler}>
-                {userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL ? t('buttons.cancelSickLeave') : t('buttons.takeSickLeave')}
-              </Button>
-              <Button className="w-100 button button-height" disabled={userReservedDays?.type === ReservedDaysTypeEnum.HOSPITAL} onClick={userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? cancelVacationHandler : takeVacationHandler}>
-                {userReservedDays?.type === ReservedDaysTypeEnum.VACATION ? t('buttons.cancelVacation') : t('buttons.takeVacation')}
               </Button>
               <Button className="w-100 button button-height" onClick={crewSettingsHandler}>
                 {t('buttons.crewSettings')}
@@ -112,7 +117,7 @@ const NavBar = () => {
           >
             {t('buttons.exit')}
           </Button>
-          {crewId ? (
+          {crewId && role !== RolesEnum.ADMIN ? (
             <Popconfirm
               title={t('popconfirm.title')}
               description={t('popconfirm.description')}

@@ -7,11 +7,14 @@ import axios from 'axios';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import routes from '@/routes';
 import toast from '@/utilities/toast';
+import { useAppSelector } from '@/utilities/hooks';
 import { Brand } from '../../../../server/types/Cars';
 
 const ModalCarsAdd = () => {
   const { t } = useTranslation('translation', { keyPrefix: 'modals.carsAdd' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
+
+  const { id: crewId } = useAppSelector((state) => state.crew);
 
   const { modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
@@ -63,7 +66,7 @@ const ModalCarsAdd = () => {
           if (name === 'car-signup') {
             try {
               setIsSubmit(true);
-              const { data } = await axios.post(routes.createCar, carsValues);
+              const { data } = await axios.post(routes.createCar, carsValues, { params: { crewId } });
               if (data.code === 1) {
                 modalOpen('carsControl');
               } else if (data.code === 2) {

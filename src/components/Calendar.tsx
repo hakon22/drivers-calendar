@@ -140,7 +140,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
         fullCellRender={dateFullCellRender}
         locale={locale}
       />
-      {isMyShift && activeCar && !completedShifts.find(({ userId, date }) => userId === id && dayjs(date).isSame(dayjs(), 'day')) && (
+      {isMyShift && activeCar && !completedShifts.find(({ date }) => dayjs(date).isSame(dayjs(), 'day')) && (
       <Button className="end-work-shift-btn button-height button" style={{ marginTop: '-1.2em', marginBottom: '-0.1em' }} onClick={endWorkShiftHandler}>
         <DoubleRightOutlined className="fs-6 me-3" />
         {t('floatButton')}
@@ -151,7 +151,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
         {shiftOrder?.map((orderId) => {
           const user = users.find((usr) => usr.id === orderId);
           if (user) {
-            return <span key={user.id} className="py-1 px-2 text-center w-100" style={{ backgroundColor: user.color, color: '#f8f9fb', borderRadius: '7px' }}>{user.username}</span>;
+            return <a href={`tel:+${user.phone}`} key={user.id} className="text-decoration-none py-1 px-2 text-center w-100" style={{ backgroundColor: user.color, color: '#f8f9fb', borderRadius: '7px' }}>{user.username}</a>;
           }
           return null;
         })}

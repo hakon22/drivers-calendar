@@ -188,7 +188,8 @@ h1 {
 .back-button {
   position: absolute;
   left: 2rem;
-  top: 3rem;
+  top: 2.7rem;
+  padding: 0.3rem 0.5rem;
 
   &::before {
     content: url('../images/back.svg');

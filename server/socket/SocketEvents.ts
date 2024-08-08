@@ -11,7 +11,7 @@ class SocketEvents {
   }
 
   public socketMakeSchedule = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.MAKE_SCHEDULE, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.MAKE_SCHEDULE, data, crewId);
   };
 
   public socketSendNotification = (data: any) => {
@@ -23,23 +23,23 @@ class SocketEvents {
   };
 
   public socketActiveCarUpdate = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.ACTIVE_CAR_UPDATE, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.ACTIVE_CAR_UPDATE, data, crewId);
   };
 
   public socketCarUpdate = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.CAR_UPDATE, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.CAR_UPDATE, data, crewId);
   };
 
   public socketCarRemove = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.CAR_REMOVE, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.CAR_REMOVE, data, crewId);
   };
 
   public socketCarAdd = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.CAR_ADD, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.CAR_ADD, data, crewId);
   };
 
   public socketSwipShift = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.SWIP_SHIFT, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.SWIP_SHIFT, data, crewId);
   };
 
   public socketSendMessageToChat = ({ crewId, ...data }: any) => {
@@ -47,19 +47,19 @@ class SocketEvents {
   };
 
   public socketChangeIsRoundFuel = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.CHANGE_IS_ROUND_FUEL, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.CHANGE_IS_ROUND_FUEL, data, crewId);
   };
 
   public socketChangeFuelSeason = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.CHANGE_FUEL_SEASON, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.CHANGE_FUEL_SEASON, data, crewId);
   };
 
   public socketCompletedShift = (data: any) => {
-    this.io.sockets.in(`CREW:${data.crewId}`).emit(SocketEventEnum.COMPLETED_SHIFT, data);
+    this.io.sockets.in(`CREW:${data.crewId}`).in('ADMIN').emit(SocketEventEnum.COMPLETED_SHIFT, data, data.crewId);
   };
 
   public socketKickReplacement = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.KICK_REPLACEMENT, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.KICK_REPLACEMENT, data, crewId);
   };
 
   public socketKickLogout = ({ userId, ...data }: any) => {
@@ -67,15 +67,14 @@ class SocketEvents {
   };
 
   public socketAddUserInCrew = ({ crewId, ...data }: any) => {
-    this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.ADD_USER_IN_CREW, data);
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.ADD_USER_IN_CREW, data, crewId);
   };
 
   public socketUserProfileUpdate = ({ crewId, ...data }: any) => {
-    if (crewId && data?.username) {
-      this.io.sockets.in(`CREW:${crewId}`).emit(SocketEventEnum.USER_PROFILE_UPDATE, data);
-    } else {
-      this.io.sockets.in(`USER:${data?.id}`).emit(SocketEventEnum.USER_PROFILE_UPDATE, data);
+    if (crewId) {
+      this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.USER_PROFILE_UPDATE, data, crewId);
     }
+    this.io.sockets.in(`USER:${data?.id}`).emit(SocketEventEnum.USER_PROFILE_UPDATE, data);
   };
 }
 

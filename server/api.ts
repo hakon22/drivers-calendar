@@ -5,6 +5,7 @@ import Auth from './authentication/Auth.js';
 import Car from './car/Car.js';
 import Crew from './crew/Crew.js';
 import Notification from './notification/Notification.js';
+import checkRoleAccess from './authentication/checkRoleAccess.js';
 
 const router = express.Router();
 
@@ -51,6 +52,7 @@ router.post(`${apiPath}/crew/endWorkShift`, jwtToken, Crew.endWorkShift);
 router.patch(`${apiPath}/crew/changeIsRoundFuel`, jwtToken, Crew.changeIsRoundFuel);
 router.patch(`${apiPath}/crew/changeFuelSeason`, jwtToken, Crew.changeFuelSeason);
 router.get(`${apiPath}/crew/kickReplacement/:id?`, jwtToken, Crew.kickReplacement);
+router.get(`${apiPath}/crew/fetchCrewList`, jwtToken, checkRoleAccess, Crew.fetchCrewList);
 
 // notification
 router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.fetchNotifications);

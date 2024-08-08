@@ -14,6 +14,7 @@ import { PassportRequest } from '../db/tables/Users';
 import Crews from '../db/tables/Crews';
 import CrewsCars from '../db/tables/CrewsCars';
 import { socketEventsService } from '../server';
+import RolesEnum from '../types/user/enum/RolesEnum';
 
 class Car {
   async fetchBrands(req: Request, res: Response) {
@@ -33,22 +34,33 @@ class Car {
 
   async fetchCarList(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
+      const paramsCrewId = req?.query?.crewId ? +req.query.crewId : undefined;
+
+      if (!crewId && role !== RolesEnum.ADMIN) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const [cars] = await Cars.sequelize?.query(`
-        SELECT "cars"."id",
+        SELECT DISTINCT "cars"."id",
           "cars"."brand",
           "cars"."model",
           "cars"."inventory",
           "cars"."call"
         FROM "driver"."cars" AS "cars"
         LEFT JOIN "driver"."crews_cars" AS "crewsCars" ON "cars"."id" = "crewsCars"."carId"
-        LEFT JOIN "driver"."crews" AS "crews" ON "crewsCars"."crewId" = "crews"."id" AND "crews"."id" != ${crewId}
+        LEFT JOIN "driver"."crews" AS "crews" ON "crewsCars"."crewId" = "crews"."id" AND "crews"."id" != ${crewId || paramsCrewId}
         WHERE
-          ("crews"."activeCar" != "cars"."id" OR "crewsCars"."carId" IS NULL)
+          ("cars"."id" NOT IN (
+            SELECT "activeCar" 
+            FROM "driver"."crews"
+            WHERE "activeCar" IS NOT NULL
+            )
+            OR "crewsCars"."carId" IS NULL)
           AND NOT EXISTS (
             SELECT 1
             FROM "driver"."crews_cars" AS "crewsCars"
-            WHERE "crewsCars"."carId" = "cars"."id" AND "crewsCars"."crewId" = ${crewId}
+            WHERE "crewsCars"."carId" = "cars"."id" AND "crewsCars"."crewId" = ${crewId || paramsCrewId}
           )
       `) as CarModel[][];
       const preparedCars = cars.map(({
@@ -80,7 +92,13 @@ class Car {
 
   async updateCar(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
+      const paramsCrewId = req?.query?.crewId ? +req.query.crewId : undefined;
+
+      if (!crewId && role !== RolesEnum.ADMIN) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
       const { id } = req.params;
       const updatedCar = req.body as CarType;
       await carValidation.serverValidator({ ...updatedCar });
@@ -90,7 +108,7 @@ class Car {
       } = updatedCar;
 
       const [car, isExist] = await Promise.all([
-        Cars.findByPk(id, { include: { model: Crews, as: 'crews', where: { id: crewId } } }),
+        Cars.findByPk(id, { include: { model: Crews, as: 'crews', where: { id: crewId || paramsCrewId } } }),
         Cars.findOne({ where: { [Op.or]: [{ inventory }, { call }], id: { [Op.ne]: id } } }),
       ]);
 
@@ -100,7 +118,7 @@ class Car {
       if (isExist) {
         return res.json({ code: 3 });
       }
-      if (!car.crews?.find((crew) => crew.id === crewId)) {
+      if (!car.crews?.find((crew) => crew.id === (crewId || paramsCrewId))) {
         return res.json({ code: 2 });
       }
       const [, affectedRows] = await Cars.update(
@@ -115,7 +133,7 @@ class Car {
         },
         { where: { id }, returning: true },
       );
-      socketEventsService.socketCarUpdate({ crewId, car: affectedRows[0] });
+      socketEventsService.socketCarUpdate({ crewId: crewId || paramsCrewId, car: affectedRows[0] });
 
       res.json({ code: 1 });
     } catch (e) {
@@ -126,16 +144,18 @@ class Car {
 
   async removeCar(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
-      if (!crewId) {
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
+      const paramsCrewId = req?.query?.crewId ? +req.query.crewId : undefined;
+
+      if (!crewId && role !== RolesEnum.ADMIN) {
         throw new Error('Пользователь не состоит в экипаже');
       }
 
       const { id } = req.params;
 
       const [car, crew] = await Promise.all([
-        Cars.findByPk(id, { include: { model: Crews, as: 'crews', where: { id: crewId } } }),
-        Crews.findByPk(crewId),
+        Cars.findByPk(id, { include: { model: Crews, as: 'crews', where: { id: crewId || paramsCrewId } } }),
+        Crews.findByPk(crewId || paramsCrewId),
       ]);
 
       if (!car) {
@@ -147,11 +167,11 @@ class Car {
       if (crew.activeCar === +id) {
         return res.json({ code: 3 });
       }
-      if (!car.crews?.find((_crew) => _crew.id === crewId)) {
+      if (!car.crews?.find((_crew) => _crew.id === (crewId || paramsCrewId))) {
         return res.json({ code: 2 });
       }
-      await CrewsCars.destroy({ where: { carId: id, crewId } });
-      socketEventsService.socketCarRemove({ crewId, carId: id });
+      await CrewsCars.destroy({ where: { carId: id, crewId: crewId || paramsCrewId } });
+      socketEventsService.socketCarRemove({ crewId: crewId || paramsCrewId, carId: id });
 
       res.json({ code: 1 });
     } catch (e) {
@@ -162,8 +182,10 @@ class Car {
 
   async createCar(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
-      if (!crewId) {
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
+      const paramsCrewId = req?.query?.crewId ? +req.query.crewId : undefined;
+
+      if (!crewId && role !== RolesEnum.ADMIN) {
         throw new Error('Пользователь не состоит в экипаже');
       }
 
@@ -190,8 +212,8 @@ class Car {
         fuel_consumption_winter_highway: fuel_consumption_winter.highway,
       });
 
-      await CrewsCars.create({ carId: car.id, crewId });
-      socketEventsService.socketCarAdd({ crewId, car });
+      await CrewsCars.create({ carId: car.id, crewId: crewId || paramsCrewId });
+      socketEventsService.socketCarAdd({ crewId: crewId || paramsCrewId, car });
 
       res.json({ code: 1 });
     } catch (e) {
@@ -202,8 +224,10 @@ class Car {
 
   async addCar(req: Request, res: Response) {
     try {
-      const { dataValues: { crewId } } = req.user as PassportRequest;
-      if (!crewId) {
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
+      const paramsCrewId = req?.query?.crewId ? +req.query.crewId : undefined;
+
+      if (!crewId && role !== RolesEnum.ADMIN) {
         throw new Error('Пользователь не состоит в экипаже');
       }
 
@@ -211,7 +235,7 @@ class Car {
 
       const [car, crew] = await Promise.all([
         Cars.findByPk(id),
-        Crews.findByPk(crewId),
+        Crews.findByPk(crewId || paramsCrewId),
       ]);
 
       if (!car) {
@@ -221,8 +245,8 @@ class Car {
         throw new Error('Экипаж не существует');
       }
 
-      await CrewsCars.create({ crewId, carId: car.id });
-      socketEventsService.socketCarAdd({ crewId, car });
+      await CrewsCars.create({ crewId: crewId || paramsCrewId, carId: car.id });
+      socketEventsService.socketCarAdd({ crewId: crewId || paramsCrewId, car });
 
       res.json({ code: 1 });
     } catch (e) {

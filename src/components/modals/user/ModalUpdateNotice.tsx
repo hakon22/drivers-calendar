@@ -52,39 +52,37 @@ const ModalUpdateNotice = ({ updatesNotice }: { updatesNotice: UpdateNoticeModel
         className="p-2 mt-result-extra-0"
         extra={(
           <div className="d-flex flex-column gap-2">
-            {
-          updatesNotice.map(({
-            id: key, title: label, createdAt, message,
-          }) => (
-            <Collapse
-              key={key}
-              bordered={false}
-              accordion
-              defaultActiveKey={[updatesNotice[0].id]}
-              expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
-              items={[{
-                key,
-                label: (
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span className="fs-6 fw-bold">{label}</span>
-                    <span className="text-muted">{dayjs(createdAt).format('DD.MM.YYYY')}</span>
-                  </div>
-                ),
-                headerClass: 'd-flex align-items-center',
-                children: (
-                  <div className="d-flex flex-column gap-4">
-                    <div className="text-start" style={{ lineHeight: 1.8 }}>{message}</div>
-                    <div className="mt-4 d-flex justify-content-center col-10 mx-auto">
-                      <Button className="button-height button w-100" onClick={() => onRead(key)}>{t('readButton')}</Button>
+            {updatesNotice.map(({
+              id: key, title: label, createdAt, message,
+            }) => (
+              <Collapse
+                key={key}
+                bordered={false}
+                accordion
+                defaultActiveKey={updatesNotice[0].id}
+                expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+                items={[{
+                  key,
+                  label: (
+                    <div className="d-flex justify-content-between align-items-center">
+                      <span className="fs-6 fw-bold">{label}</span>
+                      <span className="text-muted">{dayjs(createdAt).format('DD.MM.YYYY')}</span>
                     </div>
-                  </div>
-                ),
-              }]}
-            />
-          ))
-}
+                  ),
+                  headerClass: 'd-flex align-items-center',
+                  children: (
+                    <div className="d-flex flex-column gap-4">
+                      <div className="text-start" style={{ lineHeight: 1.8 }}>{message}</div>
+                      <div className="mt-4 d-flex justify-content-center col-10 mx-auto">
+                        <Button className="button-height button w-100" onClick={() => onRead(key)}>{t('readButton')}</Button>
+                      </div>
+                    </div>
+                  ),
+                }]}
+              />
+            ))}
           </div>
-)}
+        )}
       />
     </Modal>
   );

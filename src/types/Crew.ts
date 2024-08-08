@@ -12,6 +12,7 @@ import { CompletedShiftsModel } from '../../server/db/tables/CompletedShifts';
 export type CrewInitialState = InitialState & {
   id?: number;
   schedule?: CrewScheduleEnum;
+  name?: string;
   shiftOrder: number[];
   season?: SeasonEnum;
   isRoundFuelConsumption?: boolean;

@@ -66,7 +66,14 @@ export default {
     },
     index: {
       title: 'График смен',
+      adminTitle: 'Список экипажей',
+      prev: 'Назад',
       description: 'График смен',
+      adminSelectCrew: {
+        drivers: 'Водители:',
+        cars: 'Автомобили:',
+        submitButton: 'Детали экипажа',
+      },
       navbar: {
         menu: 'Меню',
         buttons: {
@@ -326,6 +333,7 @@ export default {
         mileage: 'Пробег',
         remainingFuel: 'Остаток',
         refueling: 'Заправка',
+        emptyText: 'Ещё никто не закрывал смену',
       },
       updatesNotice: {
         title: 'Новое обновление!',

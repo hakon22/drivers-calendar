@@ -55,4 +55,5 @@ export default {
   changeIsRoundFuel: [apiPath, 'crew', 'changeIsRoundFuel'].join('/'),
   changeFuelSeason: [apiPath, 'crew', 'changeFuelSeason'].join('/'),
   kickReplacement: [apiPath, 'crew', 'kickReplacement'].join('/'),
+  fetchCrewList: [apiPath, 'crew', 'fetchCrewList'].join('/'),
 } as ApiUrl;

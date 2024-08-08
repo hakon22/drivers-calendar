@@ -39,11 +39,3 @@ export const ModalContext = createContext<{
       modalOpen: (arg) => arg,
       modalClose: () => 'none',
     });
-
-export const ScrollContext = createContext<{
-  scrollBar?: number,
-  setMarginScroll:() => void,
-    }>({
-      scrollBar: 0,
-      setMarginScroll: () => undefined,
-    });

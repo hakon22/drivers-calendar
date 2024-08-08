@@ -9,6 +9,7 @@ import { carValidation } from '@/validations/validations';
 import routes from '@/routes';
 import axiosErrorHandler from '@/utilities/axiosErrorHandler';
 import toast from '@/utilities/toast';
+import { useAppSelector } from '@/utilities/hooks';
 import type { Brand } from '../../../server/types/Cars';
 import type { CarSignupType } from './CarSignup';
 import { ModalContext, SubmitContext } from '../Context';
@@ -42,6 +43,8 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
   const { t: tCarForm } = useTranslation('translation', { keyPrefix: 'signup.carForm' });
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
+  const { id: crewId } = useAppSelector((state) => state.crew);
+
   const [form] = Form.useForm();
 
   const [values, setValues] = useState(car);
@@ -70,7 +73,7 @@ const CarUpdate = ({ car }: CarUpdateProps) => {
         return;
       }
       setIsSubmit(true);
-      const { data: { code } } = await axios.patch(`${routes.updateCar}/${car.id}`, finishValues);
+      const { data: { code } } = await axios.patch(`${routes.updateCar}/${car.id}`, finishValues, { params: { crewId } });
       if (code === 3) {
         toast(tToast('carAlreadyExists'), 'error');
         form.setFields([
