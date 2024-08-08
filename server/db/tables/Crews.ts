@@ -13,6 +13,7 @@ import SeasonEnum from '../../types/crew/enum/SeasonEnum.js';
 export interface CrewModel extends Model<InferAttributes<CrewModel>, InferCreationAttributes<CrewModel>> {
   id: CreationOptional<number>;
   schedule: string;
+  name: string;
   shiftOrder: number[];
   activeCar: CreationOptional<number>;
   season: SeasonEnum;
@@ -35,6 +36,10 @@ const Crews = db.define<CrewModel>(
     },
     schedule: {
       type: DataTypes.ENUM(...Object.keys(CrewScheduleEnum).filter((v) => Number.isNaN(Number(v)))),
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
     shiftOrder: {

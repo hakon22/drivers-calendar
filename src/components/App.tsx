@@ -24,9 +24,7 @@ const App = ({ children }: { children: JSX.Element }) => {
 
   useEffect(() => {
     const tokenStorage = window.localStorage.getItem(storageKey);
-    if (!tokenStorage) {
-      setIsLoaded(true);
-    } else if (token) {
+    if (!tokenStorage || token) {
       setIsLoaded(true);
     }
   }, [token, loadingStatus]);

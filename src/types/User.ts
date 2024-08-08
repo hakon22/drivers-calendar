@@ -1,6 +1,7 @@
 import { UserSignupType } from '@/components/forms/UserSignup';
 import { InitialState } from './InitialState';
 import { UpdateNoticeModel } from '../../server/db/tables/UpdateNotice';
+import RolesEnum from '../../server/types/user/enum/RolesEnum';
 
 export type User = {
   id?: number;
@@ -9,7 +10,7 @@ export type User = {
   color: string;
   phone: string;
   token?: string;
-  role: string;
+  role: RolesEnum;
   refreshToken: string;
   isRoundCalendarDays: boolean;
 };
@@ -22,7 +23,7 @@ export type UserInitialState = InitialState & {
   username?: string;
   phone?: string;
   key?: string;
-  role?: string;
+  role?: RolesEnum;
   color?: string;
   crewId?: number;
   isRoundCalendarDays?: boolean;

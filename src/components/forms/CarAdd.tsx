@@ -20,7 +20,7 @@ const CarAdd = () => {
   const { t: tToast } = useTranslation('translation', { keyPrefix: 'toast' });
 
   const [form] = Form.useForm();
-  const { cars: currentCars } = useAppSelector((state) => state.crew);
+  const { id: crewId, cars: currentCars } = useAppSelector((state) => state.crew);
 
   const [cars, setCars] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ const CarAdd = () => {
   const fetchCarList = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(routes.fetchCarList);
+      const { data } = await axios.get(routes.fetchCarList, { params: { crewId } });
       if (data.code === 1) {
         setCars(data.cars);
       }
@@ -46,7 +46,7 @@ const CarAdd = () => {
       setIsSubmit(true);
       const car = cars?.find((item) => item.label === brand);
       if (car) {
-        const { data } = await axios.post(routes.addCar, car) as { data: { code: number } };
+        const { data } = await axios.post(routes.addCar, car, { params: { crewId } }) as { data: { code: number } };
         if (data.code === 1) {
           setCars(cars.filter(({ value }) => value !== car.value));
           form.setFieldValue('brand', undefined);

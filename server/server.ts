@@ -17,6 +17,7 @@ import router from './api.js';
 import createRelations from './db/relations.js';
 import SocketEventEnum from './types/notification/enum/SocketEventEnum.js';
 import SocketEvents from './socket/SocketEvents.js';
+import RolesEnum from './types/user/enum/RolesEnum.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -44,7 +45,12 @@ app.prepare().then(() => {
   server.use(router);
 
   io.on('connection', (socket) => {
-    socket.on(SocketEventEnum.USER_CONNECTION, (userId) => socket.join(`USER:${userId}`));
+    socket.on(SocketEventEnum.USER_CONNECTION, ({ userId, role }) => {
+      socket.join(`USER:${userId}`);
+      if (role === RolesEnum.ADMIN) {
+        socket.join('ADMIN');
+      }
+    });
     socket.on(SocketEventEnum.CREW_CONNECTION, (crewId) => socket.join(`CREW:${crewId}`));
     socket.on(SocketEventEnum.DISCONNECT, () => socket.disconnect());
   });

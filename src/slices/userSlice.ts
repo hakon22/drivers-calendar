@@ -121,6 +121,9 @@ const userSlice = createSlice({
       } = payload.values;
       if (phone) {
         state.phone = phone as string;
+        if (state?.key) {
+          delete state.key;
+        }
       }
       if (username) {
         state.username = username as string;

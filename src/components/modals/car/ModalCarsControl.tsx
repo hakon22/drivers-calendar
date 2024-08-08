@@ -27,14 +27,14 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
   const { modalClose, modalOpen } = useContext(ModalContext);
   const { setIsSubmit } = useContext(SubmitContext);
 
-  const { cars, activeCar } = useAppSelector((state) => state.crew);
+  const { id: crewId, cars, activeCar } = useAppSelector((state) => state.crew);
 
   const [add, setAdd] = useState(false);
 
   const activeCarUpdateHandler = async (id: number) => {
     try {
       setIsSubmit(true);
-      const { data } = await axios.post(routes.activeCarsUpdate, { activeCar: id }) as { data: { code: number } };
+      const { data } = await axios.post(routes.activeCarsUpdate, { activeCar: id }, { params: { crewId } }) as { data: { code: number } };
       if (data.code === 2) {
         toast(tToast('carNotOnTheCrew'), 'error');
       } else if (data.code === 3) {
@@ -48,7 +48,7 @@ const ModalCarsControl = ({ modalContext }: { modalContext?: string }) => {
 
   const handleOk = async (id: number) => {
     try {
-      const { data } = await axios.delete(`${routes.removeCar}/${id}`) as { data: { code: number } };
+      const { data } = await axios.delete(`${routes.removeCar}/${id}`, { params: { crewId } }) as { data: { code: number } };
       if (data.code === 1) {
         toast(tToast('carRemoveSuccess'), 'success');
       } else if (data.code === 2) {

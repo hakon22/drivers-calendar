@@ -74,9 +74,9 @@ const Signup = ({ brands }: { brands: Brand[] }) => {
         if (name === 'car-signup') {
           try {
             setIsSubmit(true);
-            const { data: { code } } = await axios.post(routes.signup, { user: userValues, car: carsValues });
+            const { data: { code, isFindOldUser } } = await axios.post(routes.signup, { user: userValues, car: carsValues });
             if (code === 1) {
-              modalOpen('signup');
+              modalOpen('signup', undefined, isFindOldUser ? 1 : 0);
             } else if (code === 2) {
               toast(tToast('userAlreadyExists'), 'error');
             } else if (code === 3) {

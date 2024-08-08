@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import axios from 'axios';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import PaginationInterface from '@/types/PaginationInterface';
@@ -17,8 +18,10 @@ type KeysCrewInitialState = keyof CrewInitialState;
 
 export const fetchCrew = createAsyncThunk(
   'crew/fetchCrew',
-  async () => {
-    const response = await axios.get(routes.fetchCrew);
+  async (id?: number) => {
+    const response = await axios.get(routes.fetchCrew, {
+      params: { id },
+    });
     return response.data;
   },
 );
@@ -66,76 +69,104 @@ const crewSlice = createSlice({
         }
       });
     },
-    socketMakeSchedule: (state, { payload }: PayloadAction<{ code: number, scheduleSchema: ScheduleSchemaType, shiftOrder?: number[], reservedDays: ReservedDaysModel[] }>) => {
-      state.schedule_schema = payload.scheduleSchema;
-      if (payload?.shiftOrder) {
-        state.shiftOrder = payload.shiftOrder;
+    socketMakeSchedule: (state, { payload }: PayloadAction<{ code: number, scheduleSchema: ScheduleSchemaType, shiftOrder?: number[], reservedDays: ReservedDaysModel[], _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.schedule_schema = payload.scheduleSchema;
+        if (payload?.shiftOrder) {
+          state.shiftOrder = payload.shiftOrder;
+        }
+        if (payload?.reservedDays) {
+          state.reservedDays = payload.reservedDays;
+        }
       }
-      if (payload?.reservedDays) {
-        state.reservedDays = payload.reservedDays;
+    },
+    socketSwipShift: (state, { payload }: PayloadAction<{ firstShift: ScheduleSchemaType, secondShift: ScheduleSchemaType, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        const { firstShift, secondShift } = payload;
+        state.schedule_schema = { ...state.schedule_schema, ...firstShift, ...secondShift };
       }
     },
-    socketSwipShift: (state, { payload }: PayloadAction<{ firstShift: ScheduleSchemaType, secondShift: ScheduleSchemaType }>) => {
-      const { firstShift, secondShift } = payload;
-      state.schedule_schema = { ...state.schedule_schema, ...firstShift, ...secondShift };
+    socketActiveCarsUpdate: (state, { payload }: PayloadAction<{ code: number, activeCar: number, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.activeCar = payload.activeCar;
+      }
     },
-    socketActiveCarsUpdate: (state, { payload }: PayloadAction<{ code: number, activeCar: number }>) => {
-      state.activeCar = payload.activeCar;
+    socketCarUpdate: (state, { payload }: PayloadAction<{ code: number, car: CarModel, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.cars = [...state.cars.filter((car) => car.id !== payload.car.id), payload.car];
+      }
     },
-    socketCarUpdate: (state, { payload }: PayloadAction<{ code: number, car: CarModel }>) => {
-      state.cars = [...state.cars.filter((car) => car.id !== payload.car.id), payload.car];
+    socketCarAdd: (state, { payload }: PayloadAction<{ code: number, car: CarModel, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.cars = [...state.cars, payload.car];
+      }
     },
-    socketCarAdd: (state, { payload }: PayloadAction<{ code: number, car: CarModel }>) => {
-      state.cars = [...state.cars, payload.car];
-    },
-    socketCarRemove: (state, { payload }: PayloadAction<{ code: number, carId: number }>) => {
-      state.cars = state.cars.filter((car) => car.id !== +payload.carId);
+    socketCarRemove: (state, { payload }: PayloadAction<{ code: number, carId: number, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.cars = state.cars.filter((car) => car.id !== +payload.carId);
+      }
     },
     socketSendMessageToChat: (state, { payload }: PayloadAction<{ code: number, message: ChatMessagesModel }>) => {
-      state.chat = [...state.chat, payload.message];
+      if (state?.id) {
+        state.chat = [...state.chat, payload.message];
+      }
     },
-    socketChangeIsRoundFuel: (state, { payload }: PayloadAction<{ code: number, isRoundFuelConsumption: boolean }>) => {
-      state.isRoundFuelConsumption = payload.isRoundFuelConsumption;
+    socketChangeIsRoundFuel: (state, { payload }: PayloadAction<{ code: number, isRoundFuelConsumption: boolean, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.isRoundFuelConsumption = payload.isRoundFuelConsumption;
+      }
     },
-    socketChangeFuelSeason: (state, { payload }: PayloadAction<{ code: number, season: SeasonEnum }>) => {
-      state.season = payload.season;
+    socketChangeFuelSeason: (state, { payload }: PayloadAction<{ code: number, season: SeasonEnum, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.season = payload.season;
+      }
     },
     socketCompletedShift: (state, { payload }: PayloadAction<CompletedShiftsModel>) => {
-      state.completedShifts = [...state.completedShifts, payload];
+      if (state?.id && state.id === payload.crewId) {
+        state.completedShifts = [...state.completedShifts, payload];
+      }
     },
-    socketKickReplacement: (state, { payload }: PayloadAction<{ code: number, userId: number }>) => {
-      state.users = state.users.filter((user) => user.id !== payload.userId);
+    socketKickReplacement: (state, { payload }: PayloadAction<{ code: number, userId: number, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.users = state.users.filter((user) => user.id !== payload.userId);
+      }
     },
-    socketAddUserInCrew: (state, { payload }: PayloadAction<{ code: number, user: UserModel }>) => {
-      state.users = [...state.users, payload.user];
+    socketAddUserInCrew: (state, { payload }: PayloadAction<{ code: number, user: UserModel, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.users = [...state.users, payload.user];
+      }
     },
-    socketUserProfileUpdateCrew: (state, { payload }: PayloadAction<{ code: number, id: number, values: UserProfileType }>) => {
-      const { username, phone, color } = payload.values;
-      if (username || color || phone) {
-        state.users = state.users.map((user) => {
-          if (user.id === payload.id) {
-            if (username) {
-              user.username = payload.values.username as string;
+    socketUserProfileUpdateCrew: (state, { payload }: PayloadAction<{ code: number, id: number, values: UserProfileType, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        const { username, phone, color } = payload.values;
+        if (username || color || phone) {
+          state.users = state.users.map((user) => {
+            if (user.id === payload.id) {
+              if (username) {
+                user.username = payload.values.username as string;
+              }
+              if (color) {
+                user.color = payload.values.color as string;
+              }
+              if (phone) {
+                user.phone = payload.values.phone as string;
+              }
             }
-            if (color) {
-              user.color = payload.values.color as string;
-            }
-            if (phone) {
-              user.phone = payload.values.phone as string;
-            }
-          }
-          return user;
-        });
+            return user;
+          });
+        }
       }
     },
     readChatMessages: (state, { payload }: PayloadAction<{ userId: number }>) => {
-      state.chat = state.chat.map((message) => {
-        if (!message.readBy.includes(payload.userId)) {
-          message.readBy.push(payload.userId);
+      if (state?.id) {
+        state.chat = state.chat.map((message) => {
+          if (!message.readBy.includes(payload.userId)) {
+            message.readBy.push(payload.userId);
+            return message;
+          }
           return message;
-        }
-        return message;
-      });
+        });
+      }
     },
   },
   extraReducers: (builder) => {
