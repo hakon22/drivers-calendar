@@ -140,7 +140,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
         fullCellRender={dateFullCellRender}
         locale={locale}
       />
-      {isMyShift && activeCar && !completedShifts.find(({ date }) => dayjs(date).isSame(dayjs(), 'day')) && (
+      {isMyShift && activeCar && mode === 'calendar' && !completedShifts.find(({ date }) => dayjs(date).isSame(dayjs(), 'day')) && (
       <Button className="end-work-shift-btn button-height button" style={{ marginTop: '-1.2em', marginBottom: '-0.1em' }} onClick={endWorkShiftHandler}>
         <DoubleRightOutlined className="fs-6 me-3" />
         {t('floatButton')}
