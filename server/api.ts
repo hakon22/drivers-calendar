@@ -53,6 +53,7 @@ router.patch(`${apiPath}/crew/changeIsRoundFuel`, jwtToken, Crew.changeIsRoundFu
 router.patch(`${apiPath}/crew/changeFuelSeason`, jwtToken, Crew.changeFuelSeason);
 router.get(`${apiPath}/crew/kickReplacement/:id?`, jwtToken, Crew.kickReplacement);
 router.get(`${apiPath}/crew/fetchCrewList`, jwtToken, checkRoleAccess, Crew.fetchCrewList);
+router.get(`${apiPath}/crew/fetchCrewByRef/:uuid`, Crew.fetchCrewByRef);
 
 // notification
 router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.fetchNotifications);

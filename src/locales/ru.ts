@@ -147,6 +147,7 @@ export default {
       kickReplacementSuccess: 'Сменщик успешно исключён из экипажа',
       expelledFromCrewSuccess: 'Вас исключили из экипажа',
       swipShiftSuccess: 'Вы успешно поменялись сменами!',
+      copyRefSuccess: 'Ссылка на график успешно скопирована!',
     },
     modals: {
       signup: {
@@ -310,6 +311,7 @@ export default {
         roundFuel: 'Округлять остаток топлива',
         summer: 'Летняя норма',
         winter: 'Зимняя норма',
+        copyRef: 'Скопировать ссылку на график',
       },
       userProfile: {
         title: 'Настройки пользователя',

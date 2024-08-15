@@ -142,6 +142,10 @@ const profileSchema = yup.object().shape({
   ['password', 'password'],
 ]);
 
+const uuidSchema = yup.object().shape({
+  uuid: yup.string().uuid(),
+});
+
 export const confirmCodeValidation = validate(confirmCodeSchema);
 export const phoneValidation = validate(confirmPhoneSchema);
 export const loginValidation = validate(loginSchema);
@@ -150,3 +154,4 @@ export const userInviteValidation = validate(userInviteSchema);
 export const carValidation = validate(carSchema);
 export const endWorkShiftValidation = validate(endWorkShiftSchema);
 export const profileValidation = validate(profileSchema);
+export const uuidValidation = validate(uuidSchema);

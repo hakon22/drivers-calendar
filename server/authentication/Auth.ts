@@ -210,8 +210,21 @@ class Auth {
 
   async inviteSignup(req: Request, res: Response) {
     try {
-      const cashData = req.user as PassportRequest;
+      const cashData = req.user as {
+        phone: string,
+        password: string,
+        role: RolesEnum,
+        crewId: number,
+        refUserId: number,
+      };
       req.body.username = upperCase(req.body.username);
+
+      const crew = await Crews.findByPk(cashData?.crewId, {
+        include: { attributes: ['id', 'username'], model: Users, as: 'users' },
+      });
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
 
       const candidate = { ...cashData, ...req.body } as UserModel;
       await userInviteValidation.serverValidator({ ...candidate });
@@ -228,6 +241,29 @@ class Auth {
 
       refresh_token.push(refreshToken);
       await Users.update({ refresh_token }, { where: { phone } });
+
+      const notifications: NotificationType[] = [];
+
+      await Promise.all((crew.users as UserModel[]).map(async (crewUser) => {
+        const preparedNotification = {
+          userId: crewUser.id,
+          title: `${username} присоединился к экипажу`,
+          description: `Пригласил: ${crew.users?.find((usr) => usr.id === cashData?.refUserId)?.username}`,
+          type: NotificationEnum.CREW,
+        };
+
+        const newNotification = await Notification.create(preparedNotification);
+        notifications.push(newNotification as NotificationType);
+      }));
+
+      socketEventsService.socketAddUserInCrew({
+        crewId: crew.id,
+        user: {
+          id, username, color, phone,
+        },
+      });
+
+      notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
 
       res.status(200).send({
         code: 1,

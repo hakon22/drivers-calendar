@@ -10,10 +10,6 @@ import CompletedShifts from './tables/CompletedShifts.js';
 
 const createRelations = async () => {
   try {
-    // почему-то, если нет любого запроса в БД, то foreignKey дублируются каждый запуск приложения
-    await Users.sequelize?.query(`
-      SELECT id FROM "driver"."users"
-    `);
     Users.belongsTo(Crews, { foreignKey: 'crewId' });
     Crews.hasMany(Users, { as: 'users' });
     Crews.hasMany(ChatMessages, { as: 'chat' });
