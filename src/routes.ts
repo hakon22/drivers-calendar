@@ -56,4 +56,5 @@ export default {
   changeFuelSeason: [apiPath, 'crew', 'changeFuelSeason'].join('/'),
   kickReplacement: [apiPath, 'crew', 'kickReplacement'].join('/'),
   fetchCrewList: [apiPath, 'crew', 'fetchCrewList'].join('/'),
+  fetchCrewByRef: [serverHost, apiPath, 'crew', 'fetchCrewByRef'].join('/'),
 } as ApiUrl;

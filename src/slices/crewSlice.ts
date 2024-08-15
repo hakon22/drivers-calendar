@@ -69,6 +69,12 @@ const crewSlice = createSlice({
         }
       });
     },
+    addCrew: (state, { payload }: PayloadAction<CrewModel>) => {
+      const entries = Object.entries(payload);
+      entries.forEach(([key, value]) => {
+        state[key] = value;
+      });
+    },
     socketMakeSchedule: (state, { payload }: PayloadAction<{ code: number, scheduleSchema: ScheduleSchemaType, shiftOrder?: number[], reservedDays: ReservedDaysModel[], _crewId: number }>) => {
       if (state?.id && state.id === payload._crewId) {
         state.schedule_schema = payload.scheduleSchema;
@@ -221,7 +227,7 @@ const crewSlice = createSlice({
 export const {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, socketCarRemove, socketSwipShift, socketSendMessageToChat,
   readChatMessages, removeToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew, socketCompletedShift,
-  socketKickReplacement, socketAddUserInCrew,
+  socketKickReplacement, socketAddUserInCrew, addCrew,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

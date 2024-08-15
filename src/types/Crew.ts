@@ -17,6 +17,7 @@ export type CrewInitialState = InitialState & {
   season?: SeasonEnum;
   isRoundFuelConsumption?: boolean;
   schedule_schema: ScheduleSchemaType;
+  ref?: string;
   users: UserModel[];
   cars: CarModel[];
   completedShifts: CompletedShiftsModel[],

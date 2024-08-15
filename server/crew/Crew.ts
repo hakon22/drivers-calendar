@@ -9,7 +9,7 @@
 import { Request, Response } from 'express';
 import dayjs, { type Dayjs } from 'dayjs';
 import bcrypt from 'bcryptjs';
-import { phoneValidation } from '@/validations/validations';
+import { phoneValidation, uuidValidation } from '@/validations/validations';
 import { Op } from 'sequelize';
 import minMax from 'dayjs/plugin/minMax';
 import isBetween from 'dayjs/plugin/isBetween';
@@ -257,6 +257,28 @@ class Crew {
         crew.dataValues.reservedDays = reservedDays;
       } else if (id) {
         delete crew.dataValues.chat;
+      }
+
+      return res.json({ code: 1, crew });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async fetchCrewByRef(req: Request, res: Response) {
+    try {
+      const { uuid } = req.params;
+      await uuidValidation.serverValidator({ uuid });
+
+      const crew = await Crews.findOne({
+        where: { ref: uuid },
+        include: [
+          { attributes: ['id', 'username', 'color', 'phone'], model: Users, as: 'users' },
+        ],
+      });
+      if (!crew) {
+        return res.json({ code: 2 });
       }
 
       return res.json({ code: 1, crew });
@@ -737,7 +759,7 @@ class Crew {
       const password = await Sms.sendPass(phone);
       const role = RolesEnum.MEMBER;
       await redis.setEx(phone, 86400, JSON.stringify({
-        phone, password: bcrypt.hashSync(password, 10), role, crewId,
+        phone, password: bcrypt.hashSync(password, 10), role, crewId, refUserId: id,
       }));
 
       return res.json({ code: 1 });

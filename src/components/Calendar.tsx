@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/utilities/hooks';
-import { useState, useContext } from 'react';
+import { useState, useContext, CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import locale from '@/locales/pickers.locale.RU';
 import cn from 'classnames';
@@ -53,7 +53,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
   const {
     schedule_schema: scheduleSchema, users, shiftOrder, activeCar, completedShifts,
   } = useAppSelector((state) => state.crew);
-  const { id, isRoundCalendarDays } = useAppSelector((state) => state.user);
+  const { id, isRoundCalendarDays = true } = useAppSelector((state) => state.user);
 
   const { modalOpen } = useContext(ModalContext);
 
@@ -83,7 +83,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
       selected: value.isSame(selectedDate),
     });
 
-    let style = {};
+    let style: CSSProperties = {};
 
     if (isRoundCalendarDays) {
       const lastId = scheduleSchema?.[value?.subtract(1, 'day').format('DD-MM-YYYY')]?.id;
@@ -96,6 +96,9 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
           borderTopLeftRadius: lastId !== listData.user.id ? '7px' : 'unset',
           borderBottomLeftRadius: lastId !== listData.user.id ? '7px' : 'unset',
         };
+    }
+    if (!value.isToday()) {
+      style.color = 'black';
     }
     return (
       <button

@@ -19,6 +19,7 @@ export interface CrewModel extends Model<InferAttributes<CrewModel>, InferCreati
   season: SeasonEnum;
   isRoundFuelConsumption: boolean;
   schedule_schema: CreationOptional<ScheduleSchemaType>;
+  ref: CreationOptional<string>;
   users?: CreationOptional<UserModel[]>;
   cars?: CreationOptional<CarModel[]>;
   chat?: CreationOptional<ChatMessagesModel[]>;
@@ -60,6 +61,11 @@ const Crews = db.define<CrewModel>(
     },
     schedule_schema: {
       type: DataTypes.JSONB,
+    },
+    ref: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      defaultValue: DataTypes.UUIDV4,
     },
   },
 );
