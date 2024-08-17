@@ -2,37 +2,48 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable class-methods-use-this */
-import { Telegraf, Markup } from 'telegraf';
+import axios from 'axios';
+import { Telegraf } from 'telegraf';
 
 class Telegram {
-  public telegramBot: Telegraf;
+  private telegramBot: Telegraf;
 
   constructor(telegramBot: Telegraf) {
     this.telegramBot = telegramBot;
     this.telegramBot.telegram.setWebhook(`${process.env.NEXT_PUBLIC_PRODUCTION_HOST}/api/telegram`);
   }
 
-  public sendMessage = async (message: string, telegramId: string, options?: typeof Markup) => {
-    try {
-      const msg = encodeURI(message);
-      await this.telegramBot.telegram.sendMessage(msg, telegramId, { parse_mode: 'HTML', ...options });
+  public sendMessage = async (message: string, telegramId: string, options?: object) => {
+    const msg = encodeURI(message);
+    const { data } = await axios.post<{ ok: boolean }>(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
+      chat_id: telegramId,
+      parse_mode: 'html',
+      text: msg,
+      ...options,
+    });
+    if (data.ok) {
       console.log('Сообщение в Telegram отправлено!');
-    } catch (e) {
-      console.log('Ошибка отправки сообщения в Telegram :(', e);
+    } else {
+      console.log('Ошибка отправки сообщения в Telegram :(');
     }
   };
 
   public sendMessageAfterEndWorkShift = async (username: string, mileage: number, remainingFuel: number, telegramId: string) => {
-    try {
-      const fields = [
-        `<b>${username}</b> закрыл смену!`,
-        `Пробег: <b>${mileage}</b>`,
-        `Остаток топлива: <b>${remainingFuel}</b>`,
-      ];
-      const msg = encodeURI(fields.reduce((acc, field) => acc += `${field}\n`, ''));
-      await this.telegramBot.telegram.sendMessage(msg, telegramId, { parse_mode: 'HTML' });
-    } catch (e) {
-      console.log('Ошибка отправки сообщения в Telegram :(', e);
+    const fields = [
+      `<b>${username}</b> закрыл смену!`,
+      `Пробег: <b>${mileage}</b>`,
+      `Остаток топлива: <b>${remainingFuel}</b>`,
+    ];
+    const msg = encodeURI(fields.reduce((acc, field) => acc += `${field}\n`, ''));
+    const { data } = await axios.post<{ ok: boolean }>(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
+      chat_id: telegramId,
+      parse_mode: 'html',
+      text: msg,
+    });
+    if (data.ok) {
+      console.log('Сообщение в Telegram отправлено!');
+    } else {
+      console.log('Ошибка отправки сообщения в Telegram :(');
     }
   };
 }
