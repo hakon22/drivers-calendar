@@ -1,3 +1,5 @@
+/* eslint-disable no-return-assign */
+/* eslint-disable no-param-reassign */
 /* eslint-disable import/no-cycle */
 /* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable class-methods-use-this */
@@ -14,8 +16,12 @@ class Telegram {
       const message = context.message as Message.TextMessage;
 
       if (message?.text === '/start') {
-        console.log(message);
-        const text = 'Напишите ваш номер телефона в ответ (свайпните влево) на это сообщение.';
+        const fields = [
+          'Напишите ваш номер телефона в ответ на это сообщение.',
+          'Для этого просто "свапните" его влево.',
+          'Формат номера: <b>79999999999</b>',
+        ];
+        const text = fields.reduce((acc, field) => acc += `${field}\n`, '');
         await telegramBotService.sendMessage(text, message?.from?.id as number);
       } else if (message?.reply_to_message) {
         const user = await Users.findOne({ where: { phone: message?.text } });
