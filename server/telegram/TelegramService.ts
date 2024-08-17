@@ -13,12 +13,11 @@ class Telegram {
     this.telegramBot.telegram.setWebhook(`${process.env.NEXT_PUBLIC_PRODUCTION_HOST}/api/telegram`);
   }
 
-  public sendMessage = async (message: string, telegramId: string, options?: object) => {
-    const msg = encodeURI(message);
+  public sendMessage = async (text: string, telegramId: string, options?: object) => {
     const { data } = await axios.post<{ ok: boolean }>(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
       chat_id: telegramId,
       parse_mode: 'html',
-      text: msg,
+      text,
       ...options,
     });
     if (data.ok) {
@@ -34,11 +33,11 @@ class Telegram {
       `Пробег: <b>${mileage}</b>`,
       `Остаток топлива: <b>${remainingFuel}</b>`,
     ];
-    const msg = encodeURI(fields.reduce((acc, field) => acc += `${field}\n`, ''));
+    const text = fields.reduce((acc, field) => acc += `${field}\n`, '');
     const { data } = await axios.post<{ ok: boolean }>(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
       chat_id: telegramId,
       parse_mode: 'html',
-      text: msg,
+      text,
     });
     if (data.ok) {
       console.log('Сообщение в Telegram отправлено!');
