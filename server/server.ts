@@ -6,6 +6,7 @@ import next from 'next';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
+import { Telegraf } from 'telegraf';
 import cors from 'cors';
 import passport from 'passport';
 import { Server } from 'socket.io';
@@ -18,6 +19,7 @@ import createRelations from './db/relations.js';
 import SocketEventEnum from './types/notification/enum/SocketEventEnum.js';
 import SocketEvents from './socket/SocketEvents.js';
 import RolesEnum from './types/user/enum/RolesEnum.js';
+import TelegramService from './telegram/TelegramService.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -33,6 +35,8 @@ const socketServer = createServer(server);
 const io = new Server(socketServer, { transports: ['websocket', 'polling'] });
 
 export const socketEventsService = new SocketEvents(io);
+const telegramBot = new Telegraf(process.env.TELEGRAM_TOKEN ?? '');
+export const telegramBotService = new TelegramService(telegramBot);
 
 app.prepare().then(() => {
   tokenChecker(passport);
