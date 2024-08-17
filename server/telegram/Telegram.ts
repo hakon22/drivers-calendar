@@ -4,8 +4,8 @@
 /* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable class-methods-use-this */
 import { Request, Response } from 'express';
-import { Context } from 'telegraf';
-import { Message } from 'typegram/message';
+import { Context, Markup } from 'telegraf';
+import { message } from 'telegraf/filters';
 import Users from '../db/tables/Users';
 import { telegramBotService } from '../server';
 
@@ -13,25 +13,23 @@ class Telegram {
   public webhooks = async (req: Request, res: Response) => {
     try {
       const context = req.body as Context;
-      const message = context.message as Message.TextMessage;
 
-      if (message?.text === '/start') {
-        const fields = [
-          'Напишите ваш номер телефона в ответ на это сообщение.',
-          'Для этого просто "свапните" его влево.',
-          'Формат номера: <b>79999999999</b>',
-        ];
-        const text = fields.reduce((acc, field) => acc += `${field}\n`, '');
-        await telegramBotService.sendMessage(text, message?.from?.id as number);
-      } else if (message?.reply_to_message) {
-        const user = await Users.findOne({ where: { phone: message?.text } });
-        if (user) {
-          await Users.update({ telegramId: message?.from?.id }, { where: { phone: message?.text } });
-          await telegramBotService.sendMessage('Теперь вы будете получать уведомления.', message?.from?.id as number);
-        } else {
-          await telegramBotService.sendMessage('Номер телефона не найден в базе данных.', message?.from?.id as number);
-        }
-      } else if (context.myChatMember?.new_chat_member?.status === 'kicked') {
+      telegramBotService.telegramBot.start((ctx) => {
+        ctx.reply(
+          'Пожалуйста, предоставьте ваш номер телефона:',
+          Markup.keyboard([
+            Markup.button.contactRequest('Отправить номер телефона'),
+          ])
+            .oneTime()
+            .resize(),
+        );
+      });
+
+      telegramBotService.telegramBot.on(message('contact'), (ctx) => {
+        ctx.reply('Вы успешно подписались на уведомления.');
+      });
+
+      if (context.myChatMember?.new_chat_member?.status === 'kicked') {
         const telegramId = context.myChatMember.chat.id;
         console.log('TelegramBotService', `User has blocked a bot. Deleting telegramID: ${telegramId}`);
 

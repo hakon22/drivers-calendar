@@ -13,7 +13,7 @@ export interface UserModel extends Model<InferAttributes<UserModel>, InferCreati
   role: RolesEnum;
   color: string;
   refresh_token: CreationOptional<string[]>;
-  telegramId: CreationOptional<number | null>;
+  telegramId: CreationOptional<string | null>;
   crewId: CreationOptional<number | null>;
   isRoundCalendarDays: CreationOptional<boolean>;
 }
@@ -58,7 +58,7 @@ const Users = db.define<UserModel>(
       defaultValue: [],
     },
     telegramId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
     },
     crewId: {
       type: DataTypes.INTEGER,
