@@ -32,7 +32,7 @@ import ReservedDays from '../db/tables/ReservedDays';
 import ReservedDaysTypeEnum from '../types/user/enum/ReservedDaysTypeEnum';
 import ChatMessages from '../db/tables/ChatMessages';
 import SeasonEnum from '../types/crew/enum/SeasonEnum';
-import { socketEventsService } from '../server';
+import { socketEventsService, telegramBotService } from '../server';
 import CompletedShifts from '../db/tables/CompletedShifts';
 import truncateLastDecimal from '../utilities/truncateLastDecimal';
 import RolesEnum from '../types/user/enum/RolesEnum';
@@ -649,6 +649,11 @@ class Crew {
       notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
 
       socketEventsService.socketCompletedShift(completedShift);
+
+      const nextUser = crew.users?.find((user) => crew.schedule_schema?.[dayjs().add(1, 'day').format('DD-MM-YYYY')]?.id === user.id && user.id !== id);
+      if (nextUser && nextUser?.telegramId) {
+        await telegramBotService.sendMessageAfterEndWorkShift(nextUser.username, newMileage, newRemainingFuel, nextUser.telegramId);
+      }
 
       return res.json({ code: 1, ...result });
     } catch (e) {

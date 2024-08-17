@@ -6,6 +6,8 @@ import Car from './car/Car.js';
 import Crew from './crew/Crew.js';
 import Notification from './notification/Notification.js';
 import checkRoleAccess from './authentication/checkRoleAccess.js';
+import Telegram from './telegram/Telegram.js';
+import accessTelegramMiddleware from './authentication/accessTelegramMiddleware.js';
 
 const router = express.Router();
 
@@ -60,5 +62,8 @@ router.get(`${apiPath}/notification/fetchNotifications`, jwtToken, Notification.
 router.get(`${apiPath}/notification/readUpdate/:id`, jwtToken, Notification.readUpdate);
 router.get(`${apiPath}/notification/acceptNotification/:id`, jwtToken, Notification.acceptNotification);
 router.delete(`${apiPath}/notification/remove/:id`, jwtToken, Notification.remove);
+
+// telegram
+router.post(`${apiPath}/telegram`, accessTelegramMiddleware, Telegram.webhooks);
 
 export default router;

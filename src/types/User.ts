@@ -13,6 +13,7 @@ export type User = {
   role: RolesEnum;
   refreshToken: string;
   isRoundCalendarDays: boolean;
+  telegramId: number;
 };
 
 export type UserInitialState = InitialState & {
@@ -26,6 +27,7 @@ export type UserInitialState = InitialState & {
   role?: RolesEnum;
   color?: string;
   crewId?: number;
+  telegramId?: number;
   isRoundCalendarDays?: boolean;
   updatesNotice?: UpdateNoticeModel[];
   [key: string]: number[] | string[] | UpdateNoticeModel[] | string | number | null | boolean | undefined;
