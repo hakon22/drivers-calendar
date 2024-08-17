@@ -45,7 +45,7 @@ class Sms {
         method: 'push_msg',
         format: 'json',
         key: process.env.SMS_API_KEY_PASS,
-        text: `Ваш пароль для входа: ${password}`,
+        text: `Ваш пароль для входа: ${password} ${process.env.NEXT_PUBLIC_PRODUCTION_HOST}`,
         phone,
         sender_name: 'AM-PROJECTS',
       };
