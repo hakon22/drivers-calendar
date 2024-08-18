@@ -26,6 +26,7 @@ router.post(`${apiPath}/auth/acceptInvitation`, jwtToken, Auth.acceptInvitation)
 router.post(`${apiPath}/auth/changeUserProfile`, jwtToken, Auth.changeUserProfile);
 router.get(`${apiPath}/auth/fetchUpdates`, jwtToken, Auth.fetchUpdates);
 router.get(`${apiPath}/auth/readUpdates/:id`, jwtToken, Auth.readUpdates);
+router.get(`${apiPath}/auth/unlinkTelegram`, jwtToken, Auth.unlinkTelegram);
 
 // car
 router.get(`${apiPath}/car/fetchBrands`, Car.fetchBrands);

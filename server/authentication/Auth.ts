@@ -186,7 +186,7 @@ class Auth {
         const token = generateAccessToken(user.id, user.phone);
         const refreshToken = generateRefreshToken(user.id, user.phone);
         const {
-          id, username, role, refresh_token, crewId, color, isRoundCalendarDays,
+          id, username, role, refresh_token, crewId, color, isRoundCalendarDays, telegramId,
         } = user;
 
         if (refresh_token.length < 4) {
@@ -198,7 +198,7 @@ class Auth {
         res.status(200).send({
           code: 1,
           user: {
-            token, refreshToken, username, role, id, phone, crewId, color, isRoundCalendarDays,
+            token, refreshToken, username, role, id, phone, crewId, color, isRoundCalendarDays, telegramId,
           },
         });
       }
@@ -236,7 +236,7 @@ class Auth {
       const refreshToken = generateRefreshToken(user.id, user.phone);
 
       const {
-        id, username, phone, role, refresh_token, crewId, color, isRoundCalendarDays,
+        id, username, phone, role, refresh_token, crewId, color, isRoundCalendarDays, telegramId,
       } = user;
 
       refresh_token.push(refreshToken);
@@ -268,7 +268,7 @@ class Auth {
       res.status(200).send({
         code: 1,
         user: {
-          token, refreshToken, username, role, id, phone, crewId, color, isRoundCalendarDays,
+          token, refreshToken, username, role, id, phone, crewId, color, isRoundCalendarDays, telegramId,
         },
       });
     } catch (e) {
@@ -381,7 +381,7 @@ class Auth {
     try {
       const {
         dataValues: {
-          id, username, refresh_token, phone, role, crewId, color, isRoundCalendarDays,
+          id, username, refresh_token, phone, role, crewId, color, isRoundCalendarDays, telegramId,
         }, token, refreshToken,
       } = req.user as PassportRequest;
       const oldRefreshToken = req.get('Authorization')?.split(' ')[1] ?? '';
@@ -403,7 +403,7 @@ class Auth {
       res.status(200).send({
         code: 1,
         user: {
-          id, username, token, refreshToken, role, phone, crewId, color, isRoundCalendarDays,
+          id, username, token, refreshToken, role, phone, crewId, color, isRoundCalendarDays, telegramId,
         },
       });
     } catch (e) {
@@ -490,6 +490,23 @@ class Auth {
       await UpdateNotice.update({ readBy: update.readBy }, { where: { id } });
 
       res.status(200).json({ code: 1, updateId: update.id });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async unlinkTelegram(req: Request, res: Response) {
+    try {
+      const { dataValues: { id, telegramId } } = req.user as PassportRequest;
+
+      if (!telegramId) {
+        throw new Error('Телеграм-аккаунт не найден');
+      }
+
+      await Users.update({ telegramId: null }, { where: { id } });
+
+      res.status(200).json({ code: 1 });
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
