@@ -115,6 +115,11 @@ const userSlice = createSlice({
         }
       });
     },
+    removeTelegramId: (state) => {
+      if (state?.telegramId) {
+        state.telegramId = null;
+      }
+    },
     socketUserProfileUpdate: (state, { payload }: PayloadAction<{ code: number, values: UserProfileType }>) => {
       const {
         phone, username, color, isRoundCalendarDays,
@@ -293,6 +298,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { removeToken, socketUserProfileUpdate } = userSlice.actions;
+export const { removeToken, removeTelegramId, socketUserProfileUpdate } = userSlice.actions;
 
 export default userSlice.reducer;

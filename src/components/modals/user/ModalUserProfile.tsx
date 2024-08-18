@@ -3,6 +3,7 @@ import {
   Checkbox,
 } from 'antd';
 import { useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Color } from 'antd/es/color-picker';
 import { useAppDispatch, useAppSelector } from '@/utilities/hooks';
 import { useTranslation } from 'react-i18next';
@@ -17,7 +18,7 @@ import { profileValidation } from '@/validations/validations';
 import axios from 'axios';
 import MaskedInput from '@/components/forms/MaskedInput';
 import { isEmpty } from 'lodash';
-import { fetchConfirmCode } from '@/slices/userSlice';
+import { fetchConfirmCode, removeTelegramId } from '@/slices/userSlice';
 import type { UserProfileType } from '@/types/User';
 import ModalConfirmPhone from './ModalConfirmPhone';
 import RolesEnum from '../../../../server/types/user/enum/RolesEnum';
@@ -28,10 +29,11 @@ const ModalUserProfile = () => {
   const { t: tValidation } = useTranslation('translation', { keyPrefix: 'validation' });
 
   const {
-    username, phone, color, key, isRoundCalendarDays, role,
+    username, phone, color, key, isRoundCalendarDays, role, telegramId,
   } = useAppSelector((state) => state.user);
 
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const [updateValues, setUpdateValues] = useState<UserProfileType>();
   const [phoneConfirm, setPhoneConfirm] = useState<string>();
@@ -53,22 +55,46 @@ const ModalUserProfile = () => {
   const [form] = Form.useForm();
 
   const updateProfile = async (changedValues: UserProfileType) => {
-    if (changedValues?.color) {
-      changedValues.color = (changedValues.color as unknown as Color).toHexString();
+    try {
+      setIsSubmit(true);
+      if (changedValues?.color) {
+        changedValues.color = (changedValues.color as unknown as Color).toHexString();
+      }
+      const { data } = await axios.post(routes.changeUserProfile, { ...changedValues, key }) as { data: { code: number } };
+      if (data.code === 1) {
+        setUpdateValues(undefined);
+        setPhoneConfirm(undefined);
+        setIsConfirmed(false);
+        form.setFieldsValue({ confirmPassword: '', oldPassword: '', password: '' });
+        toast(tToast('changeProfileSuccess'), 'success');
+      }
+      if (data.code === 2) {
+        form.setFields([{ name: 'oldPassword', errors: [tValidation('incorrectPassword')] }]);
+      }
+      if (data.code === 6) {
+        form.setFields([{ name: 'phone', errors: [tToast('userAlreadyExists')] }]);
+      }
+      setIsSubmit(false);
+    } catch (e) {
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
-    const { data } = await axios.post(routes.changeUserProfile, { ...changedValues, key }) as { data: { code: number } };
-    if (data.code === 1) {
-      setUpdateValues(undefined);
-      setPhoneConfirm(undefined);
-      setIsConfirmed(false);
-      form.setFieldsValue({ confirmPassword: '', oldPassword: '', password: '' });
-      toast(tToast('changeProfileSuccess'), 'success');
-    }
-    if (data.code === 2) {
-      form.setFields([{ name: 'oldPassword', errors: [tValidation('incorrectPassword')] }]);
-    }
-    if (data.code === 6) {
-      form.setFields([{ name: 'phone', errors: [tToast('userAlreadyExists')] }]);
+  };
+
+  const telegramHandler = async () => {
+    try {
+      if (telegramId) {
+        setIsSubmit(true);
+        const { data } = await axios.get(routes.unlinkTelegram) as { data: { code: number } };
+        if (data.code === 1) {
+          dispatch(removeTelegramId());
+          toast(tToast('unlinkTelegramSuccess'), 'success');
+        }
+        setIsSubmit(false);
+      } else {
+        router.push('https://t.me/AM_PROJECTS_BOT');
+      }
+    } catch (e) {
+      axiosErrorHandler(e, tToast, setIsSubmit);
     }
   };
 
@@ -171,6 +197,9 @@ const ModalUserProfile = () => {
           <Form.Item<UserProfileType> name="isRoundCalendarDays" valuePropName="checked" rules={[profileValidation]}>
             <Checkbox>{t('isRoundCalendarDays')}</Checkbox>
           </Form.Item>
+          <Button type="link" className="text-danger" onClick={telegramHandler}>
+            {t(telegramId ? 'unlinkTelegram' : 'linkTelegram')}
+          </Button>
           <div className="mt-4 d-flex justify-content-center col-10 mx-auto">
             <Button type="primary" htmlType="submit" className="w-100 button-height button">
               {t('submitButton')}

@@ -24,6 +24,7 @@ export default {
   changeUserProfile: [apiPath, 'auth', 'changeUserProfile'].join('/'),
   fetchUpdates: [apiPath, 'auth', 'fetchUpdates'].join('/'),
   readUpdates: [apiPath, 'auth', 'readUpdates'].join('/'),
+  unlinkTelegram: [apiPath, 'auth', 'unlinkTelegram'].join('/'),
   // car
   fetchBrands: [serverHost, apiPath, 'car', 'fetchBrands'].join('/'),
   fetchBrandsChange: [apiPath, 'car', 'fetchBrands'].join('/'),
