@@ -5,7 +5,7 @@
 import axios from 'axios';
 import { Telegraf } from 'telegraf';
 
-class Telegram {
+class TelegramService {
   private telegramBot: Telegraf;
 
   constructor(telegramBot: Telegraf) {
@@ -47,4 +47,4 @@ class Telegram {
   };
 }
 
-export default Telegram;
+export default TelegramService;
