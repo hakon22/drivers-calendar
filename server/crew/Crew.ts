@@ -652,7 +652,7 @@ class Crew {
 
       const nextUser = crew.users?.find((user) => crew.schedule_schema?.[dayjs().add(1, 'day').format('DD-MM-YYYY')]?.id === user.id && user.id !== id);
       if (nextUser && nextUser?.telegramId) {
-        await telegramBotService.sendMessageAfterEndWorkShift(nextUser.username, newMileage, newRemainingFuel, nextUser.telegramId);
+        await telegramBotService.sendMessageAfterEndWorkShift(username, newMileage, newRemainingFuel, nextUser.telegramId);
       }
 
       return res.json({ code: 1, ...result });
