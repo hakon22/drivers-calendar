@@ -39,7 +39,7 @@ class TelegramService {
       parse_mode: 'html',
       text,
     });
-    if (data.ok) {
+    if (data?.ok) {
       console.log('Сообщение в Telegram отправлено!');
     } else {
       console.log('Ошибка отправки сообщения в Telegram :(');
