@@ -650,7 +650,11 @@ class Crew {
 
       socketEventsService.socketCompletedShift(completedShift);
 
-      const nextUser = crew.users?.find((user) => crew.schedule_schema?.[dayjs().add(1, 'day').format('DD-MM-YYYY')]?.id === user.id && user.id !== id);
+      crew.schedule_schema = sortingSchedule(crew.schedule_schema);
+      const shiftDays = Object.keys(crew.schedule_schema);
+      const nextShiftIndex = shiftDays.findIndex((day) => day === dayjs().format('DD-MM-YYYY')) + 1;
+
+      const nextUser = crew.users?.find((user) => nextShiftIndex && crew.schedule_schema?.[shiftDays[nextShiftIndex]]?.id === user.id);
       if (nextUser && nextUser?.telegramId) {
         await telegramBotService.sendMessageAfterEndWorkShift(username, newMileage, newRemainingFuel, nextUser.telegramId);
       }
