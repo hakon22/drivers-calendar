@@ -148,7 +148,7 @@ export default {
       expelledFromCrewSuccess: 'Вас исключили из экипажа',
       swipShiftSuccess: 'Вы успешно поменялись сменами!',
       copyRefSuccess: 'Ссылка на график успешно скопирована!',
-      unlinkTelegramSuccess: 'Телеграм-аккаунт успешно отвязан',
+      unlinkTelegramSuccess: 'Telegram аккаунт успешно отвязан',
     },
     modals: {
       signup: {
@@ -320,8 +320,8 @@ export default {
         username: 'Имя',
         color: 'Цвет рабочих смен',
         colorTooltip: 'Этим цветом будут отображаться ваши рабочие смены на календаре',
-        linkTelegram: 'Привязать телеграм-аккаунт',
-        unlinkTelegram: 'Отвязать телеграм-аккаунт',
+        linkTelegram: 'Привязать Telegram аккаунт',
+        unlinkTelegram: 'Отвязать Telegram аккаунт',
         confirm: 'Подтвердить телефон',
         password: 'Пароль',
         oldPassword: 'Старый пароль',
