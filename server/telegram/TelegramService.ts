@@ -34,16 +34,18 @@ class TelegramService {
       `Остаток топлива: <b>${remainingFuel}</b>`,
     ];
     const text = fields.reduce((acc, field) => acc += `${field}\n`, '');
-    const { data } = await axios.post<{ ok: boolean }>(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
-      chat_id: telegramId,
-      parse_mode: 'html',
-      text,
-    });
-    if (data?.ok) {
-      console.log('Сообщение в Telegram отправлено!');
-    } else {
-      console.log('Ошибка отправки сообщения в Telegram :(');
-    }
+    await this.sendMessage(text, telegramId);
+  };
+
+  public sendMessageSwapShift = async (username: string, firstDate: string, secondDate: string, telegramId: string) => {
+    const fields = [
+      `<b>${username}</b> хочет поменяться с вами сменами!`,
+      `Он выйдет за вас <b>${secondDate}</b>`,
+      `Вы за него - <b>${firstDate}</b>`,
+      'https://drivers.am-projects.ru',
+    ];
+    const text = fields.reduce((acc, field) => acc += `${field}\n`, '');
+    await this.sendMessage(text, telegramId);
   };
 }
 

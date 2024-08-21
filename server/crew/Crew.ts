@@ -376,12 +376,21 @@ class Crew {
       const firstUser = crew.schedule_schema[firstShift.format('DD-MM-YYYY')];
       const secondUser = crew.schedule_schema[secondShift.format('DD-MM-YYYY')];
 
+      const firstDate = firstShift?.locale('ru').format('D MMMM, dddd');
+      const secondDate = secondShift?.locale('ru').format('D MMMM, dddd');
+
+      const secondFullUser = await Users.findByPk(secondUser.id, { attributes: ['telegramId'] });
+
+      if (secondFullUser && secondFullUser?.telegramId) {
+        await telegramBotService.sendMessageSwapShift(username, firstDate, secondDate, secondFullUser.telegramId);
+      }
+
       const preparedNotification = {
         userId: secondUser.id,
         authorId: firstUser.id,
         title: `${username} хочет поменяться с вами сменами!`,
-        description: `Он выйдет за вас ${secondShift?.locale('ru').format('D MMMM, dddd')}`,
-        description2: `Вы за него - ${firstShift?.locale('ru').format('D MMMM, dddd')}`,
+        description: `Он выйдет за вас ${secondDate}`,
+        description2: `Вы за него - ${firstDate}`,
         type: NotificationEnum.SHIFT,
         data: req.body,
         isDecision: true,
@@ -645,11 +654,6 @@ class Crew {
         include: [{ attributes: ['id', 'username'], model: Users, as: 'user' }, { attributes: ['id', 'call'], model: Cars, as: 'car' }],
       });
 
-      socketEventsService.socketCarUpdate({ crewId, car: affectedRows[0] });
-      notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
-
-      socketEventsService.socketCompletedShift(completedShift);
-
       crew.schedule_schema = sortingSchedule(crew.schedule_schema);
       const shiftDays = Object.keys(crew.schedule_schema);
       const nextShiftIndex = shiftDays.findIndex((day) => day === dayjs().format('DD-MM-YYYY')) + 1;
@@ -658,6 +662,11 @@ class Crew {
       if (nextUser && nextUser?.telegramId) {
         await telegramBotService.sendMessageAfterEndWorkShift(username, newMileage, newRemainingFuel, nextUser.telegramId);
       }
+
+      socketEventsService.socketCarUpdate({ crewId, car: affectedRows[0] });
+      notifications.forEach((notif) => socketEventsService.socketSendNotification(notif));
+
+      socketEventsService.socketCompletedShift(completedShift);
 
       return res.json({ code: 1, ...result });
     } catch (e) {
