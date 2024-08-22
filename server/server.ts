@@ -36,6 +36,11 @@ const io = new Server(socketServer, { transports: ['websocket', 'polling'] });
 
 export const socketEventsService = new SocketEvents(io);
 const telegramBot = new Telegraf(process.env.TELEGRAM_TOKEN ?? '');
+await telegramBot.telegram.setMyCommands([{
+  command: 'start',
+  description: '🔃 Запуск бота',
+}]);
+telegramBot.telegram.setWebhook(`${process.env.NEXT_PUBLIC_PRODUCTION_HOST}/api/telegram`);
 export const telegramBotService = new TelegramService(telegramBot);
 
 app.prepare().then(() => {

@@ -10,11 +10,6 @@ class TelegramService {
 
   constructor(telegramBot: Telegraf) {
     this.telegramBot = telegramBot;
-    this.telegramBot.telegram.setMyCommands([{
-      command: 'start',
-      description: '🔃 Запуск бота',
-    }]);
-    this.telegramBot.telegram.setWebhook(`${process.env.NEXT_PUBLIC_PRODUCTION_HOST}/api/telegram`);
   }
 
   public sendMessage = async (text: string, telegramId: string, options?: object) => {
