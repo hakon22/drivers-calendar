@@ -10,6 +10,10 @@ class TelegramService {
 
   constructor(telegramBot: Telegraf) {
     this.telegramBot = telegramBot;
+    this.telegramBot.telegram.setMyCommands([{
+      command: 'start',
+      description: 'Запуск бота',
+    }]);
     this.telegramBot.telegram.setWebhook(`${process.env.NEXT_PUBLIC_PRODUCTION_HOST}/api/telegram`);
   }
 
@@ -20,7 +24,7 @@ class TelegramService {
       text,
       ...options,
     });
-    if (data.ok) {
+    if (data?.ok) {
       console.log('Сообщение в Telegram отправлено!');
     } else {
       console.log('Ошибка отправки сообщения в Telegram :(');

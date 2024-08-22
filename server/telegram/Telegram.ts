@@ -17,10 +17,6 @@ const start = async (telegramId: string) => {
           text: 'Отправить номер телефона',
           request_contact: true,
         },
-        {
-          text: 'Рестарт',
-          callback_data: 'start_button',
-        },
       ],
     ],
     resize_keyboard: true,
@@ -35,7 +31,7 @@ class Telegram {
       const context = req.body as Context;
       const message = context.message as Message.ContactMessage & Message.TextMessage;
 
-      if (message?.text === '/start' || message?.text === 'Рестарт') {
+      if (message?.text === '/start') {
         await start(message?.from?.id?.toString() as string);
       } else if (message?.contact?.phone_number) {
         const user = await Users.findOne({ where: { phone: message.contact.phone_number } });
@@ -47,7 +43,7 @@ class Telegram {
         }
       } else if (context.myChatMember?.new_chat_member?.status === 'kicked') {
         const telegramId = context.myChatMember.chat.id;
-        console.log('TelegramBotService', `User has blocked a bot. Deleting telegramID: ${telegramId}`);
+        console.log('[TelegramBotService]', `User has blocked a bot. Deleting telegramID: ${telegramId}`);
 
         await Users.update({ telegramId: null }, { where: { telegramId } });
       }
