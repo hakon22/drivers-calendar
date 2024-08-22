@@ -12,7 +12,7 @@ class TelegramService {
     this.telegramBot = telegramBot;
     this.telegramBot.telegram.setMyCommands([{
       command: 'start',
-      description: 'Запуск бота',
+      description: '🔃 Запуск бота',
     }]);
     this.telegramBot.telegram.setWebhook(`${process.env.NEXT_PUBLIC_PRODUCTION_HOST}/api/telegram`);
   }

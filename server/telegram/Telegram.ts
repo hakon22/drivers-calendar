@@ -14,7 +14,7 @@ const start = async (telegramId: string) => {
     keyboard: [
       [
         {
-          text: 'Отправить номер телефона',
+          text: '📞 Отправить номер телефона',
           request_contact: true,
         },
       ],
