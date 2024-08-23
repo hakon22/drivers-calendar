@@ -122,6 +122,11 @@ const crewSlice = createSlice({
         state.isRoundFuelConsumption = payload.isRoundFuelConsumption;
       }
     },
+    socketChangeIsWorkingWeekend: (state, { payload }: PayloadAction<{ code: number, isWorkingWeekend: boolean, _crewId: number }>) => {
+      if (state?.id && state.id === payload._crewId) {
+        state.isWorkingWeekend = payload.isWorkingWeekend;
+      }
+    },
     socketChangeFuelSeason: (state, { payload }: PayloadAction<{ code: number, season: SeasonEnum, _crewId: number }>) => {
       if (state?.id && state.id === payload._crewId) {
         state.season = payload.season;
@@ -227,7 +232,7 @@ const crewSlice = createSlice({
 export const {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, socketCarRemove, socketSwipShift, socketSendMessageToChat,
   readChatMessages, removeToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew, socketCompletedShift,
-  socketKickReplacement, socketAddUserInCrew, addCrew,
+  socketKickReplacement, socketAddUserInCrew, addCrew, socketChangeIsWorkingWeekend,
 } = crewSlice.actions;
 
 export default crewSlice.reducer;

@@ -310,6 +310,7 @@ export default {
       crewSettings: {
         title: 'Настройки экипажа',
         roundFuel: 'Округлять остаток топлива',
+        workingWeekend: 'Рабочие выходные',
         summer: 'Летняя норма',
         winter: 'Зимняя норма',
         copyRef: 'Скопировать ссылку на график',

@@ -19,7 +19,7 @@ import type { ModalShowType, ModalShowObjectType } from '@/types/Modal';
 import {
   socketMakeSchedule, socketActiveCarsUpdate, socketCarUpdate, socketCarAdd, fetchCrew, socketCarRemove, socketSwipShift, socketSendMessageToChat,
   removeToken as crewRemoveToken, socketChangeFuelSeason, socketChangeIsRoundFuel, socketUserProfileUpdateCrew, socketCompletedShift,
-  socketKickReplacement, socketAddUserInCrew,
+  socketKickReplacement, socketAddUserInCrew, socketChangeIsWorkingWeekend,
 } from '@/slices/crewSlice';
 import routes from '@/routes';
 import { fetchNotifications, socketSendNotification, removeToken as notifRemoveToken } from '@/slices/notificationSlice';
@@ -101,6 +101,7 @@ const Init = (props: AppProps) => {
       socket.on(SocketEventEnum.SWIP_SHIFT, (data, _crewId) => dispatch(socketSwipShift({ ...data, _crewId })));
       socket.on(SocketEventEnum.CHANGE_IS_ROUND_FUEL, (data, _crewId) => dispatch(socketChangeIsRoundFuel({ ...data, _crewId })));
       socket.on(SocketEventEnum.CHANGE_FUEL_SEASON, (data, _crewId) => dispatch(socketChangeFuelSeason({ ...data, _crewId })));
+      socket.on(SocketEventEnum.CHANGE_IS_WORKING_WEEKEND, (data, _crewId) => dispatch(socketChangeIsWorkingWeekend({ ...data, _crewId })));
       socket.on(SocketEventEnum.COMPLETED_SHIFT, (data, _crewId) => dispatch(socketCompletedShift({ ...data, _crewId })));
       socket.on(SocketEventEnum.KICK_REPLACEMENT, (data, _crewId) => dispatch(socketKickReplacement({ ...data, _crewId })));
       socket.on(SocketEventEnum.ADD_USER_IN_CREW, (data, _crewId) => dispatch(socketAddUserInCrew({ ...data, _crewId })));

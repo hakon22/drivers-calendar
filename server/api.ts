@@ -54,6 +54,7 @@ router.get(`${apiPath}/crew/fetchChatMessages`, jwtToken, Crew.fetchChatMessages
 router.post(`${apiPath}/crew/endWorkShift`, jwtToken, Crew.endWorkShift);
 router.patch(`${apiPath}/crew/changeIsRoundFuel`, jwtToken, Crew.changeIsRoundFuel);
 router.patch(`${apiPath}/crew/changeFuelSeason`, jwtToken, Crew.changeFuelSeason);
+router.patch(`${apiPath}/crew/changeIsWorkingWeekend`, jwtToken, Crew.changeIsWorkingWeekend);
 router.get(`${apiPath}/crew/kickReplacement/:id?`, jwtToken, Crew.kickReplacement);
 router.get(`${apiPath}/crew/fetchCrewList`, jwtToken, checkRoleAccess, Crew.fetchCrewList);
 router.get(`${apiPath}/crew/fetchCrewByRef/:uuid`, Crew.fetchCrewByRef);

@@ -14,10 +14,11 @@ export interface CrewModel extends Model<InferAttributes<CrewModel>, InferCreati
   id: CreationOptional<number>;
   schedule: string;
   name: string;
-  shiftOrder: number[];
+  shiftOrder: CreationOptional<number[]>;
   activeCar: CreationOptional<number>;
-  season: SeasonEnum;
-  isRoundFuelConsumption: boolean;
+  season: CreationOptional<SeasonEnum>;
+  isRoundFuelConsumption: CreationOptional<boolean>;
+  isWorkingWeekend: CreationOptional<boolean>;
   schedule_schema: CreationOptional<ScheduleSchemaType>;
   ref: CreationOptional<string>;
   users?: CreationOptional<UserModel[]>;
@@ -56,6 +57,10 @@ const Crews = db.define<CrewModel>(
       defaultValue: SeasonEnum.SUMMER,
     },
     isRoundFuelConsumption: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isWorkingWeekend: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
