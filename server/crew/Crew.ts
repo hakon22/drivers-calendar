@@ -560,7 +560,9 @@ class Crew {
         throw new Error('Экипаж не существует');
       }
 
-      const { cars, season, isRoundFuelConsumption } = crew;
+      const {
+        cars, season, isRoundFuelConsumption, isWorkingWeekend,
+      } = crew;
 
       const activeCar = cars?.find((car) => crew.activeCar === car.id);
       if (!activeCar) {
@@ -656,7 +658,14 @@ class Crew {
 
       crew.schedule_schema = sortingSchedule(crew.schedule_schema);
       const shiftDays = Object.keys(crew.schedule_schema);
-      const nextShiftIndex = shiftDays.findIndex((day) => day === dayjs().format('DD-MM-YYYY')) + 1;
+
+      const today = dayjs();
+
+      let nextShiftIndex = shiftDays.findIndex((day) => day === today.format('DD-MM-YYYY')) + 1;
+
+      if (!isWorkingWeekend && (today.add(1, 'day').day() === 0 || today.add(1, 'day').day() === 6)) {
+        nextShiftIndex = shiftDays.findIndex((day) => dayjs(day, 'DD-MM-YYYY').isAfter(today) && dayjs(day, 'DD-MM-YYYY').day() !== 0 && dayjs(day, 'DD-MM-YYYY').day() !== 6);
+      }
 
       const nextUser = crew.users?.find((user) => nextShiftIndex && crew.schedule_schema?.[shiftDays[nextShiftIndex]]?.id === user.id);
       if (nextUser && nextUser?.telegramId) {
@@ -805,6 +814,32 @@ class Crew {
       await Crews.update({ isRoundFuelConsumption }, { where: { id: crewId || paramsCrewId } });
 
       socketEventsService.socketChangeIsRoundFuel({ crewId: crewId || paramsCrewId, isRoundFuelConsumption });
+
+      return res.json({ code: 1 });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(500);
+    }
+  }
+
+  async changeIsWorkingWeekend(req: Request, res: Response) {
+    try {
+      const { dataValues: { crewId, role } } = req.user as PassportRequest;
+      const { isWorkingWeekend }: { isWorkingWeekend: boolean } = req.body;
+      const paramsCrewId = req?.query?.crewId ? +req.query.crewId : undefined;
+
+      if (!crewId && role !== RolesEnum.ADMIN) {
+        throw new Error('Пользователь не состоит в экипаже');
+      }
+
+      const crew = await Crews.findByPk(crewId || paramsCrewId);
+      if (!crew) {
+        throw new Error('Экипаж не существует');
+      }
+
+      await Crews.update({ isWorkingWeekend }, { where: { id: crewId || paramsCrewId } });
+
+      socketEventsService.socketChangeIsWorkingWeekend({ crewId: crewId || paramsCrewId, isWorkingWeekend });
 
       return res.json({ code: 1 });
     } catch (e) {

@@ -50,6 +50,10 @@ class SocketEvents {
     this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.CHANGE_IS_ROUND_FUEL, data, crewId);
   };
 
+  public socketChangeIsWorkingWeekend = ({ crewId, ...data }: any) => {
+    this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.CHANGE_IS_WORKING_WEEKEND, data, crewId);
+  };
+
   public socketChangeFuelSeason = ({ crewId, ...data }: any) => {
     this.io.sockets.in(`CREW:${crewId}`).in('ADMIN').emit(SocketEventEnum.CHANGE_FUEL_SEASON, data, crewId);
   };

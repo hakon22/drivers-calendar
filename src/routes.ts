@@ -55,6 +55,7 @@ export default {
   endWorkShift: [apiPath, 'crew', 'endWorkShift'].join('/'),
   changeIsRoundFuel: [apiPath, 'crew', 'changeIsRoundFuel'].join('/'),
   changeFuelSeason: [apiPath, 'crew', 'changeFuelSeason'].join('/'),
+  changeIsWorkingWeekend: [apiPath, 'crew', 'changeIsWorkingWeekend'].join('/'),
   kickReplacement: [apiPath, 'crew', 'kickReplacement'].join('/'),
   fetchCrewList: [apiPath, 'crew', 'fetchCrewList'].join('/'),
   fetchCrewByRef: [serverHost, apiPath, 'crew', 'fetchCrewByRef'].join('/'),

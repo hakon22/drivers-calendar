@@ -76,7 +76,6 @@ class Auth {
           name: call,
           shiftOrder: [],
           season: SeasonEnum.SUMMER,
-          isRoundFuelConsumption: false,
           cars: [{
             ...rest,
             inventory,
@@ -107,9 +106,6 @@ class Auth {
         const crew = await Crews.create({
           schedule,
           name: call,
-          shiftOrder: [],
-          season: SeasonEnum.SUMMER,
-          isRoundFuelConsumption: false,
           users: [{
             ...userValues,
             color: typeof color !== 'string' ? color.toHexString() : color,

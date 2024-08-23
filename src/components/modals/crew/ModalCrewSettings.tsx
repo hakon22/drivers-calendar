@@ -26,13 +26,23 @@ const ModalCrewSettings = () => {
   const { modalClose } = useContext(ModalContext);
 
   const {
-    id: crewId, ref, season = SeasonEnum.SUMMER, isRoundFuelConsumption = false,
+    id: crewId, ref, season = SeasonEnum.SUMMER, isRoundFuelConsumption = false, isWorkingWeekend = true,
   } = useAppSelector((state) => state.crew);
 
   const onChangeIsRound = async ({ target }: CheckboxChangeEvent) => {
     try {
       setIsSubmit(true);
       await axios.patch(routes.changeIsRoundFuel, { isRoundFuelConsumption: target.checked }, { params: { crewId } });
+      setIsSubmit(false);
+    } catch (e) {
+      axiosErrorHandler(e, tToast, setIsSubmit);
+    }
+  };
+
+  const onChangeIsWorkingWeekend = async ({ target }: CheckboxChangeEvent) => {
+    try {
+      setIsSubmit(true);
+      await axios.patch(routes.changeIsWorkingWeekend, { isWorkingWeekend: target.checked }, { params: { crewId } });
       setIsSubmit(false);
     } catch (e) {
       axiosErrorHandler(e, tToast, setIsSubmit);
@@ -63,6 +73,7 @@ const ModalCrewSettings = () => {
           <Radio.Button className="border-button" value={SeasonEnum.WINTER}>{t('winter')}</Radio.Button>
         </Radio.Group>
         <Checkbox checked={isRoundFuelConsumption} onChange={onChangeIsRound}>{t('roundFuel')}</Checkbox>
+        <Checkbox checked={isWorkingWeekend} onChange={onChangeIsWorkingWeekend}>{t('workingWeekend')}</Checkbox>
         <CopyToClipboard text={`${url}/schedule/${ref}`}>
           <Button type="dashed" className="mt-3" style={{ color: 'orange' }} onClick={() => toast(tToast('copyRefSuccess'), 'success')}>
             {t('copyRef')}
