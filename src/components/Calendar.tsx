@@ -60,7 +60,7 @@ const Calendar = ({ dateValues, setDateValues, mode = 'calendar' }: CalendarProp
   const [selectedDate, setSelectedDate] = useState<Dayjs>();
 
   const today = dayjs().format('DD-MM-YYYY');
-  const isMyShift = scheduleSchema?.[today]?.id === id;
+  const isMyShift = id && scheduleSchema?.[today]?.id === id;
 
   const endWorkShiftHandler = () => modalOpen('endWorkShift');
 
