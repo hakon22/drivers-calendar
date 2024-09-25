@@ -661,11 +661,7 @@ class Crew {
 
       const today = dayjs();
 
-      let nextShiftIndex = shiftDays.findIndex((day) => day === today.format('DD-MM-YYYY')) + 1;
-
-      if (!isWorkingWeekend && (today.add(1, 'day').day() === 0 || today.add(1, 'day').day() === 6)) {
-        nextShiftIndex = shiftDays.findIndex((day) => dayjs(day, 'DD-MM-YYYY').isAfter(today) && dayjs(day, 'DD-MM-YYYY').day() !== 0 && dayjs(day, 'DD-MM-YYYY').day() !== 6);
-      }
+      const nextShiftIndex = shiftDays.findIndex((day) => !isWorkingWeekend ? dayjs(day, 'DD-MM-YYYY').day() !== 0 && dayjs(day, 'DD-MM-YYYY').day() !== 6 && dayjs(day, 'DD-MM-YYYY').isAfter(today) : dayjs(day, 'DD-MM-YYYY').isAfter(today));
 
       const nextUser = crew.users?.find((user) => nextShiftIndex && crew.schedule_schema?.[shiftDays[nextShiftIndex]]?.id === user.id);
       if (nextUser && nextUser?.telegramId) {
