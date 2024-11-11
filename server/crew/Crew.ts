@@ -245,7 +245,7 @@ class Crew {
             attributes: ['id', 'message', 'createdAt', 'readBy'], limit: paginationChatLimit, order: [['id', 'DESC']], model: ChatMessages, as: 'chat', include: [{ attributes: ['id', 'username'], model: Users, as: 'author' }],
           },
           {
-            model: CompletedShifts, as: 'completedShifts', limit: 50, include: [{ attributes: ['id', 'username'], model: Users, as: 'user' }, { attributes: ['id', 'call'], model: Cars, as: 'car' }],
+            model: CompletedShifts, as: 'completedShifts', limit: 50, order: [['id', 'DESC']], include: [{ attributes: ['id', 'username'], model: Users, as: 'user' }, { attributes: ['id', 'call'], model: Cars, as: 'car' }],
           },
         ],
       });
