@@ -304,9 +304,11 @@ class Crew {
       const shiftOrder: number[] = users.map((user: UserModel) => user.id);
       const scheduleSchema = await generateScheduleSchema(startDate, users as UserModel[], shiftOrder);
 
-      await Crews.update({ schedule_schema: scheduleSchema, shiftOrder }, { where: { id: crew.id } });
+      const newSchedule = { ...crew.schedule_schema, ...scheduleSchema };
 
-      socketEventsService.socketMakeSchedule({ crewId, scheduleSchema, shiftOrder });
+      await Crews.update({ schedule_schema: newSchedule, shiftOrder }, { where: { id: crew.id } });
+
+      socketEventsService.socketMakeSchedule({ crewId, scheduleSchema: newSchedule, shiftOrder });
 
       return res.json({ code: 1 });
     } catch (e) {
