@@ -112,7 +112,7 @@ const ModalShiftReport = () => {
         <div className="h1">{t('title')}</div>
         <Table
           columns={columns}
-          dataSource={data.sort((a, b) => (b.key as number) - (a.key as number))}
+          dataSource={data}
           locale={{
             emptyText: (
               <div className="ant-empty ant-empty-normal my-4">
